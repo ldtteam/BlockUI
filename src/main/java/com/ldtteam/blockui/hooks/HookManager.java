@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.IForgeRegistryEntry;
-
 import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
@@ -65,9 +64,9 @@ public abstract class HookManager<T, U extends IForgeRegistryEntry<U>, K>
         Objects.requireNonNull(guiLoc, "Gui location can't be null!");
         Objects.requireNonNull(trigger, "Trigger can't be null!");
 
-        final BiPredicate<T, Type> shouldOpenTest = requireNonNullElse((BiPredicate<T, Type>) shouldOpen, (t, tt) -> true);
-        final IGuiActionCallback<T> onOpenListener = requireNonNullElse((IGuiActionCallback<T>) onOpen, IGuiActionCallback.noAction());
-        final IGuiActionCallback<T> onClosedListener = requireNonNullElse((IGuiActionCallback<T>) onClose, IGuiActionCallback.noAction());
+        final BiPredicate<T, Type> shouldOpenTest = Objects.requireNonNullElse((BiPredicate<T, Type>) shouldOpen, (t, tt) -> true);
+        final IGuiActionCallback<T> onOpenListener = Objects.requireNonNullElse((IGuiActionCallback<T>) onOpen, IGuiActionCallback.noAction());
+        final IGuiActionCallback<T> onClosedListener = Objects.requireNonNullElse((IGuiActionCallback<T>) onClose, IGuiActionCallback.noAction());
         final ResourceLocation registryKey = targetThing.getRegistryName();
 
         if (registryKeys.contains(registryKey))
@@ -119,7 +118,7 @@ public abstract class HookManager<T, U extends IForgeRegistryEntry<U>, K>
                 findTriggered(hook.targetThing, hook.trigger).forEach(thing -> {
                     final K key = keyMapper(thing);
                     final WindowEntry entry = activeWindows.get(key);
-    
+
                     if ((entry == null || entry.hook.trigger.isLowerPriority(hook.trigger))
                         && hook.shouldOpen.test(thing, hook.trigger.getType())) // new entry or override
                     {
@@ -127,7 +126,7 @@ public abstract class HookManager<T, U extends IForgeRegistryEntry<U>, K>
                         {
                             entry.screen.removed();
                         }
-    
+
                         final WindowEntry window = new WindowEntry(now, thing, hook, HookWindow::new);
                         activeWindows.put(key, window);
                         window.screen.init(Minecraft.getInstance(), window.screen.getWindow().getWidth(), window.screen.getWindow().getHeight());
@@ -240,11 +239,5 @@ public abstract class HookManager<T, U extends IForgeRegistryEntry<U>, K>
             this.hook = hook;
             this.screen = windowFactory.apply(this).getScreen();
         }
-    }
-
-    // java 9 feature
-    private static <T> T requireNonNullElse(T obj, T defaultObj)
-    {
-        return (obj != null) ? obj : Objects.requireNonNull(defaultObj, "defaultObj");
     }
 }

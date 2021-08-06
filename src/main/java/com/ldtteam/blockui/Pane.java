@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
  */
 public class Pane extends GuiComponent
 {
-        private static final Deque<ScissorsInfo> scissorsInfoStack = new ConcurrentLinkedDeque<>();
+    private static final Deque<ScissorsInfo> scissorsInfoStack = new ConcurrentLinkedDeque<>();
     protected static Pane lastClickedPane;
     protected static Pane focus;
     protected Pane onHover;
@@ -892,6 +892,7 @@ public class Pane extends GuiComponent
 
     /**
      * Draws texture without scaling so one texel is one pixel, using repeatable texture center.
+     * TODO: Nightenom - rework to better algoritm from pgr, also texture extensions?
      *
      * @param ms            MatrixStack
      * @param x             start target coords [pixels]

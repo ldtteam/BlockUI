@@ -68,8 +68,9 @@ public final class Render
         RenderSystem.disableTexture();
         RenderSystem.defaultBlendFunc();
 
-        GL11.glLineWidth(lineWidth);
-        vertexBuffer.begin(VertexFormat.Mode.LINE_STRIP, DefaultVertexFormat.POSITION_COLOR);
+        RenderSystem.lineWidth(lineWidth);
+        // TODO: forge pr LINES_LOOP
+        vertexBuffer.begin(VertexFormat.Mode.DEBUG_LINE_STRIP, DefaultVertexFormat.POSITION_COLOR);
         vertexBuffer.vertex(matrix, x, y, 0.0f).color(red, green, blue, alpha).endVertex();
         vertexBuffer.vertex(matrix, x + w, y, 0.0f).color(red, green, blue, alpha).endVertex();
         vertexBuffer.vertex(matrix, x + w, y + h, 0.0f).color(red, green, blue, alpha).endVertex();
@@ -78,6 +79,7 @@ public final class Render
         vertexBuffer.end();
         BufferUploader.end(vertexBuffer);
 
+        RenderSystem.lineWidth(1.0F);
         RenderSystem.enableTexture();
         RenderSystem.disableBlend();
     }

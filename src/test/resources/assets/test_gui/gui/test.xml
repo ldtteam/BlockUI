@@ -1,0 +1,32 @@
+<window xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../main/java/com/ldtteam/blockui/blockOut.xsd" size="1600 900" type="FIXED_VANILLA" pause="true" lightbox="true">
+    <button id="bt" label="vanilla" size="100 100" pos="0 0" textscale="5"/>
+    <buttonimage id="bti" label="textured" size="100 100" pos="100 0" textscale="5" textoffset="18 18" textbox="64 64" source="test_gui:textures/gui/button.png"/>
+    <text id="txt" size="600 250" pos="0 100" textcolor="yellow" tooltip="test tooltip" textscale="3.5" textalign="BOTTOM_RIGHT" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut eros elit, tempus quis imperdiet iaculis, dignissim ac velit. Donec sed molestie sem. Fusce lacinia est nec nibh lobortis aliquet. Aliquam lorem est, vehicula sodales lorem ac, mollis faucibus felis. Fusce facilisis suscipit mi. Fusce luctus erat et magna rutrum ullamcorper. Phasellus placerat, nulla in mattis mattis, purus nunc elementum nisl, ac tristique risus neque in dolor. Nunc a sagittis ligula. Sed ut placerat elit, a ultricies purus. Nullam vel gravida ante.\nProin mattis lobortis tellus sit amet semper. Integer ut viverra nunc. Donec dictum tincidunt laoreet. Pellentesque ultrices dapibus ex, ut iaculis odio. Ut suscipit, nibh eu condimentum gravida, sapien neque blandit ipsum, eget laoreet ipsum erat id felis. Fusce tempor dui sit amet bibendum tristique. Curabitur sodales, leo sit amet blandit rhoncus, arcu est gravida nibh, vitae fringilla sapien nunc vel nisl. Praesent a tristique tortor. Nullam facilisis nisi at augue condimentum ornare. Aliquam vitae sem ipsum. Quisque varius ut dolor at sagittis. Suspendisse vehicula mattis massa vitae hendrerit. Nunc blandit suscipit enim."/>
+    <zoomdragview id="zdv" pos="800 0" size="800 900">
+        <scrollgroup pos="0 0" size="108 900">
+            <button size="100 100" label="0" textscale="10"/>
+            <button size="100 100" label="1" textscale="10"/>
+            <button size="100 100" label="2" textscale="10"/>
+            <button size="100 100" label="3" textscale="10"/>
+            <button size="100 100" label="4" textscale="10"/>
+            <button size="100 100" label="5" textscale="10"/>
+            <button size="100 100" label="6" textscale="10"/>
+            <button size="100 100" label="7" textscale="10"/>
+            <button size="100 100" label="8" textscale="10"/>
+            <button size="100 100" label="9" textscale="10"/>
+            <button size="100 100" label="10" textscale="10"/>
+            <button size="100 100" label="11" textscale="10"/>
+            <button size="100 100" label="12" textscale="10"/>
+            <button size="100 100" label="13" textscale="10"/>
+            <button size="100 100" label="14" textscale="10"/>
+            <button size="100 100" label="15" textscale="10"/>
+            <button size="100 100" label="16" textscale="10"/>
+            <button size="100 100" label="17" textscale="10"/>
+        </scrollgroup>
+        <dropdown size="100 20" pos="150 0">
+            <image size="100 100" source="test_gui:textures/gui/button.png"/>
+        </dropdown>
+        <itemicon id="ii" item="minecraft:barrier" onHoverId="ii2" size="16 16" pos="0 400"/>
+        <itemicon id="ii2" item="minecraft:diamond_pickaxe" pos="0 416" size="16 16"/>
+    </zoomdragview>
+</window>

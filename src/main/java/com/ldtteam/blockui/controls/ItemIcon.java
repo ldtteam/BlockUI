@@ -99,7 +99,7 @@ public class ItemIcon extends Pane
 
             // RenderSystem.pushMatrix();
             // RenderSystem.multMatrix(ms.getLast().getMatrix());
-            // mc.getItemRenderer().renderItemAndEffectIntoGUI(itemStack, 0, 0);
+            // mc.getItemRenderer().renderAndDecorateItem(itemStack, 0, 0);
             renderItemModelIntoGUI(itemStack,
                 ms,
                 mc.getItemRenderer().getModel(itemStack, null, mc.player, 0));

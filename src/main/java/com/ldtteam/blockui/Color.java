@@ -1,8 +1,7 @@
 package com.ldtteam.blockui;
 
 import net.minecraft.util.Mth;
-
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -47,8 +46,9 @@ public final class Color
 
     /**
      * Parses a color or returns the default
+     *
      * @param color a string representation of the color, in rgba, hex, or int
-     * @param def the fallback value
+     * @param def   the fallback value
      * @return the parsed or defaulted color integer
      */
     public static int parse(String color, int def)
@@ -84,6 +84,7 @@ public final class Color
 
     /**
      * Get the int from rgba.
+     *
      * @param r the red value from 0-255.
      * @param g the green value from 0-255.
      * @param b the blue value from 0-255.
@@ -100,7 +101,7 @@ public final class Color
         final int r = Mth.clamp(Integer.parseInt(m.group(1)), 0, 255);
         final int g = Mth.clamp(Integer.parseInt(m.group(2)), 0, 255);
         final int b = Mth.clamp(Integer.parseInt(m.group(3)), 0, 255);
-        final int a = Mth.clamp((int)Double.parseDouble(m.group(4))*255,0,255);
+        final int a = Mth.clamp((int) Double.parseDouble(m.group(4)) * 255, 0, 255);
 
         return (a << 24) | (r << 16) | (g << 8) | b;
     }

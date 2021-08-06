@@ -168,7 +168,7 @@ public class Window extends View
      */
     public void open()
     {
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> mc.executeBlocking(() -> mc.setScreen(screen)));
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> mc.submit(() -> mc.setScreen(screen)));
     }
 
     /**
