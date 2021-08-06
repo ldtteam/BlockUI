@@ -1,7 +1,7 @@
 package com.ldtteam.blockui.hooks;
 
 import com.ldtteam.blockui.hooks.TriggerMechanism.Type;
-import com.ldtteam.blockui.views.Window;
+import com.ldtteam.blockui.views.BOWindow;
 
 /**
  * Provides callbacks for fine tuning hook mechanism and for window setuping.
@@ -32,7 +32,7 @@ public interface IGuiHookable
      * @param window      new window
      * @param triggerType type of trigger condition
      */
-    default void onOpen(final Window window, final Type triggerType)
+    default void onOpen(final BOWindow window, final Type triggerType)
     {
     }
 
@@ -43,7 +43,7 @@ public interface IGuiHookable
      * @param window      window about to be closed
      * @param triggerType type of trigger condition
      */
-    default void onClose(final Window window, final Type triggerType)
+    default void onClose(final BOWindow window, final Type triggerType)
     {
     }
 }

@@ -1,7 +1,7 @@
 package test;
 
 import com.ldtteam.blockui.Loader;
-import com.ldtteam.blockui.views.Window;
+import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -32,7 +32,7 @@ public class TestGuiMod
         }
     }
 
-    public class TestWindow extends Window
+    public class TestWindow extends BOWindow
     {
         public TestWindow()
         {

@@ -1,6 +1,6 @@
 package com.ldtteam.blockui;
 
-import com.ldtteam.blockui.views.Window;
+import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.math.Matrix4f;
@@ -19,7 +19,7 @@ public class BOScreen extends Screen
 {
     protected double renderScale = 1.0d;
     protected double mcScale = 1.0d;
-    protected Window window;
+    protected BOWindow window;
     protected double x = 0;
     protected double y = 0;
     public static boolean isMouseLeftDown = false;
@@ -109,7 +109,7 @@ public class BOScreen extends Screen
      *
      * @param w blockout window.
      */
-    public BOScreen(final Window w)
+    public BOScreen(final BOWindow w)
     {
         super(new TextComponent("Blockout GUI"));
         window = w;
@@ -264,7 +264,7 @@ public class BOScreen extends Screen
     public void removed()
     {
         window.onClosed();
-        Window.clearFocus();
+        BOWindow.clearFocus();
         minecraft.keyboardHandler.setSendRepeatsToGui(false);
         OverlayRegistry.enableOverlay(ForgeIngameGui.CROSSHAIR_ELEMENT, true);
     }

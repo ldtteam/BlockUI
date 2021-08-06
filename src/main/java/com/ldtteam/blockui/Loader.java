@@ -130,9 +130,9 @@ public final class Loader
             return null;
         }
 
-        if (parent instanceof Window && params.getType().equals("window"))
+        if (parent instanceof BOWindow && params.getType().equals("window"))
         {
-            ((Window) parent).loadParams(params);
+            ((BOWindow) parent).loadParams(params);
             parent.parseChildren(params);
             return parent;
         }

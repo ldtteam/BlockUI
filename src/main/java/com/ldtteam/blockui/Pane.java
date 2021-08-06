@@ -2,7 +2,7 @@ package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.controls.AbstractTextBuilder.TooltipBuilder;
 import com.ldtteam.blockui.views.View;
-import com.ldtteam.blockui.views.Window;
+import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
@@ -43,7 +43,7 @@ public class Pane extends GuiComponent
     protected boolean enabled = true;
     protected String onHoverId = "";
     // Runtime
-    protected Window window;
+    protected BOWindow window;
     protected View parent;
     /**
      * Should be only used during drawing methods. Outside drawing scope value may be outdated.
@@ -480,12 +480,12 @@ public class Pane extends GuiComponent
      *
      * @return the Window that this Pane belongs to.
      */
-    public final Window getWindow()
+    public final BOWindow getWindow()
     {
         return window;
     }
 
-    public void setWindow(final Window w)
+    public void setWindow(final BOWindow w)
     {
         window = w;
 

@@ -164,7 +164,7 @@ public class View extends Pane
     }
 
     @Override
-    public void setWindow(final Window w)
+    public void setWindow(final BOWindow w)
     {
         super.setWindow(w);
         for (final Pane child : children)
