@@ -1,12 +1,12 @@
 package com.ldtteam.blockui.hooks;
 
 import com.ldtteam.blockui.Loader;
-import com.ldtteam.blockui.views.Window;
+import com.ldtteam.blockui.views.BOWindow;
 
 /**
  * Window wrapper
  */
-public class HookWindow<T> extends Window
+public class HookWindow<T> extends BOWindow
 {
     protected final HookManager<T, ?, ?>.WindowEntry windowHolder;
 

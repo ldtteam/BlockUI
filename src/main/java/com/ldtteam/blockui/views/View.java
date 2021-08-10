@@ -1,6 +1,7 @@
 package com.ldtteam.blockui.views;
 
 import com.ldtteam.blockui.*;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -164,7 +165,7 @@ public class View extends Pane
     }
 
     @Override
-    public void setWindow(final Window w)
+    public void setWindow(final BOWindow w)
     {
         super.setWindow(w);
         for (final Pane child : children)

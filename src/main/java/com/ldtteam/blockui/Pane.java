@@ -2,11 +2,12 @@ package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.controls.AbstractTextBuilder.TooltipBuilder;
 import com.ldtteam.blockui.views.View;
-import com.ldtteam.blockui.views.Window;
+import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import com.mojang.math.Matrix4f;
@@ -26,7 +27,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
  */
 public class Pane extends GuiComponent
 {
-        private static final Deque<ScissorsInfo> scissorsInfoStack = new ConcurrentLinkedDeque<>();
+    private static final Deque<ScissorsInfo> scissorsInfoStack = new ConcurrentLinkedDeque<>();
     protected static Pane lastClickedPane;
     protected static Pane focus;
     protected Pane onHover;
@@ -43,7 +44,7 @@ public class Pane extends GuiComponent
     protected boolean enabled = true;
     protected String onHoverId = "";
     // Runtime
-    protected Window window;
+    protected BOWindow window;
     protected View parent;
     /**
      * Should be only used during drawing methods. Outside drawing scope value may be outdated.
@@ -309,8 +310,9 @@ public class Pane extends GuiComponent
      */
     public void draw(final PoseStack ms, final double mx, final double my)
     {
+        final boolean oldCursorInPane = wasCursorInPane;
         wasCursorInPane = isPointInPane(mx, my);
-        handleHover();
+        handleHover(oldCursorInPane);
 
         if (visible)
         {
@@ -480,12 +482,12 @@ public class Pane extends GuiComponent
      *
      * @return the Window that this Pane belongs to.
      */
-    public final Window getWindow()
+    public final BOWindow getWindow()
     {
         return window;
     }
 
-    public void setWindow(final Window w)
+    public void setWindow(final BOWindow w)
     {
         window = w;
 
@@ -665,7 +667,7 @@ public class Pane extends GuiComponent
             scissorsYend = Math.max(scissorsYstart, Math.min(parentInfo.yEnd, scissorsYend));
         }
 
-                final ScissorsInfo info = new ScissorsInfo(scissorsXstart, scissorsXend, scissorsYstart, scissorsYend, window.getScreen().width, window.getScreen().height);
+        final ScissorsInfo info = new ScissorsInfo(scissorsXstart, scissorsXend, scissorsYstart, scissorsYend, window.getScreen().width, window.getScreen().height);
         scissorsInfoStack.push(info);
         window.getScreen().width = contentWidth;
         window.getScreen().height = contentHeight;
@@ -705,7 +707,7 @@ public class Pane extends GuiComponent
             final int yStart = mc.getWindow().getHeight() - popped.yEnd;
 
             ms.pushPose();
-            ms.last().pose().setIdentity();
+            ms.setIdentity();
             Render.drawOutlineRect(ms, popped.xStart, yStart, w, h, color, 2.0f);
 
             final String scId = "scissor_" + (id.isEmpty() ? this.toString() : id);
@@ -781,7 +783,7 @@ public class Pane extends GuiComponent
     /**
      * Handle onHover element, element must be visible.
      */
-    protected void handleHover()
+    protected void handleHover(final boolean wasCursorInPaneLastTick)
     {
         if (onHover == null && !onHoverId.isEmpty())
         {
@@ -800,7 +802,8 @@ public class Pane extends GuiComponent
         }
         // if onHover was already drawn then we good
         // else we have to wait for next frame
-        else if (!onHover.wasCursorInPane && !this.wasCursorInPane && onHover.isVisible())
+        else if (!onHover.wasCursorInPane && !this.wasCursorInPane && this.wasCursorInPane == wasCursorInPaneLastTick
+            && onHover.isVisible())
         {
             onHover.hide();
         }
@@ -892,6 +895,7 @@ public class Pane extends GuiComponent
 
     /**
      * Draws texture without scaling so one texel is one pixel, using repeatable texture center.
+     * TODO: Nightenom - rework to better algoritm from pgr, also texture extensions?
      *
      * @param ms            MatrixStack
      * @param x             start target coords [pixels]
@@ -1001,6 +1005,7 @@ public class Pane extends GuiComponent
         buffer.vertex(mat, xEnd, yEnd, 0).uv(restMinU, restMinV).endVertex();
 
         buffer.end();
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
         BufferUploader.end(buffer);
     }
 }

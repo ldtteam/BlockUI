@@ -1,12 +1,14 @@
 package com.ldtteam.blockui;
 
-import com.ldtteam.blockui.views.Window;
+import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.math.Matrix4f;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.util.BitStorage;
+import net.minecraftforge.client.ForgeRenderTypes;
+import net.minecraftforge.client.gui.ForgeIngameGui;
+import net.minecraftforge.client.gui.OverlayRegistry;
 import net.minecraft.network.chat.TextComponent;
 import org.lwjgl.glfw.GLFW;
 
@@ -17,7 +19,7 @@ public class BOScreen extends Screen
 {
     protected double renderScale = 1.0d;
     protected double mcScale = 1.0d;
-    protected Window window;
+    protected BOWindow window;
     protected double x = 0;
     protected double y = 0;
     public static boolean isMouseLeftDown = false;
@@ -107,7 +109,7 @@ public class BOScreen extends Screen
      *
      * @param w blockout window.
      */
-    public BOScreen(final Window w)
+    public BOScreen(final BOWindow w)
     {
         super(new TextComponent("Blockout GUI"));
         window = w;
@@ -130,6 +132,9 @@ public class BOScreen extends Screen
         final float oldZ = minecraft.getItemRenderer().blitOffset;
         minecraft.getItemRenderer().blitOffset = renderZlevel;
 
+        final boolean oldFilteringValue = ForgeRenderTypes.enableTextTextureLinearFiltering;
+        ForgeRenderTypes.enableTextTextureLinearFiltering = false;
+
         mcScale = minecraft.getWindow().getGuiScale();
         renderScale = window.getRenderType().calcRenderScale(minecraft.getWindow(), window);
 
@@ -146,21 +151,28 @@ public class BOScreen extends Screen
         y = Math.floor((guiHeight - height * renderScale) / 2.0d);
 
         // replace vanilla projection
-        Matrix4f ourOrtho = Matrix4f.orthographic(0.0F, (float)fbWidth, 0.0F, (float)fbHeight, 1000.0F, 3000.0F);
-        RenderSystem.setProjectionMatrix(ourOrtho);
+        final PoseStack shaderPs = RenderSystem.getModelViewStack();
+        final Matrix4f oldProjection = RenderSystem.getProjectionMatrix();
+        RenderSystem.setProjectionMatrix(Matrix4f.orthographic(0.0F, (float) fbWidth, 0.0F, (float) fbHeight, -10000.0F, 50000.0F));
+        shaderPs.pushPose();
+        shaderPs.setIdentity();
 
         final PoseStack newMs = new PoseStack();
         newMs.translate(x, y, renderZlevel);
         newMs.scale((float) renderScale, (float) renderScale, 1.0f);
+
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.enableDepthTest();
         window.draw(newMs, calcRelativeX(mx), calcRelativeY(my));
         window.drawLast(newMs, calcRelativeX(mx), calcRelativeY(my));
-        newMs.popPose();
 
         // restore vanilla state
-        Matrix4f theirOrtho = Matrix4f.orthographic(0.0F, (float)((double)Minecraft.getInstance().getWindow().getWidth() / Minecraft.getInstance().getWindow().getGuiScale()), 0.0F, (float)((double)Minecraft.getInstance().getWindow().getHeight() / Minecraft.getInstance().getWindow().getGuiScale()), 1000.0F, 3000.0F);
-        RenderSystem.setProjectionMatrix(theirOrtho);
+        shaderPs.popPose();
+        RenderSystem.setProjectionMatrix(oldProjection);
+        RenderSystem.applyModelViewMatrix();
 
         minecraft.getItemRenderer().blitOffset = oldZ;
+        ForgeRenderTypes.enableTextTextureLinearFiltering = oldFilteringValue;
     }
 
     @Override
@@ -230,7 +242,7 @@ public class BOScreen extends Screen
     public void init()
     {
         minecraft.keyboardHandler.setSendRepeatsToGui(true);
-        //TODO: Disable crosshair. Might not be possible anymore or might need an event
+        OverlayRegistry.enableOverlay(ForgeIngameGui.CROSSHAIR_ELEMENT, false);
     }
 
     @Override
@@ -259,9 +271,9 @@ public class BOScreen extends Screen
     public void removed()
     {
         window.onClosed();
-        Window.clearFocus();
+        BOWindow.clearFocus();
         minecraft.keyboardHandler.setSendRepeatsToGui(false);
-        //TODO: See Above (init)
+        OverlayRegistry.enableOverlay(ForgeIngameGui.CROSSHAIR_ELEMENT, true);
     }
 
     @Override

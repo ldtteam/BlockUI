@@ -1,7 +1,7 @@
 package com.ldtteam.blockui.hooks;
 
 import com.ldtteam.blockui.hooks.TriggerMechanism.Type;
-import com.ldtteam.blockui.views.Window;
+import com.ldtteam.blockui.views.BOWindow;
 
 /**
  * Callback for gui open/close action.
@@ -19,7 +19,7 @@ public interface IGuiActionCallback<T>
      * @param window      window attached to instance above
      * @param triggerType trigger condition type
      */
-    void onAction(final T thing, final Window window, final Type triggerType);
+    void onAction(final T thing, final BOWindow window, final Type triggerType);
 
     /**
      * @return default impl with no action

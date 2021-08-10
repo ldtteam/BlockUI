@@ -111,7 +111,7 @@
             <xs:element name="view" type="viewType"/>
             <xs:element name="zoomdragview" type="zoomDragType"/>
             <xs:element name="group" type="groupType"/>
-            <!-- xs:element name="scrollgroup" type="scrollGroupType"/ -->
+            <xs:element name="scrollgroup" type="viewType"/>
             <xs:element name="list" type="listType"/>
             <xs:element name="button" type="buttonType"/>
             <xs:element name="buttonimage" type="buttonImageType"/>
@@ -126,7 +126,6 @@
             <xs:element name="itemicon" type="itemIconType"/>
             <xs:element name="switch" type="switchType"/>
             <xs:element name="dropdown" type="dropdownType"/>
-            <xs:element name="treeview" type="treeViewType"/>
         </xs:choice>
     </xs:group>
 
@@ -178,7 +177,7 @@
     <xs:complexType name="buttonType">
         <xs:complexContent>
             <xs:extension base="textElementType">
-                <xs:attribute name="source" type="xs:string" />
+                <xs:attribute name="source" type="xs:string"/>
                 <xs:attribute name="imageoffset" type="fixedSizePair"/>
                 <xs:attribute name="imagesize" type="fixedSizePair"/>
                 <xs:attribute name="highlight" type="xs:string"/>
@@ -207,8 +206,7 @@
     <!-- <text> -->
     <xs:complexType name="textType">
         <xs:complexContent>
-            <xs:extension base="textElementType">
-            </xs:extension>
+            <xs:extension base="textElementType"></xs:extension>
         </xs:complexContent>
     </xs:complexType>
 
@@ -224,9 +222,7 @@
     <!-- <buttonimage> -->
     <xs:complexType name="buttonImageType">
         <xs:complexContent>
-            <xs:extension base="buttonType">
-                <xs:attribute name="source" type="xs:string" use="required"/>
-            </xs:extension>
+            <xs:extension base="buttonType"/>
         </xs:complexContent>
     </xs:complexType>
 
@@ -310,18 +306,6 @@
                 <xs:attribute name="zoomenabled" type="xs:boolean"/>
                 <xs:attribute name="minscale" type="xs:double"/>
                 <xs:attribute name="maxscale" type="xs:double"/>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <!-- <tree> -->
-    <xs:complexType name="treeViewType">
-        <xs:complexContent>
-            <xs:extension base="zoomDragType">
-                <xs:attribute name="nodeVertDist" type="xs:integer"/>
-                <xs:attribute name="nodeToLineHorizDist" type="xs:integer"/>
-                <xs:attribute name="lineSize" type="xs:integer"/>
-                <xs:attribute name="linePackedColor" type="xs:integer"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

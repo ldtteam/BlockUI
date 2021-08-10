@@ -7,7 +7,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
-import org.lwjgl.opengl.GL11;
 
 /**
  * Image element with repeatable middle part.
@@ -133,8 +132,7 @@ public class ImageRepeatable extends Pane
         this.mc.getTextureManager().bindForSetup(resourceLocation);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.enableBlend();
-        RenderSystem.blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
-        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        RenderSystem.defaultBlendFunc();
 
         blitRepeatable(ms, x, y, width, height, u, v, uWidth, vHeight, fileWidth, fileHeight, uRepeat, vRepeat, repeatWidth, repeatHeight);
 

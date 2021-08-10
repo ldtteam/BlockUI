@@ -281,7 +281,7 @@ public class PaneParams
      * @param def the default value if none can be found
      * @return the parsed value
      */
-    private int getScaledInteger(String name, final int scale, final int def)
+    public int getScaledInteger(String name, final int scale, final int def)
     {
         return getProperty(name, Parsers.SCALED(scale), def);
     }

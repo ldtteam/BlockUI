@@ -7,6 +7,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.MultiBufferSource;
 import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraftforge.client.ForgeRenderTypes;
+
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Vector4f;
 import net.minecraft.network.chat.MutableComponent;
@@ -267,7 +269,7 @@ public abstract class AbstractTextElement extends Pane
             || Math.abs((float) Math.round(newScaleY) - newScaleY) > FILTERING_THRESHOLD)
         {
             // smooth the texture
-            // TODO: forge enable filtering
+            ForgeRenderTypes.enableTextTextureLinearFiltering = true;
             ms.scale((float) textScale, (float) textScale, 1.0f);
         }
         else
@@ -300,7 +302,7 @@ public abstract class AbstractTextElement extends Pane
         }
         drawBuffer.endBatch();
 
-        // TODO: forge disable filtering
+        ForgeRenderTypes.enableTextTextureLinearFiltering = false;
 
         ms.popPose();
     }

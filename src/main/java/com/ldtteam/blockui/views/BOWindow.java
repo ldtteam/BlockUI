@@ -5,8 +5,8 @@ import com.ldtteam.blockui.Loader;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.Parsers;
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -19,7 +19,7 @@ import java.util.function.ToDoubleBiFunction;
  * Blockout window, high level root pane.
  */
 @OnlyIn(Dist.CLIENT)
-public class Window extends View
+public class BOWindow extends View
 {
     /**
      * The default width.
@@ -56,7 +56,7 @@ public class Window extends View
      *
      * @param resource ResourceLocation to get file from.
      */
-    public Window(final ResourceLocation resource)
+    public BOWindow(final ResourceLocation resource)
     {
         this();
         Loader.createFromXMLFile(resource, this);
@@ -65,7 +65,7 @@ public class Window extends View
     /**
      * Make default sized window.
      */
-    public Window()
+    public BOWindow()
     {
         this(DEFAULT_WIDTH, DEFAULT_HEIGHT);
     }
@@ -76,7 +76,7 @@ public class Window extends View
      * @param w Width of the window, in pixels.
      * @param h Height of the window, in pixels.
      */
-    public Window(final int w, final int h)
+    public BOWindow(final int w, final int h)
     {
         super();
         width = w;
@@ -91,7 +91,7 @@ public class Window extends View
      *
      * @param resource location to get file from.
      */
-    public Window(final String resource)
+    public BOWindow(final String resource)
     {
         this();
         Loader.createFromXMLFile(resource, this);
@@ -168,7 +168,7 @@ public class Window extends View
      */
     public void open()
     {
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> mc.executeBlocking(() -> mc.setScreen(screen)));
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> mc.submit(() -> mc.setScreen(screen)));
     }
 
     /**
@@ -299,7 +299,7 @@ public class Window extends View
          */
         OVERSIZED((mcWindow, window) -> {
             final double fs = FULLSCREEN.calcRenderScale(mcWindow, window);
-            final int userScale = Minecraft.getInstance().options.guiScale;
+            final int userScale = window.mc.options.guiScale;
             return fs < 1.0d ? fs : Math.min(Math.floor(fs), userScale == 0 ? Double.MAX_VALUE : userScale);
         }),
         /**
@@ -307,18 +307,18 @@ public class Window extends View
          */
         OVERSIZED_VANILLA((mcWindow, window) -> {
             final double fs_vanilla = FULLSCREEN_VANILLA.calcRenderScale(mcWindow, window);
-            final int userScale = Minecraft.getInstance().options.guiScale;
+            final int userScale = window.mc.options.guiScale;
             return fs_vanilla < 1.0d ? fs_vanilla : Math.min(Math.floor(fs_vanilla), userScale == 0 ? Double.MAX_VALUE : userScale);
         });
 
-        private final ToDoubleBiFunction<com.mojang.blaze3d.platform.Window, Window> renderScaleCalculator;
+        private final ToDoubleBiFunction<Window, BOWindow> renderScaleCalculator;
 
-        private WindowRenderType(final ToDoubleBiFunction<com.mojang.blaze3d.platform.Window, Window> renderScaleCalculator)
+        private WindowRenderType(final ToDoubleBiFunction<Window, BOWindow> renderScaleCalculator)
         {
             this.renderScaleCalculator = renderScaleCalculator;
         }
 
-        public double calcRenderScale(final com.mojang.blaze3d.platform.Window mcWindow, final Window window)
+        public double calcRenderScale(final Window mcWindow, final BOWindow window)
         {
             return renderScaleCalculator.applyAsDouble(mcWindow, window);
         }
