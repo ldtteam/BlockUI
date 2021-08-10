@@ -1,6 +1,5 @@
 package test;
 
-import com.ldtteam.blockui.Loader;
 import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;

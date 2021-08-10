@@ -1,5 +1,6 @@
 package com.ldtteam.blockui;
 
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
@@ -106,8 +107,8 @@ public final class Color
         return (a << 24) | (r << 16) | (g << 8) | b;
     }
 
-    public static net.minecraft.network.chat.TextColor toVanilla(final int color)
+    public static TextColor toVanilla(final int color)
     {
-        return net.minecraft.network.chat.TextColor.fromRgb(color);
+        return TextColor.fromRgb(color);
     }
 }

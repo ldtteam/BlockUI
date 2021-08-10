@@ -6,10 +6,8 @@ import com.ldtteam.blockui.Parsers;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
-import org.lwjgl.opengl.GL11;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
@@ -206,11 +204,7 @@ public class Image extends Pane
         this.mc.getTextureManager().bindForSetup(resourceLocation);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.enableBlend();
-        RenderSystem.blendFuncSeparate(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA, 1, 0);
-        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-
-
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+        RenderSystem.defaultBlendFunc();
         RenderSystem.setShaderTexture(0, resourceLocation);
 
         if (this.customSized)

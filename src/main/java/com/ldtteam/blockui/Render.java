@@ -1,9 +1,14 @@
 package com.ldtteam.blockui;
 
-import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.math.Matrix4f;
-import org.lwjgl.opengl.GL11;
+import net.minecraft.client.renderer.GameRenderer;
 
 /**
  * Render utility functions.
@@ -58,7 +63,6 @@ public final class Render
     {
         if (lineWidth <= 0.0F)
         {
-            // If lineWidth is less than or equal to 0, a GL Error occurs
             return;
         }
 
@@ -67,6 +71,7 @@ public final class Render
         RenderSystem.enableBlend();
         RenderSystem.disableTexture();
         RenderSystem.defaultBlendFunc();
+        RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
         RenderSystem.lineWidth(lineWidth);
         // TODO: forge pr LINES_LOOP

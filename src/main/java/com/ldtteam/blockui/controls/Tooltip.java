@@ -6,6 +6,7 @@ import com.ldtteam.blockui.PaneParams;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.math.Matrix4f;
+
 import net.minecraft.client.renderer.GameRenderer;
 
 /**
@@ -135,7 +136,7 @@ public class Tooltip extends AbstractTextElement
                 y = window.getScreen().height - height - 4;
             }
 
-            // vanilla Screen#renderTooltip(MatrixStack, List<? extends IReorderingProcessor>, int, int, FontRenderer)
+            // modified INLINE: vanilla Screen#renderTooltip(MatrixStack, List<? extends IReorderingProcessor>, int, int, FontRenderer)
             ms.pushPose();
             ms.translate(x, y, Z_OFFSET);
 
@@ -157,7 +158,6 @@ public class Tooltip extends AbstractTextElement
             RenderSystem.disableTexture();
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
-
             RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
             bufferbuilder.end();

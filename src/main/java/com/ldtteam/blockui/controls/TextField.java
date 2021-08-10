@@ -4,13 +4,14 @@ import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.views.View;
 import com.mojang.blaze3d.vertex.*;
+import com.mojang.blaze3d.platform.GlStateManager.LogicOp;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL11;
 
 /**
  * Class which can be used to add text fields to a pane.
@@ -408,10 +409,11 @@ public class TextField extends Pane
             }
 
             final Tesselator tessellator = Tesselator.getInstance();
-            RenderSystem.setShaderColor(0.0F, 0.0F, 255.0F, 255.0F);
+            RenderSystem.setShaderColor(0.0F, 0.0F, 1.0F, 1.0F);
             RenderSystem.disableTexture();
             RenderSystem.enableColorLogicOp();
-            GL11.glLogicOp(GL11.GL_OR_REVERSE);
+            RenderSystem.logicOp(LogicOp.OR_REVERSE);
+            RenderSystem.setShader(GameRenderer::getPositionShader);
             final BufferBuilder vertexBuffer = tessellator.getBuilder();
 
             // There are several to choose from, look at DefaultVertexFormats for more info
@@ -425,6 +427,7 @@ public class TextField extends Pane
             tessellator.end();
             RenderSystem.disableColorLogicOp();
             RenderSystem.enableTexture();
+            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         }
     }
 
@@ -486,27 +489,6 @@ public class TextField extends Pane
         {
             return handleKey(c, key);
         }
-        /*
-         * switch (c)
-         * {
-         * case 1: // ctrl a ???
-         * setCursorPosition(text.length());
-         * setSelectionEnd(0);
-         * return true;
-         * case 3: // ctrl c
-         * mc.keyboardListener.setClipboardString(getSelectedText());
-         * return true;
-         * case 22: // ctrl v
-         * writeText(mc.keyboardListener.getClipboardString());
-         * return true;
-         * case 24: // ctrl x
-         * mc.keyboardListener.setClipboardString(getSelectedText());
-         * writeText("");
-         * return true;
-         * default:
-         * return handleKey(c, key);
-         * }
-         */
     }
 
     @Override

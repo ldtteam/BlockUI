@@ -7,6 +7,7 @@ import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 import com.mojang.math.Matrix4f;
@@ -309,8 +310,9 @@ public class Pane extends GuiComponent
      */
     public void draw(final PoseStack ms, final double mx, final double my)
     {
+        final boolean oldCursorInPane = wasCursorInPane;
         wasCursorInPane = isPointInPane(mx, my);
-        handleHover();
+        handleHover(oldCursorInPane);
 
         if (visible)
         {
@@ -665,7 +667,7 @@ public class Pane extends GuiComponent
             scissorsYend = Math.max(scissorsYstart, Math.min(parentInfo.yEnd, scissorsYend));
         }
 
-                final ScissorsInfo info = new ScissorsInfo(scissorsXstart, scissorsXend, scissorsYstart, scissorsYend, window.getScreen().width, window.getScreen().height);
+        final ScissorsInfo info = new ScissorsInfo(scissorsXstart, scissorsXend, scissorsYstart, scissorsYend, window.getScreen().width, window.getScreen().height);
         scissorsInfoStack.push(info);
         window.getScreen().width = contentWidth;
         window.getScreen().height = contentHeight;
@@ -705,7 +707,7 @@ public class Pane extends GuiComponent
             final int yStart = mc.getWindow().getHeight() - popped.yEnd;
 
             ms.pushPose();
-            ms.last().pose().setIdentity();
+            ms.setIdentity();
             Render.drawOutlineRect(ms, popped.xStart, yStart, w, h, color, 2.0f);
 
             final String scId = "scissor_" + (id.isEmpty() ? this.toString() : id);
@@ -781,7 +783,7 @@ public class Pane extends GuiComponent
     /**
      * Handle onHover element, element must be visible.
      */
-    protected void handleHover()
+    protected void handleHover(final boolean wasCursorInPaneLastTick)
     {
         if (onHover == null && !onHoverId.isEmpty())
         {
@@ -800,7 +802,8 @@ public class Pane extends GuiComponent
         }
         // if onHover was already drawn then we good
         // else we have to wait for next frame
-        else if (!onHover.wasCursorInPane && !this.wasCursorInPane && onHover.isVisible())
+        else if (!onHover.wasCursorInPane && !this.wasCursorInPane && this.wasCursorInPane == wasCursorInPaneLastTick
+            && onHover.isVisible())
         {
             onHover.hide();
         }
@@ -1002,6 +1005,7 @@ public class Pane extends GuiComponent
         buffer.vertex(mat, xEnd, yEnd, 0).uv(restMinU, restMinV).endVertex();
 
         buffer.end();
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
         BufferUploader.end(buffer);
     }
 }

@@ -151,18 +151,25 @@ public class BOScreen extends Screen
         y = Math.floor((guiHeight - height * renderScale) / 2.0d);
 
         // replace vanilla projection
-        RenderSystem.setProjectionMatrix(Matrix4f.orthographic(0.0F, (float) fbWidth, 0.0F, (float) fbHeight, 1000.0F, 3000.0F));
+        final PoseStack shaderPs = RenderSystem.getModelViewStack();
+        final Matrix4f oldProjection = RenderSystem.getProjectionMatrix();
+        RenderSystem.setProjectionMatrix(Matrix4f.orthographic(0.0F, (float) fbWidth, 0.0F, (float) fbHeight, -10000.0F, 50000.0F));
+        shaderPs.pushPose();
+        shaderPs.setIdentity();
 
         final PoseStack newMs = new PoseStack();
         newMs.translate(x, y, renderZlevel);
         newMs.scale((float) renderScale, (float) renderScale, 1.0f);
+
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.enableDepthTest();
         window.draw(newMs, calcRelativeX(mx), calcRelativeY(my));
         window.drawLast(newMs, calcRelativeX(mx), calcRelativeY(my));
-        newMs.popPose();
 
         // restore vanilla state
-        RenderSystem.setProjectionMatrix(
-            Matrix4f.orthographic(0.0F, (float) (fbWidth / mcScale), 0.0F, (float) (fbHeight / mcScale), 1000.0F, 3000.0F));
+        shaderPs.popPose();
+        RenderSystem.setProjectionMatrix(oldProjection);
+        RenderSystem.applyModelViewMatrix();
 
         minecraft.getItemRenderer().blitOffset = oldZ;
         ForgeRenderTypes.enableTextTextureLinearFiltering = oldFilteringValue;

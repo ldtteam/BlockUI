@@ -7,7 +7,6 @@ import com.ldtteam.blockui.Parsers;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -300,7 +299,7 @@ public class BOWindow extends View
          */
         OVERSIZED((mcWindow, window) -> {
             final double fs = FULLSCREEN.calcRenderScale(mcWindow, window);
-            final int userScale = Minecraft.getInstance().options.guiScale;
+            final int userScale = window.mc.options.guiScale;
             return fs < 1.0d ? fs : Math.min(Math.floor(fs), userScale == 0 ? Double.MAX_VALUE : userScale);
         }),
         /**
@@ -308,7 +307,7 @@ public class BOWindow extends View
          */
         OVERSIZED_VANILLA((mcWindow, window) -> {
             final double fs_vanilla = FULLSCREEN_VANILLA.calcRenderScale(mcWindow, window);
-            final int userScale = Minecraft.getInstance().options.guiScale;
+            final int userScale = window.mc.options.guiScale;
             return fs_vanilla < 1.0d ? fs_vanilla : Math.min(Math.floor(fs_vanilla), userScale == 0 ? Double.MAX_VALUE : userScale);
         });
 

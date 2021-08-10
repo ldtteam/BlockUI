@@ -1,5 +1,6 @@
 package com.ldtteam.blockui;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.util.Mth;
 import com.mojang.math.Matrix4f;
@@ -86,5 +87,20 @@ public class MatrixUtils
     public static float getMatrixTranslateZ(final Matrix4f matrix)
     {
         return matrix.m23;
+    }
+
+    public static void pushShaderMVstack(final PoseStack pushWith)
+    {
+        final PoseStack ps = RenderSystem.getModelViewStack();
+        ps.pushPose();
+        ps.last().pose().multiply(pushWith.last().pose());
+        ps.last().normal().mul(pushWith.last().normal());
+        RenderSystem.applyModelViewMatrix();
+    }
+
+    public static void popShaderMVstack()
+    {
+        RenderSystem.getModelViewStack().popPose();
+        RenderSystem.applyModelViewMatrix();
     }
 }
