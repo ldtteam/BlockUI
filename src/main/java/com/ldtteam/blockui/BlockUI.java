@@ -1,4 +1,4 @@
-package test;
+package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.platform.InputConstants;
