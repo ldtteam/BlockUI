@@ -2,15 +2,15 @@ modLoader="javafml" #mandatory
 loaderVersion="[37, 38)" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
 license="GPL3"
 [[mods]] #mandatory
-modId="test_gui" #mandatory
-version="0.0.0" #mandatory
+modId="blockui" #mandatory
+version="0.0.1" #mandatory
  # A display name for the mod
-displayName="Test Gui Mod" #mandatory
+displayName="UI Library Mod" #mandatory
 logoFile="" #optional
 credits="LDT Team" #optional
 authors="LDT Team" #optional
 description='''
-Test gui mod, use ctrl+alt+shift+x to open it
+UI Library mod, use ctrl+alt+shift+x to open a test-ui
 '''
 [[dependencies.examplemod]] #optional
     modId="forge" #mandatory

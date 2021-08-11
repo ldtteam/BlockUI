@@ -1,4 +1,4 @@
-package test;
+package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -11,12 +11,12 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.lwjgl.glfw.GLFW;
 
-@Mod(TestGuiMod.MOD_ID)
-public class TestGuiMod
+@Mod(BlockUI.MOD_ID)
+public class BlockUI
 {
-    public static final String MOD_ID = "test_gui";
+    public static final String MOD_ID = "blockui";
 
-    public TestGuiMod()
+    public BlockUI()
     {
         Mod.EventBusSubscriber.Bus.FORGE.bus().get().addListener(this::onClientTick);
     }
