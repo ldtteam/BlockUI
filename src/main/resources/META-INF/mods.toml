@@ -3,7 +3,7 @@ loaderVersion="[37, 38)" #mandatory This is typically bumped every Minecraft ver
 license="GPL3"
 [[mods]] #mandatory
 modId="blockui" #mandatory
-version="0.0.1" #mandatory
+version="${file.jarVersion}" #mandatory
  # A display name for the mod
 displayName="UI Library Mod" #mandatory
 logoFile="" #optional
