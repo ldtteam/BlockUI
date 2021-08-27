@@ -12,13 +12,13 @@ authors="LDT Team" #optional
 description='''
 UI Library mod, use ctrl+alt+shift+x to open a test-ui
 '''
-[[dependencies.examplemod]] #optional
+[[dependencies.blockui]] #optional
     modId="forge" #mandatory
     mandatory=true #mandatory
     versionRange="[37, 38)" #mandatory
     ordering="NONE"
     side="BOTH"
-[[dependencies.examplemod]]
+[[dependencies.blockui]]
     modId="minecraft"
     mandatory=true
     versionRange="[1.17, 1.18)"
