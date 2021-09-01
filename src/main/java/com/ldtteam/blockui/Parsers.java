@@ -1,4 +1,6 @@
 package com.ldtteam.blockui;
+
+import com.ldtteam.blockui.mod.Log;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
@@ -11,8 +13,6 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import static com.ldtteam.blockui.Log.getLogger;
 
 public final class Parsers
 {
@@ -107,7 +107,7 @@ public final class Parsers
             }
             catch (final NumberFormatException | IndexOutOfBoundsException | IllegalStateException ex)
             {
-                getLogger().warn(ex);
+                Log.getLogger().warn(ex);
             }
 
             return null;

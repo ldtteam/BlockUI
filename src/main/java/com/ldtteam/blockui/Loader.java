@@ -1,37 +1,35 @@
 package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.controls.*;
+import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.views.*;
-import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Tuple;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
+import net.minecraft.util.profiling.ProfilerFiller;
 import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-import javax.annotation.Nullable;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * Utilities to load xml files.
  */
-public final class Loader
+public final class Loader extends SimplePreparableReloadListener<Map<ResourceLocation, PaneParams>>
 {
-    private static final DocumentBuilderFactory DOCUMENT_BUILDER_FACTORY = DocumentBuilderFactory.newInstance();
+    public static final Loader INSTANCE = new Loader();
 
-    private static final Map<ResourceLocation, Function<PaneParams,? extends Pane>> paneFactories = new HashMap<>();
-    static
+    private final Map<ResourceLocation, Function<PaneParams, ? extends Pane>> paneFactories = new HashMap<>();
+
+    private Map<ResourceLocation, PaneParams> xmlCache = new HashMap<>();
+
+    private Loader()
     {
         register("view", View::new);
         register("group", Group::new);
@@ -54,32 +52,14 @@ public final class Loader
         register("zoomdragview", ZoomDragView::new);
     }
 
-    public static int MAX_CACHE_SIZE = 100;
-
-    /** A map to store the parsed documents. Retains data based on a priority */
-    private static final Map<ResourceLocation, Tuple<Integer,PaneParams>> parsedCache = Collections.synchronizedMap(new HashMap<ResourceLocation, Tuple<Integer, PaneParams>>()
-    {
-        @Override
-        public Tuple<Integer, PaneParams> get(final Object o)
-        {
-            Tuple<Integer, PaneParams> me = super.get(o);
-            this.replace((ResourceLocation) o, new Tuple<>(me.getA()+1,me.getB()));
-            return me;
-        }
-    });
-
-    private Loader()
-    {
-        // Hides default constructor.
-    }
-
     /**
      * registers an element definition class so it can be used in
      * gui definition files
-     * @param name the tag name of the element in the definition file
+     *
+     * @param name          the tag name of the element in the definition file
      * @param factoryMethod the constructor/method to create the element Pane
      */
-    public static void register(final String name, final Function<PaneParams, ? extends Pane> factoryMethod)
+    public void register(final String name, final Function<PaneParams, ? extends Pane> factoryMethod)
     {
         final ResourceLocation key = new ResourceLocation(name);
 
@@ -93,10 +73,11 @@ public final class Loader
 
     /**
      * Uses the loaded parameters to construct a new Pane tree
+     *
      * @param params the parameters for the new pane and its children
      * @return the created Pane
      */
-    private static Pane createFromPaneParams(final PaneParams params)
+    private Pane createFromPaneParams(final PaneParams params)
     {
         final ResourceLocation paneType = new ResourceLocation(params.getType());
 
@@ -144,7 +125,7 @@ public final class Loader
         else
         {
             params.setParentView(parent);
-            final Pane pane = createFromPaneParams(params);
+            final Pane pane = INSTANCE.createFromPaneParams(params);
 
             if (pane != null)
             {
@@ -156,68 +137,6 @@ public final class Loader
     }
 
     /**
-     * Parse an XML Document into contents for a View.
-     *
-     * @param doc    xml document.
-     * @param parent parent view.
-     */
-    private static PaneParams createFromDocument(@Nullable final Document doc, final View parent)
-    {
-        if (doc == null) return null;
-
-        doc.getDocumentElement().normalize();
-
-        final PaneParams root = new PaneParams(doc.getDocumentElement());
-        createFromPaneParams(root, parent);
-        return root;
-    }
-
-    /**
-     * Parse XML from an InputSource into contents for a View.
-     *
-     * @param input  xml file.
-     */
-    private static Document parseXML(final InputSource input)
-    {
-        try
-        {
-            final DocumentBuilder dBuilder = DOCUMENT_BUILDER_FACTORY.newDocumentBuilder();
-            final Document doc = dBuilder.parse(input);
-            input.getByteStream().close();
-
-            return doc;
-        }
-        catch (final ParserConfigurationException | SAXException | IOException exc)
-        {
-            Log.getLogger().error("Exception when parsing XML.", exc);
-        }
-
-        return null;
-    }
-
-    /**
-     * Parse an XML String into contents for a View.
-     *
-     * @param xmlString the xml data.
-     * @param parent    parent view.
-     */
-    public static void createFromXML(final String xmlString, final View parent)
-    {
-        createFromDocument(parseXML(new InputSource(new StringReader(xmlString))), parent);
-    }
-
-    /**
-     * Parse XML contains in a ResourceLocation into contents for a Window.
-     *
-     * @param filename the xml file.
-     * @param parent   parent view.
-     */
-    public static void createFromXMLFile(final String filename, final View parent)
-    {
-        createFromXMLFile(new ResourceLocation(filename), parent);
-    }
-
-    /**
      * Parse XML contains in a ResourceLocation into contents for a Window.
      *
      * @param resource xml as a {@link ResourceLocation}.
@@ -225,67 +144,69 @@ public final class Loader
      */
     public static void createFromXMLFile(final ResourceLocation resource, final View parent)
     {
-        if (parsedCache.containsKey(resource))
+        if (INSTANCE.xmlCache.containsKey(resource))
         {
-            createFromPaneParams(parsedCache.get(resource).getB(), parent);
+            try
+            {
+                createFromPaneParams(INSTANCE.xmlCache.get(resource), parent);
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException("Can't parse xml at: " + resource.toString(), e);
+            }
         }
         else
         {
-            Document doc = parseXML(new InputSource(createInputStream(resource)));
-            addToCache(resource, createFromDocument(doc, parent));
+            throw new RuntimeException("Gui at \"" + resource.toString() + "\" was not found!");
+            // TODO: create "missing gui" gui and don't crash?
         }
     }
 
-    /**
-     * Create an InputStream from a ResourceLocation.
-     *
-     * @param res ResourceLocation to get an InputStream from.
-     * @return the InputStream created from the ResourceLocation.
-     */
-    private static InputStream createInputStream(final ResourceLocation res)
+    @Override
+    protected Map<ResourceLocation, PaneParams> prepare(final ResourceManager rm, final ProfilerFiller profiler)
     {
+        profiler.startTick();
+        profiler.push("BlockUI-xml-lookup-parsing");
+
+        final Map<ResourceLocation, PaneParams> foundXmls = new HashMap<>();
+        final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+        final DocumentBuilder documentBuilder;
         try
         {
-            InputStream is = DistExecutor.unsafeCallWhenOn(Dist.CLIENT, () -> () -> Minecraft.getInstance().getResourceManager().getResource(res).getInputStream());
-            if (is == null)
+            documentBuilder = documentBuilderFactory.newDocumentBuilder();
+        }
+        catch (final ParserConfigurationException e)
+        {
+            profiler.pop();
+            profiler.endTick();
+            throw new RuntimeException(e);
+        }
+
+        rm.listResources("gui", pathStr -> pathStr.endsWith(".xml")).forEach(rl -> {
+            final Document doc;
+            try
             {
-                is = DistExecutor
-                    .unsafeCallWhenOn(Dist.DEDICATED_SERVER, () -> () -> Loader.class.getResourceAsStream(String.format("/assets/%s/%s", res.getNamespace(), res.getPath())));
+                final Resource res = rm.getResource(rl);
+                doc = documentBuilder.parse(res.getInputStream());
             }
-            return is;
-        }
-        catch (final RuntimeException e)
-        {
-            Log.getLogger().error("IOException Loader.java", e.getCause());
-        }
-        return null;
+            catch (final IOException | SAXException e)
+            {
+                Log.getLogger().error("Failed to load xml at: " + rl.toString(), e);
+                return;
+            }
+
+            doc.getDocumentElement().normalize();
+            foundXmls.put(rl, new PaneParams(doc.getDocumentElement()));
+        });
+
+        profiler.pop();
+        profiler.endTick();
+        return foundXmls;
     }
 
-    // ------ Cache Handling ------
-
-    /**
-     * Adds a new parsed document to the cache.
-     * If the cache is full, the least accessed document is removed.
-     * @param loc the resource for the gui definition file
-     * @param doc the processed document
-     */
-    public static void addToCache(ResourceLocation loc, PaneParams doc)
+    @Override
+    protected void apply(final Map<ResourceLocation, PaneParams> foundXmls, final ResourceManager rm, final ProfilerFiller profiler)
     {
-        if (parsedCache.size() >= MAX_CACHE_SIZE)
-        {
-            parsedCache.remove(
-              parsedCache.entrySet().stream()
-                .min((a,b) -> Math.min(a.getValue().getA(), b.getValue().getA())).get().getKey());
-        }
-
-        parsedCache.put(loc, new Tuple<>(1, doc));
-    }
-
-    /**
-     * Clear the cache of parsed window parameters
-     */
-    public static void cleanParsedCache()
-    {
-        parsedCache.clear();
+        xmlCache = foundXmls;
     }
 }

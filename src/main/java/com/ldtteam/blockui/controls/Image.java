@@ -4,6 +4,7 @@ import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.Parsers;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.ldtteam.blockui.mod.Log;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
@@ -13,7 +14,6 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.util.Iterator;
-import static com.ldtteam.blockui.Log.getLogger;
 
 /**
  * Simple image element.
@@ -100,7 +100,7 @@ public class Image extends Pane
             }
             catch (final IOException e)
             {
-                getLogger().warn(e);
+                Log.getLogger().warn(e);
             }
             finally
             {
