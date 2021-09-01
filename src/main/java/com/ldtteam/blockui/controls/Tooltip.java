@@ -140,7 +140,6 @@ public class Tooltip extends AbstractTextElement
             // modified INLINE: vanilla Screen#renderTooltip(MatrixStack, List<? extends IReorderingProcessor>, int, int, FontRenderer)
             ms.pushPose();
             ms.translate(x, y, Z_OFFSET);
-            ms.scale(4, 4, 1);
 
             final BufferBuilder buffer = Tesselator.getInstance().getBuilder();
             final Matrix4f mat = ms.last().pose();
@@ -171,14 +170,7 @@ public class Tooltip extends AbstractTextElement
 
             RenderSystem.setShader(GameRenderer::getPositionColorShader);
             Tesselator.getInstance().end();
-            drawLineRectGradient(ms,
-                1,
-                1,
-                width - 2,
-                height - 2,
-                BORDER_COLOR_A,
-                BORDER_COLOR_B,
-                (int) window.getScreen().getRenderScale());
+            drawLineRectGradient(ms, 1, 1, width - 2, height - 2, BORDER_COLOR_A, BORDER_COLOR_B, 1);
 
             RenderSystem.disableBlend();
             RenderSystem.enableTexture();
