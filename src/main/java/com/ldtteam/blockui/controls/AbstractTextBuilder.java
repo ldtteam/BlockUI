@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.function.Supplier;
 import com.ldtteam.blockui.Color;
 import com.ldtteam.blockui.Pane;
+import com.ldtteam.blockui.util.SpacerTextComponent;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
@@ -87,6 +89,18 @@ public abstract class AbstractTextBuilder<P extends AbstractTextElement, R exten
     public R append(final MutableComponent text)
     {
         currentComponent = currentComponent == null ? text : currentComponent.append(text);
+        return thiz;
+    }
+
+    /**
+     * Calls {@link #newLine()} and adds spacer element of given height.
+     *
+     * @param spacerHeight in pixels
+     */
+    public R pixelSpacer(final int spacerHeight)
+    {
+        newLine();
+        text.add(new SpacerTextComponent(spacerHeight));
         return thiz;
     }
 
