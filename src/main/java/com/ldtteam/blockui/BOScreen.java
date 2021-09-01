@@ -163,6 +163,8 @@ public class BOScreen extends Screen
 
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.enableDepthTest();
+        RenderSystem.disableBlend();
+        RenderSystem.defaultBlendFunc();
         window.draw(newMs, calcRelativeX(mx), calcRelativeY(my));
         window.drawLast(newMs, calcRelativeX(mx), calcRelativeY(my));
 
@@ -296,5 +298,15 @@ public class BOScreen extends Screen
     private double calcRelativeY(final double yIn)
     {
         return (yIn * mcScale - y) / renderScale;
+    }
+
+    public double getRenderScale()
+    {
+        return renderScale;
+    }
+
+    public double getVanillaGuiScale()
+    {
+        return mcScale;
     }
 }

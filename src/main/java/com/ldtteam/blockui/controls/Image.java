@@ -3,9 +3,10 @@ package com.ldtteam.blockui.controls;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.Parsers;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.ldtteam.blockui.mod.Log;
+import com.ldtteam.blockui.util.records.SizeI;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
@@ -14,23 +15,20 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Objects;
 
 /**
  * Simple image element.
  */
 public class Image extends Pane
 {
-    public static final int MINECRAFT_DEFAULT_TEXTURE_IMAGE_SIZE = 256;
-
     protected ResourceLocation resourceLocation;
     protected int u = 0;
     protected int v = 0;
-    protected int imageWidth = 0;
-    protected int imageHeight = 0;
-    protected int fileWidth = MINECRAFT_DEFAULT_TEXTURE_IMAGE_SIZE;
-    protected int fileHeight = MINECRAFT_DEFAULT_TEXTURE_IMAGE_SIZE;
-    protected boolean customSized = true;
-    protected boolean autoscale = true;
+    protected int uWidth = 0;
+    protected int vHeight = 0;
+    protected int mapWidth = 0;
+    protected int mapHeight = 0;
 
     /**
      * Default Constructor.
@@ -49,6 +47,7 @@ public class Image extends Pane
     {
         super(params);
         resourceLocation = params.getResource("source", this::loadMapDimensions);
+        Objects.requireNonNull(resourceLocation);
 
         params.applyShorthand("imageoffset", Parsers.INT, 2, a -> {
             u = a.get(0);
@@ -56,18 +55,37 @@ public class Image extends Pane
         });
 
         params.applyShorthand("imagesize", Parsers.INT, 2, a -> {
-            imageWidth = a.get(0);
-            imageHeight = a.get(1);
+            uWidth = a.get(0);
+            vHeight = a.get(1);
         });
-
-        autoscale = params.getBoolean("autoscale", true);
     }
 
     private void loadMapDimensions(final ResourceLocation rl)
     {
-        final Tuple<Integer, Integer> dimensions = getImageDimensions(rl);
-        fileWidth = dimensions.getA();
-        fileHeight = dimensions.getB();
+        final SizeI dimensions = getImageDimensions(rl);
+        mapWidth = dimensions.width();
+        mapHeight = dimensions.height();
+        checkBlitSize();
+    }
+
+    private void checkBlitSize()
+    {
+        final String xmlLoc = window == null ? "unknown" : window.getXmlResourceLocation().toString();
+        if (u + (uWidth == 0 ? width : uWidth) > mapWidth)
+        {
+            throw new RuntimeException("Invalid blit width for image: id - " + id + " , window - " + xmlLoc);
+        }
+        else if (v + (vHeight == 0 ? height : vHeight) > mapHeight)
+        {
+            throw new RuntimeException("Invalid blit height for image: id - " + id + " , window - " + xmlLoc);
+        }
+    }
+
+    @Override
+    public void setSize(final int w, final int h)
+    {
+        super.setSize(w, h);
+        checkBlitSize();
     }
 
     /**
@@ -76,7 +94,7 @@ public class Image extends Pane
      * @param resourceLocation The {@link ResourceLocation} pointing to the image.
      * @return Width and height.
      */
-    public static Tuple<Integer, Integer> getImageDimensions(final ResourceLocation resourceLocation)
+    public static SizeI getImageDimensions(final ResourceLocation resourceLocation)
     {
         final int pos = resourceLocation.getPath().lastIndexOf(".");
 
@@ -96,7 +114,7 @@ public class Image extends Pane
             {
                 reader.setInput(stream);
 
-                return new Tuple<>(reader.getWidth(reader.getMinIndex()), reader.getHeight(reader.getMinIndex()));
+                return new SizeI(reader.getWidth(reader.getMinIndex()), reader.getHeight(reader.getMinIndex()));
             }
             catch (final IOException e)
             {
@@ -108,88 +126,48 @@ public class Image extends Pane
             }
         }
 
-        return new Tuple<>(0, 0);
+        return new SizeI(0, 0);
     }
 
     /**
      * Set the image.
      *
-     * @param source String path.
+     * @param rl      ResourceLocation for the image.
+     * @param u       image x offset.
+     * @param v       image y offset.
+     * @param uWidth  image width.
+     * @param vHeight image height.
      */
-    public void setImage(final String source)
+    public void setImage(final ResourceLocation rl, final int u, final int v, final int uWidth, final int vHeight)
     {
-        setImage(source, 0, 0, 0, 0);
+        resourceLocation = rl;
+        this.u = u;
+        this.v = v;
+        this.uWidth = uWidth;
+        this.vHeight = vHeight;
+
+        loadMapDimensions(rl);
     }
 
     /**
      * Set the image.
      *
-     * @param source  String path.
-     * @param offsetX image x offset.
-     * @param offsetY image y offset.
-     * @param w       image width.
-     * @param h       image height.
+     * @param rl     ResourceLocation for the image.
+     * @param keepUv whether to keep previous u and v values or use full size
      */
-    public void setImage(final String source, final int offsetX, final int offsetY, final int w, final int h)
+    public void setImage(final ResourceLocation rl, final boolean keepUv)
     {
-        setImage((source != null) ? new ResourceLocation(source) : null, offsetX, offsetY, w, h);
-    }
+        resourceLocation = rl;
 
-    /**
-     * Set the image.
-     *
-     * @param loc     ResourceLocation for the image.
-     * @param offsetX image x offset.
-     * @param offsetY image y offset.
-     * @param w       image width.
-     * @param h       image height.
-     */
-    public void setImage(final ResourceLocation loc, final int offsetX, final int offsetY, final int w, final int h)
-    {
-        resourceLocation = loc;
-        u = offsetX;
-        v = offsetY;
-        imageWidth = w;
-        imageHeight = h;
+        if (!keepUv)
+        {
+            u = 0;
+            v = 0;
+            uWidth = 0;
+            vHeight = 0;
+        }
 
-        loadMapDimensions(loc);
-    }
-
-    /**
-     * Set the image.
-     *
-     * @param loc         ResourceLocation for the image.
-     * @param offsetX     image x offset.
-     * @param offsetY     image y offset.
-     * @param w           image width.
-     * @param h           image height.
-     * @param customSized is it custom sized.
-     */
-    public void setImage(final ResourceLocation loc,
-        final int offsetX,
-        final int offsetY,
-        final int w,
-        final int h,
-        final boolean customSized)
-    {
-        this.customSized = customSized;
-        resourceLocation = loc;
-        u = offsetX;
-        v = offsetY;
-        imageWidth = w;
-        imageHeight = h;
-
-        loadMapDimensions(loc);
-    }
-
-    /**
-     * Set the image.
-     *
-     * @param loc ResourceLocation for the image.
-     */
-    public void setImage(final ResourceLocation loc)
-    {
-        setImage(loc, 0, 0, 0, 0);
+        loadMapDimensions(rl);
     }
 
     /**
@@ -201,31 +179,29 @@ public class Image extends Pane
     @Override
     public void drawSelf(final PoseStack ms, final double mx, final double my)
     {
-        this.mc.getTextureManager().bindForSetup(resourceLocation);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderTexture(0, resourceLocation);
 
-        if (this.customSized)
+        if (u != 0 || v != 0 || uWidth != 0 || vHeight != 0)
         {
             blit(ms,
+                resourceLocation,
                 x,
                 y,
-                getWidth(),
-                getHeight(),
+                width,
+                height,
                 u,
                 v,
-                imageWidth != 0 ? imageWidth : fileWidth,
-                imageHeight != 0 ? imageHeight : fileHeight,
-                fileWidth,
-                fileHeight);
+                uWidth == 0 ? width : uWidth,
+                vHeight == 0 ? height : vHeight,
+                mapWidth,
+                mapHeight);
         }
         else
         {
-            blit(ms, x, y, u, v, imageWidth != 0 ? imageWidth : getWidth(), imageHeight != 0 ? imageHeight : getHeight());
+            blit(ms, resourceLocation, x, y, width, height);
         }
 
-        RenderSystem.disableBlend();
+        RenderSystem.enableBlend();
     }
 }

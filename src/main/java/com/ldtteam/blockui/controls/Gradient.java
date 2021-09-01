@@ -64,7 +64,7 @@ public class Gradient extends AbstractTextElement
     @Override
     public void drawSelf(final PoseStack ms, final double mx, final double my)
     {
-        fillGradient(ms, getX(), getY(), getX() + width, getY() + height, gradientStart, gradientEnd);
+        fillGradient(ms, x, y, width, height, gradientStart, gradientEnd);
         super.drawSelf(ms, mx, my);
     }
 }

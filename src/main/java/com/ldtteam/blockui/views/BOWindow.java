@@ -51,6 +51,8 @@ public class BOWindow extends View
      */
     protected WindowRenderType windowRenderType = WindowRenderType.OVERSIZED_VANILLA;
 
+    protected ResourceLocation xmlResourceLocation;
+
     /**
      * Create a window from an xml file.
      *
@@ -59,6 +61,7 @@ public class BOWindow extends View
     public BOWindow(final ResourceLocation resource)
     {
         this();
+        this.xmlResourceLocation = resource;
         Loader.createFromXMLFile(resource, this);
     }
 
@@ -84,17 +87,6 @@ public class BOWindow extends View
 
         screen = new BOScreen(this);
         window = this;
-    }
-
-    /**
-     * Create a window from an xml file.
-     *
-     * @param resource location to get file from.
-     */
-    public BOWindow(final String resource)
-    {
-        this();
-        Loader.createFromXMLFile(resource, this);
     }
 
     /**
@@ -161,6 +153,14 @@ public class BOWindow extends View
     public WindowRenderType getRenderType()
     {
         return windowRenderType;
+    }
+
+    /**
+     * @return xml defining this window
+     */
+    public ResourceLocation getXmlResourceLocation()
+    {
+        return xmlResourceLocation;
     }
 
     /**

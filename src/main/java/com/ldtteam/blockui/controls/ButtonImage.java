@@ -3,10 +3,13 @@ package com.ldtteam.blockui.controls;
 import com.ldtteam.blockui.Alignment;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.Parsers;
+import com.ldtteam.blockui.util.records.SizeI;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Tuple;
+
+import java.util.Objects;
+
 import net.minecraft.util.Mth;
 
 /**
@@ -25,20 +28,20 @@ public class ButtonImage extends Button
     protected int imageOffsetY = 0;
     protected int imageWidth = 0;
     protected int imageHeight = 0;
-    protected int imageMapWidth = Image.MINECRAFT_DEFAULT_TEXTURE_IMAGE_SIZE;
-    protected int imageMapHeight = Image.MINECRAFT_DEFAULT_TEXTURE_IMAGE_SIZE;
+    protected int imageMapWidth = 0;
+    protected int imageMapHeight = 0;
     protected int highlightOffsetX = 0;
     protected int highlightOffsetY = 0;
     protected int highlightWidth = 0;
     protected int highlightHeight = 0;
-    protected int highlightMapWidth = Image.MINECRAFT_DEFAULT_TEXTURE_IMAGE_SIZE;
-    protected int highlightMapHeight = Image.MINECRAFT_DEFAULT_TEXTURE_IMAGE_SIZE;
+    protected int highlightMapWidth = 0;
+    protected int highlightMapHeight = 0;
     protected int disabledOffsetX = 0;
     protected int disabledOffsetY = 0;
     protected int disabledWidth = 0;
     protected int disabledHeight = 0;
-    protected int disabledMapWidth = Image.MINECRAFT_DEFAULT_TEXTURE_IMAGE_SIZE;
-    protected int disabledMapHeight = Image.MINECRAFT_DEFAULT_TEXTURE_IMAGE_SIZE;
+    protected int disabledMapWidth = 0;
+    protected int disabledMapHeight = 0;
 
     /**
      * Default constructor. Makes a small square button.
@@ -76,6 +79,7 @@ public class ButtonImage extends Button
     private void loadImageInfo(final PaneParams params)
     {
         image = params.getResource("source", this::loadImageDimensions);
+        Objects.requireNonNull(image);
 
         params.applyShorthand("imageoffset", Parsers.INT, 2, a -> {
             imageOffsetX = a.get(0);
@@ -102,7 +106,7 @@ public class ButtonImage extends Button
             highlightOffsetY = a.get(1);
         });
 
-       params.applyShorthand("highlightsize", Parsers.INT, 2, a -> {
+        params.applyShorthand("highlightsize", Parsers.INT, 2, a -> {
             highlightWidth = a.get(0);
             highlightHeight = a.get(1);
         });
@@ -122,7 +126,7 @@ public class ButtonImage extends Button
             disabledOffsetY = a.get(1);
         });
 
-       params.applyShorthand("disabledsize", Parsers.INT, 2, a -> {
+        params.applyShorthand("disabledsize", Parsers.INT, 2, a -> {
             disabledWidth = a.get(0);
             disabledHeight = a.get(1);
         });
@@ -159,9 +163,9 @@ public class ButtonImage extends Button
      */
     private void loadImageDimensions(final ResourceLocation rl)
     {
-        final Tuple<Integer, Integer> dimensions = Image.getImageDimensions(rl);
-        imageMapWidth = dimensions.getA();
-        imageMapHeight = dimensions.getB();
+        final SizeI dimensions = Image.getImageDimensions(rl);
+        imageMapWidth = dimensions.width();
+        imageMapHeight = dimensions.height();
     }
 
     /**
@@ -169,9 +173,9 @@ public class ButtonImage extends Button
      */
     private void loadImageHighlightDimensions(final ResourceLocation rl)
     {
-        final Tuple<Integer, Integer> dimensions = Image.getImageDimensions(rl);
-        highlightMapWidth = dimensions.getA();
-        highlightMapHeight = dimensions.getB();
+        final SizeI dimensions = Image.getImageDimensions(rl);
+        highlightMapWidth = dimensions.width();
+        highlightMapHeight = dimensions.height();
     }
 
     /**
@@ -179,33 +183,9 @@ public class ButtonImage extends Button
      */
     private void loadImageDisabledDimensions(final ResourceLocation rl)
     {
-        final Tuple<Integer, Integer> dimensions = Image.getImageDimensions(rl);
-        disabledMapWidth = dimensions.getA();
-        disabledMapHeight = dimensions.getB();
-    }
-
-    /**
-     * Set the default image.
-     *
-     * @param source String path.
-     */
-    public void setImage(final String source)
-    {
-        setImage(source, 0, 0, 0, 0);
-    }
-
-    /**
-     * Set the default image.
-     *
-     * @param source  String path.
-     * @param offsetX image x offset.
-     * @param offsetY image y offset.
-     * @param w       image width.
-     * @param h       image height.
-     */
-    public void setImage(final String source, final int offsetX, final int offsetY, final int w, final int h)
-    {
-        setImage(source != null ? new ResourceLocation(source) : null, offsetX, offsetY, w, h);
+        final SizeI dimensions = Image.getImageDimensions(rl);
+        disabledMapWidth = dimensions.width();
+        disabledMapHeight = dimensions.height();
     }
 
     /**
@@ -233,33 +213,19 @@ public class ButtonImage extends Button
      *
      * @param loc ResourceLocation for the image.
      */
-    public void setImage(final ResourceLocation loc)
+    public void setImage(final ResourceLocation loc, final boolean keepUv)
     {
-        setImage(loc, 0, 0, 0, 0);
-    }
+        image = loc;
 
-    /**
-     * Set the hover image.
-     *
-     * @param source String path.
-     */
-    public void setImageHighlight(final String source)
-    {
-        setImageHighlight(source, 0, 0, 0, 0);
-    }
+        if (!keepUv)
+        {
+            imageOffsetX = 0;
+            imageOffsetY = 0;
+            imageHeight = 0;
+            imageWidth = 0;
+        }
 
-    /**
-     * Set the hover image.
-     *
-     * @param source  String path.
-     * @param offsetX image x offset.
-     * @param offsetY image y offset.
-     * @param w       image width.
-     * @param h       image height.
-     */
-    public void setImageHighlight(final String source, final int offsetX, final int offsetY, final int w, final int h)
-    {
-        setImageHighlight(source != null ? new ResourceLocation(source) : null, offsetX, offsetY, w, h);
+        loadImageDimensions(loc);
     }
 
     /**
@@ -287,33 +253,19 @@ public class ButtonImage extends Button
      *
      * @param loc ResourceLocation for the image.
      */
-    public void setImageHighlight(final ResourceLocation loc)
+    public void setImageHighlight(final ResourceLocation loc, final boolean keepUv)
     {
-        setImageHighlight(loc, 0, 0, 0, 0);
-    }
+        imageHighlight = loc;
 
-    /**
-     * Set the disabled image.
-     *
-     * @param source String path.
-     */
-    public void setImageDisabled(final String source)
-    {
-        setImageHighlight(source, 0, 0, 0, 0);
-    }
+        if (!keepUv)
+        {
+            highlightOffsetX = 0;
+            highlightOffsetY = 0;
+            highlightHeight = 0;
+            highlightWidth = 0;
+        }
 
-    /**
-     * Set the disabled image.
-     *
-     * @param source  String path.
-     * @param offsetX image x offset.
-     * @param offsetY image y offset.
-     * @param w       image width.
-     * @param h       image height.
-     */
-    public void setImageDisabled(final String source, final int offsetX, final int offsetY, final int w, final int h)
-    {
-        setImageHighlight(source != null ? new ResourceLocation(source) : null, offsetX, offsetY, w, h);
+        loadImageHighlightDimensions(loc);
     }
 
     /**
@@ -321,9 +273,19 @@ public class ButtonImage extends Button
      *
      * @param loc ResourceLocation for the image.
      */
-    public void setImageDisabled(final ResourceLocation loc)
+    public void setImageDisabled(final ResourceLocation loc, final boolean keepUv)
     {
-        setImageHighlight(loc, 0, 0, 0, 0);
+        imageDisabled = loc;
+
+        if (!keepUv)
+        {
+            disabledOffsetX = 0;
+            disabledOffsetY = 0;
+            disabledHeight = 0;
+            disabledWidth = 0;
+        }
+
+        loadImageDisabledDimensions(loc);
     }
 
     /**
@@ -376,50 +338,30 @@ public class ButtonImage extends Button
                 mapWidth = disabledMapWidth;
                 mapHeight = disabledMapHeight;
             }
-            else
+            RenderSystem.setShaderColor(0.5F, 0.5F, 0.5F, 1.0F);
+        }
+        else if (wasCursorInPane)
+        {
+            if (imageHighlight != null)
             {
-                return;
+                bind = imageHighlight;
+                u = highlightOffsetX;
+                v = highlightOffsetY;
+                w = highlightWidth;
+                h = highlightHeight;
+                mapWidth = highlightMapWidth;
+                mapHeight = highlightMapHeight;
             }
+            RenderSystem.setShaderColor(1.1F, 1.1F, 1.1F, 1.0F);
         }
-        else if (wasCursorInPane && imageHighlight != null)
-        {
-            bind = imageHighlight;
-            u = highlightOffsetX;
-            v = highlightOffsetY;
-            w = highlightWidth;
-            h = highlightHeight;
-            mapWidth = highlightMapWidth;
-            mapHeight = highlightMapHeight;
-        }
-
-        if (w == 0 || w > getWidth())
-        {
-            w = getWidth();
-        }
-        if (h == 0 || h > getHeight())
-        {
-            h = getHeight();
-        }
-
-        mc.getTextureManager().bindForSetup(bind);
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderTexture(0, bind);
 
-        // Draw
-        if (enabled || imageDisabled != null)
-        {
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-            blit(ms, x, y, u, v, w, h, mapWidth, mapHeight);
-        }
-        else
-        {
-            RenderSystem.setShaderColor(0.5F, 0.5F, 0.5F, 1.0F);
-            blit(ms, x, y, u, v, w, h, mapWidth, mapHeight);
-        }
+        blit(ms, bind, x, y, width, height, u, v, w == 0 ? width : w, h == 0 ? height : h, mapWidth, mapHeight);
 
         RenderSystem.disableBlend();
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         super.drawSelf(ms, mx, my);
     }

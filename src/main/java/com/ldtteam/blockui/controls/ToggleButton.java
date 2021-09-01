@@ -52,7 +52,7 @@ public class ToggleButton extends Button
     public ToggleButton(ResourceLocation image, String... options)
     {
         button = new ButtonImage();
-        ((ButtonImage) button).setImage(image);
+        ((ButtonImage) button).setImage(image, false);
         setStateList(String.join("|", options));
     }
 

@@ -330,6 +330,7 @@ public abstract class AbstractTextElement extends Pane
         drawBuffer.endBatch();
 
         ForgeRenderTypes.enableTextTextureLinearFiltering = false;
+        RenderSystem.disableBlend();
 
         ms.popPose();
     }

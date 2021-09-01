@@ -81,16 +81,15 @@ public class ButtonVanilla extends Button
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderTexture(0, TEXTURE);
 
         if (width == DEFAULT_BUTTON_WIDTH && height == DEFAULT_BUTTON_HEIGHT)
         {
             // Full size button
-            blit(ms, x, y, u, v, width, height);
+            blit(ms, TEXTURE, x, y, DEFAULT_BUTTON_WIDTH, DEFAULT_BUTTON_HEIGHT, u, v, TEXTURE_SIZE, TEXTURE_SIZE);
         }
         else
         {
-            blitRepeatable(ms,
+            blitRepeatable(ms, TEXTURE,
               x, y,
               width, height,
               u, v,

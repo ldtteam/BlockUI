@@ -1,5 +1,6 @@
 package com.ldtteam.blockui;
 
+import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.views.View;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.MutableComponent;

@@ -78,7 +78,8 @@ public class Tooltip extends AbstractTextElement
         // we have wrap enabled, so we want to create as small bouding box as possible
         if (autoWidth)
         {
-            textWidth = Math.min(text.stream().mapToInt(mc.font::width).max().orElse(Integer.MAX_VALUE), maxWidth - 8);
+            // +1 for shadow
+            textWidth = Math.min(text.stream().mapToInt(mc.font::width).max().orElse(Integer.MAX_VALUE), maxWidth - 8) + 1;
         }
         if (autoHeight)
         {
@@ -139,29 +140,46 @@ public class Tooltip extends AbstractTextElement
             // modified INLINE: vanilla Screen#renderTooltip(MatrixStack, List<? extends IReorderingProcessor>, int, int, FontRenderer)
             ms.pushPose();
             ms.translate(x, y, Z_OFFSET);
+            ms.scale(4, 4, 1);
 
-            final BufferBuilder bufferbuilder = Tesselator.getInstance().getBuilder();
-            final Matrix4f matrix4f = ms.last().pose();
+            final BufferBuilder buffer = Tesselator.getInstance().getBuilder();
+            final Matrix4f mat = ms.last().pose();
 
-            bufferbuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            buffer.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
 
-            fillGradient(matrix4f, bufferbuilder, 1, 0, width - 1, height, 0, BACKGROUND_COLOR, BACKGROUND_COLOR);
-            fillGradient(matrix4f, bufferbuilder, 0, 1, 1, height - 1, 0, BACKGROUND_COLOR, BACKGROUND_COLOR);
-            fillGradient(matrix4f, bufferbuilder, width - 1, 1, width, height - 1, 0, BACKGROUND_COLOR, BACKGROUND_COLOR);
+            final int bg_a = (BACKGROUND_COLOR >> 24) & 0xff;
+            final int bg_r = (BACKGROUND_COLOR >> 16) & 0xff;
+            final int bg_g = (BACKGROUND_COLOR >> 8) & 0xff;
+            final int bg_b = BACKGROUND_COLOR & 0xff;
 
-            fillGradient(matrix4f, bufferbuilder, 1, 2, 2, height - 2, 0, BORDER_COLOR_A, BORDER_COLOR_B);
-            fillGradient(matrix4f, bufferbuilder, width - 2, 2, width - 1, height - 2, 0, BORDER_COLOR_A, BORDER_COLOR_B);
-            fillGradient(matrix4f, bufferbuilder, 1, 1, width - 1, 2, 0, BORDER_COLOR_A, BORDER_COLOR_A);
-            fillGradient(matrix4f, bufferbuilder, 1, height - 2, width - 1, height - 1, 0, BORDER_COLOR_B, BORDER_COLOR_B);
+            buffer.vertex(mat, 1, 1, 0).color(bg_r, bg_g, bg_b, bg_a).endVertex();
+            buffer.vertex(mat, 0, 1, 0).color(bg_r, bg_g, bg_b, bg_a).endVertex();
+            buffer.vertex(mat, 0, height - 1, 0).color(bg_r, bg_g, bg_b, bg_a).endVertex();
+            buffer.vertex(mat, 1, height - 1, 0).color(bg_r, bg_g, bg_b, bg_a).endVertex();
+            buffer.vertex(mat, 1, height, 0).color(bg_r, bg_g, bg_b, bg_a).endVertex();
+            buffer.vertex(mat, width - 1, height, 0).color(bg_r, bg_g, bg_b, bg_a).endVertex();
+            buffer.vertex(mat, width - 1, height - 1, 0).color(bg_r, bg_g, bg_b, bg_a).endVertex();
+            buffer.vertex(mat, width, height - 1, 0).color(bg_r, bg_g, bg_b, bg_a).endVertex();
+            buffer.vertex(mat, width, 1, 0).color(bg_r, bg_g, bg_b, bg_a).endVertex();
+            buffer.vertex(mat, width - 1, 1, 0).color(bg_r, bg_g, bg_b, bg_a).endVertex();
+            buffer.vertex(mat, width - 1, 0, 0).color(bg_r, bg_g, bg_b, bg_a).endVertex();
+            buffer.vertex(mat, 1, 0, 0).color(bg_r, bg_g, bg_b, bg_a).endVertex();
 
-            RenderSystem.enableDepthTest();
             RenderSystem.disableTexture();
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
-            RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
-            bufferbuilder.end();
-            BufferUploader.end(bufferbuilder);
+            RenderSystem.setShader(GameRenderer::getPositionColorShader);
+            Tesselator.getInstance().end();
+            drawLineRectGradient(ms,
+                1,
+                1,
+                width - 2,
+                height - 2,
+                BORDER_COLOR_A,
+                BORDER_COLOR_B,
+                (int) window.getScreen().getRenderScale());
+
             RenderSystem.disableBlend();
             RenderSystem.enableTexture();
 
