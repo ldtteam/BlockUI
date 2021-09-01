@@ -325,7 +325,7 @@ public class Pane extends GuiComponent
 
                 if (wasCursorInPane && !id.isEmpty())
                 {
-                    final int stringWidth = mc.font.width(id);
+                    final int stringWidth = mc.font.width(id) + 1;
                     mc.font.draw(ms, id, x + getWidth() - stringWidth, y + getHeight() - mc.font.lineHeight, color);
                 }
             }
@@ -711,13 +711,11 @@ public class Pane extends GuiComponent
             Render.drawOutlineRect(ms, popped.xStart, yStart, w, h, color, 2.0f);
 
             final String scId = "scissor_" + (id.isEmpty() ? this.toString() : id);
-            final int scale = (int) mc.getWindow().getGuiScale();
-            final int stringWidth = mc.font.width(scId);
-            ms.scale(scale, scale, 1.0f);
+            final int stringWidth = mc.font.width(scId) + 1;
             mc.font.draw(ms,
                 scId,
-                (popped.xStart + w) / scale - stringWidth,
-                (yStart + h) / scale - mc.font.lineHeight,
+                popped.xStart + w - stringWidth,
+                yStart + h - 2 * mc.font.lineHeight,
                 color);
             ms.popPose();
         }
