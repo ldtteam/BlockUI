@@ -1,23 +1,25 @@
-modLoader="javafml" #mandatory
-loaderVersion="[37, 38)" #mandatory This is typically bumped every Minecraft version by Forge. See our download page for lists of versions.
+modLoader="javafml"
+loaderVersion="[37, 38)"
 license="GPL3"
-[[mods]] #mandatory
-modId="blockui" #mandatory
-version="${file.jarVersion}" #mandatory
- # A display name for the mod
-displayName="UI Library Mod" #mandatory
-logoFile="" #optional
-credits="LDT Team" #optional
-authors="LDT Team" #optional
+
+[[mods]]
+modId="blockui"
+version="${file.jarVersion}"
+displayName="UI Library Mod"
+logoFile=""
+credits="LDT Team"
+authors="LDT Team"
 description='''
 UI Library mod, use ctrl+alt+shift+x to open a test-ui
 '''
-[[dependencies.blockui]] #optional
-    modId="forge" #mandatory
-    mandatory=true #mandatory
-    versionRange="[37, 38)" #mandatory
+
+[[dependencies.blockui]]
+    modId="forge"
+    mandatory=true
+    versionRange="[37, 38)"
     ordering="NONE"
     side="BOTH"
+
 [[dependencies.blockui]]
     modId="minecraft"
     mandatory=true

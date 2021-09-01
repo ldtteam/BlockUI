@@ -6,14 +6,9 @@ import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
-import com.mojang.math.Matrix4f;
 import com.mojang.math.Vector4f;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -25,7 +20,7 @@ import java.util.concurrent.ConcurrentLinkedDeque;
 /**
  * A Pane is the root of all UI objects.
  */
-public class Pane extends GuiComponent
+public class Pane extends UiRenderMacros
 {
     private static final Deque<ScissorsInfo> scissorsInfoStack = new ConcurrentLinkedDeque<>();
     protected static Pane lastClickedPane;
@@ -321,11 +316,11 @@ public class Pane extends GuiComponent
             {
                 final int color = wasCursorInPane ? 0xFF00FF00 : 0xFF0000FF;
 
-                Render.drawOutlineRect(ms, x, y, getWidth(), getHeight(), color);
+                drawLineRect(ms, x, y, width, height, color);
 
                 if (wasCursorInPane && !id.isEmpty())
                 {
-                    final int stringWidth = mc.font.width(id);
+                    final int stringWidth = mc.font.width(id) + 1;
                     mc.font.draw(ms, id, x + getWidth() - stringWidth, y + getHeight() - mc.font.lineHeight, color);
                 }
             }
@@ -635,6 +630,7 @@ public class Pane extends GuiComponent
         // Can be overloaded
     }
 
+    // TODO: refactor: move logic to macros, keep local override here
     protected synchronized void scissorsStart(final PoseStack ms, final int contentWidth, final int contentHeight)
     {
         final int fbWidth = mc.getWindow().getWidth();
@@ -708,16 +704,14 @@ public class Pane extends GuiComponent
 
             ms.pushPose();
             ms.setIdentity();
-            Render.drawOutlineRect(ms, popped.xStart, yStart, w, h, color, 2.0f);
+            drawLineRect(ms, popped.xStart, yStart, w, h, color, 2);
 
             final String scId = "scissor_" + (id.isEmpty() ? this.toString() : id);
-            final int scale = (int) mc.getWindow().getGuiScale();
-            final int stringWidth = mc.font.width(scId);
-            ms.scale(scale, scale, 1.0f);
+            final int stringWidth = mc.font.width(scId) + 1;
             mc.font.draw(ms,
                 scId,
-                (popped.xStart + w) / scale - stringWidth,
-                (yStart + h) / scale - mc.font.lineHeight,
+                popped.xStart + w - stringWidth,
+                yStart + h - 2 * mc.font.lineHeight,
                 color);
             ms.popPose();
         }
@@ -841,43 +835,6 @@ public class Pane extends GuiComponent
         return onHover;
     }
 
-    @Deprecated
-    protected int drawString(final PoseStack ms, final String text, final float x, final float y, final int color, final boolean shadow)
-    {
-        if (shadow)
-        {
-            return mc.font.drawShadow(ms, text, x, y, color);
-        }
-        else
-        {
-            return mc.font.draw(ms, text, x, y, color);
-        }
-    }
-
-    protected int drawString(final PoseStack ms, final Component text, final float x, final float y, final int color, final boolean shadow)
-    {
-        if (shadow)
-        {
-            return mc.font.drawShadow(ms, text, x, y, color);
-        }
-        else
-        {
-            return mc.font.draw(ms, text, x, y, color);
-        }
-    }
-
-    protected int drawString(final PoseStack ms, final FormattedCharSequence text, final float x, final float y, final int color, final boolean shadow)
-    {
-        if (shadow)
-        {
-            return mc.font.drawShadow(ms, text, x, y, color);
-        }
-        else
-        {
-            return mc.font.draw(ms, text, x, y, color);
-        }
-    }
-
     /**
      * Mouse drag.
      *
@@ -891,121 +848,5 @@ public class Pane extends GuiComponent
     public boolean onMouseDrag(final double mx, final double my, final int speed, final double deltaX, final double deltaY)
     {
         return false;
-    }
-
-    /**
-     * Draws texture without scaling so one texel is one pixel, using repeatable texture center.
-     * TODO: Nightenom - rework to better algoritm from pgr, also texture extensions?
-     *
-     * @param ms            MatrixStack
-     * @param x             start target coords [pixels]
-     * @param y             start target coords [pixels]
-     * @param width         target rendering box [pixels]
-     * @param height        target rendering box [pixels]
-     * @param u             texture start offset [texels]
-     * @param v             texture start offset [texels]
-     * @param uWidth        texture rendering box [texels]
-     * @param vHeight       texture rendering box [texels]
-     * @param textureWidth  texture file size [texels]
-     * @param textureHeight texture file size [texels]
-     * @param uRepeat       offset relative to u, v [texels], smaller than uWidth
-     * @param vRepeat       offset relative to u, v [texels], smaller than vHeight
-     * @param repeatWidth   size of repeatable box in texture [texels], smaller than or equal uWidth - uRepeat
-     * @param repeatHeight  size of repeatable box in texture [texels], smaller than or equal vHeight - vRepeat
-     */
-    protected static void blitRepeatable(final PoseStack ms,
-        final int x, final int y,
-        final int width, final int height,
-        final int u, final int v,
-        final int uWidth, final int vHeight,
-        final int textureWidth, final int textureHeight,
-        final int uRepeat, final int vRepeat,
-        final int repeatWidth, final int repeatHeight)
-    {
-        if (uRepeat < 0 || vRepeat < 0 || uRepeat >= uWidth || vRepeat >= vHeight || repeatWidth < 1 || repeatHeight < 1
-            || repeatWidth > uWidth - uRepeat || repeatHeight > vHeight - vRepeat)
-        {
-            throw new IllegalArgumentException("Repeatable box is outside of texture box");
-        }
-
-        final int repeatCountX = Math.max(1, Math.max(0, width - (uWidth - repeatWidth)) / repeatWidth);
-        final int repeatCountY = Math.max(1, Math.max(0, height - (vHeight - repeatHeight)) / repeatHeight);
-
-        final Matrix4f mat = ms.last().pose();
-        final BufferBuilder buffer = Tesselator.getInstance().getBuilder();
-        buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-
-        // main
-        for (int i = 0; i < repeatCountX; i++)
-        {
-            final int uAdjust = i == 0 ? 0 : uRepeat;
-            final int xStart = x + uAdjust + i * repeatWidth;
-            final int w = Math.min(repeatWidth + uRepeat - uAdjust, width - (uWidth - uRepeat - repeatWidth));
-            final float minU = (float) (u + uAdjust) / textureWidth;
-            final float maxU = (float) (u + uAdjust + w) / textureWidth;
-
-            for (int j = 0; j < repeatCountY; j++)
-            {
-                final int vAdjust = j == 0 ? 0 : vRepeat;
-                final int yStart = y + vAdjust + j * repeatHeight;
-                final int h = Math.min(repeatHeight + vRepeat - vAdjust, height - (vHeight - vRepeat - repeatHeight));
-                final float minV = (float) (v + vAdjust) / textureHeight;
-                final float maxV = (float) (v + vAdjust + h) / textureHeight;
-
-                buffer.vertex(mat, xStart, yStart + h, 0).uv(minU, maxV).endVertex();
-                buffer.vertex(mat, xStart + w, yStart + h, 0).uv(maxU, maxV).endVertex();
-                buffer.vertex(mat, xStart + w, yStart, 0).uv(maxU, minV).endVertex();
-                buffer.vertex(mat, xStart, yStart, 0).uv(minU, minV).endVertex();
-            }
-        }
-
-        final int xEnd = x + Math.min(uRepeat + repeatCountX * repeatWidth, width - (uWidth - uRepeat - repeatWidth));
-        final int yEnd = y + Math.min(vRepeat + repeatCountY * repeatHeight, height - (vHeight - vRepeat - repeatHeight));
-        final int uLeft = width - (xEnd - x);
-        final int vLeft = height - (yEnd - y);
-        final float restMinU = (float) (u + uWidth - uLeft) / textureWidth;
-        final float restMaxU = (float) (u + uWidth) / textureWidth;
-        final float restMinV = (float) (v + vHeight - vLeft) / textureHeight;
-        final float restMaxV = (float) (v + vHeight) / textureHeight;
-
-        // bot border
-        for (int i = 0; i < repeatCountX; i++)
-        {
-            final int uAdjust = i == 0 ? 0 : uRepeat;
-            final int xStart = x + uAdjust + i * repeatWidth;
-            final int w = Math.min(repeatWidth + uRepeat - uAdjust, width - uLeft);
-            final float minU = (float) (u + uAdjust) / textureWidth;
-            final float maxU = (float) (u + uAdjust + w) / textureWidth;
-
-            buffer.vertex(mat, xStart, yEnd + vLeft, 0).uv(minU, restMaxV).endVertex();
-            buffer.vertex(mat, xStart + w, yEnd + vLeft, 0).uv(maxU, restMaxV).endVertex();
-            buffer.vertex(mat, xStart + w, yEnd, 0).uv(maxU, restMinV).endVertex();
-            buffer.vertex(mat, xStart, yEnd, 0).uv(minU, restMinV).endVertex();
-        }
-
-        // left border
-        for (int j = 0; j < repeatCountY; j++)
-        {
-            final int vAdjust = j == 0 ? 0 : vRepeat;
-            final int yStart = y + vAdjust + j * repeatHeight;
-            final int h = Math.min(repeatHeight + vRepeat - vAdjust, height - vLeft);
-            float minV = (float) (v + vAdjust) / textureHeight;
-            float maxV = (float) (v + vAdjust + h) / textureHeight;
-
-            buffer.vertex(mat, xEnd, yStart + h, 0).uv(restMinU, maxV).endVertex();
-            buffer.vertex(mat, xEnd + uLeft, yStart + h, 0).uv(restMaxU, maxV).endVertex();
-            buffer.vertex(mat, xEnd + uLeft, yStart, 0).uv(restMaxU, minV).endVertex();
-            buffer.vertex(mat, xEnd, yStart, 0).uv(restMinU, minV).endVertex();
-        }
-
-        // bot left corner
-        buffer.vertex(mat, xEnd, yEnd + vLeft, 0).uv(restMinU, restMaxV).endVertex();
-        buffer.vertex(mat, xEnd + uLeft, yEnd + vLeft, 0).uv(restMaxU, restMaxV).endVertex();
-        buffer.vertex(mat, xEnd + uLeft, yEnd, 0).uv(restMaxU, restMinV).endVertex();
-        buffer.vertex(mat, xEnd, yEnd, 0).uv(restMinU, restMinV).endVertex();
-
-        buffer.end();
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        BufferUploader.end(buffer);
     }
 }

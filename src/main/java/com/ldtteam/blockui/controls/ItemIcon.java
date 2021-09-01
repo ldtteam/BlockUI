@@ -4,14 +4,19 @@ import com.ldtteam.blockui.MatrixUtils;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneBuilders;
 import com.ldtteam.blockui.PaneParams;
+import com.ldtteam.blockui.util.SpacerTextComponent;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.gui.Font;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.RenderProperties;
 import net.minecraftforge.registries.ForgeRegistries;
+
+import java.util.List;
 
 /**
  * Class of itemIcons in our GUIs.
@@ -19,6 +24,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 public class ItemIcon extends Pane
 {
     private static final float DEFAULT_ITEMSTACK_SIZE = 16f;
+    private static final SpacerTextComponent FIX_VANILLA_TOOLTIP = new SpacerTextComponent(1);
 
     /**
      * ItemStack represented in the itemIcon.
@@ -63,7 +69,7 @@ public class ItemIcon extends Pane
         this.itemStack = itemStackIn;
         if (onHover instanceof Tooltip)
         {
-            ((Tooltip) onHover).setTextOld(window.getScreen().getTooltipFromItem(itemStack));
+            ((Tooltip) onHover).setTextOld(getModifiedItemStackTooltip());
         }
     }
 
@@ -96,6 +102,8 @@ public class ItemIcon extends Pane
             mc.getItemRenderer().renderAndDecorateItem(itemStack, 0, 0);
             mc.getItemRenderer().renderGuiItemDecorations(font, itemStack, 0, 0);
 
+            RenderSystem.defaultBlendFunc();
+            RenderSystem.disableBlend();
             MatrixUtils.popShaderMVstack();
             ms.popPose();
         }
@@ -106,7 +114,14 @@ public class ItemIcon extends Pane
     {
         if (onHover == null && itemStack != null && !itemStack.isEmpty())
         {
-            PaneBuilders.tooltipBuilder().hoverPane(this).build().setTextOld(window.getScreen().getTooltipFromItem(itemStack));
+            PaneBuilders.tooltipBuilder().hoverPane(this).build().setTextOld(getModifiedItemStackTooltip());
         }
+    }
+
+    public List<Component> getModifiedItemStackTooltip()
+    {
+        final List<Component> result = window.getScreen().getTooltipFromItem(itemStack);
+        result.add(1, FIX_VANILLA_TOOLTIP);
+        return result;
     }
 }

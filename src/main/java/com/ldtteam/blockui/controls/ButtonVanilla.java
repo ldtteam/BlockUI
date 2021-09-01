@@ -81,16 +81,15 @@ public class ButtonVanilla extends Button
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
-        RenderSystem.setShaderTexture(0, TEXTURE);
 
         if (width == DEFAULT_BUTTON_WIDTH && height == DEFAULT_BUTTON_HEIGHT)
         {
             // Full size button
-            blit(ms, x, y, u, v, width, height);
+            blit(ms, TEXTURE, x, y, DEFAULT_BUTTON_WIDTH, DEFAULT_BUTTON_HEIGHT, u, v, TEXTURE_SIZE, TEXTURE_SIZE);
         }
         else
         {
-            blitRepeatable(ms,
+            blitRepeatable(ms, TEXTURE,
               x, y,
               width, height,
               u, v,
@@ -117,7 +116,8 @@ public class ButtonVanilla extends Button
     @Override
     public void setSize(final int w, final int h)
     {
+        textWidth = w - (DEFAULT_BUTTON_WIDTH - TEXTURE_INNER_U_WIDTH);
+        textHeight = h - (DEFAULT_BUTTON_HEIGHT - TEXTURE_INNER_V_HEIGHT);
         super.setSize(w, h);
-        recalcTextBox();
     }
 }

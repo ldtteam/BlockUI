@@ -3,18 +3,19 @@ package com.ldtteam.blockui.controls;
 import com.ldtteam.blockui.Alignment;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
+import com.ldtteam.blockui.util.SpacerTextComponent;
+import com.ldtteam.blockui.util.SpacerTextComponent.FormattedSpacerComponent;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.renderer.MultiBufferSource;
 import com.mojang.blaze3d.vertex.Tesselator;
-import net.minecraft.util.FormattedCharSequence;
-import net.minecraftforge.client.ForgeRenderTypes;
-
 import com.mojang.math.Matrix4f;
 import com.mojang.math.Vector4f;
-import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
-
+import net.minecraft.util.FormattedCharSequence;
+import net.minecraftforge.client.ForgeRenderTypes;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
@@ -194,11 +195,22 @@ public abstract class AbstractTextElement extends Pane
             return;
         }
 
-        final int maxWidth = (int) (textWidth / textScale);
-        preparedText = text.stream()
-            .flatMap(textBlock -> textBlock == TextComponent.EMPTY ? Stream.of(textBlock.getVisualOrderText())
-                : mc.font.split(textBlock, maxWidth).stream())
-            .collect(Collectors.toList());
+        final int maxWidth = (int) (textWidth / textScale) - (textShadow ? 1 : 0);
+        preparedText = text.stream().flatMap(textBlock -> {
+            if (textBlock == TextComponent.EMPTY)
+            {
+                return Stream.of(FormattedCharSequence.EMPTY);
+            }
+            else if (textBlock instanceof SpacerTextComponent spacer)
+            {
+                return Stream.of(spacer.getVisualOrderText());
+            }
+            else
+            {
+                return mc.font.split(textBlock, maxWidth).stream();
+            }
+        }).collect(Collectors.toList());
+
         if (textWrap)
         {
             // + Math.ceil(textScale) / textScale is to negate last pixel of vanilla font rendering
@@ -206,8 +218,12 @@ public abstract class AbstractTextElement extends Pane
             final int lineHeight = this.mc.font.lineHeight + textLinespace;
 
             preparedText = preparedText.subList(0, Math.min(preparedText.size(), maxHeight / lineHeight));
+
+            final int heightSum = preparedText.stream()
+                .mapToInt(textBlock -> textBlock instanceof FormattedSpacerComponent spacer ? spacer.getPixelHeight() + textLinespace : lineHeight)
+                .sum();
             renderedTextWidth = (int) (preparedText.stream().mapToInt(mc.font::width).max().orElse(maxWidth) * textScale);
-            renderedTextHeight = (int) ((Math.min(preparedText.size() * lineHeight, maxHeight) - 1 - textLinespace) * textScale);
+            renderedTextHeight = (int) ((Math.min(heightSum, maxHeight) - 1 - textLinespace) * textScale);
         }
         else
         {
@@ -282,6 +298,17 @@ public abstract class AbstractTextElement extends Pane
         int lineShift = 0;
         for (final FormattedCharSequence row : preparedText)
         {
+            if (row == FormattedCharSequence.EMPTY)
+            {
+                lineShift += mc.font.lineHeight + textLinespace;
+                continue;
+            }
+            else if (row instanceof FormattedSpacerComponent spacer)
+            {
+                lineShift += spacer.getPixelHeight() + textLinespace;
+                continue;
+            }
+
             final int xOffset;
 
             if (textAlignment.isRightAligned())
@@ -303,6 +330,7 @@ public abstract class AbstractTextElement extends Pane
         drawBuffer.endBatch();
 
         ForgeRenderTypes.enableTextTextureLinearFiltering = false;
+        RenderSystem.disableBlend();
 
         ms.popPose();
     }

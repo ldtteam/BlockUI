@@ -2,7 +2,6 @@ package com.ldtteam.blockui.views;
 
 import com.ldtteam.blockui.Color;
 import com.ldtteam.blockui.PaneParams;
-import com.ldtteam.blockui.Render;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 /**
@@ -10,7 +9,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
  */
 public class Box extends View
 {
-    private float lineWidth = 1.0F;
+    private int lineWidth = 1;
     private int color = 0xff000000;
 
     /**
@@ -29,7 +28,7 @@ public class Box extends View
     public Box(final PaneParams params)
     {
         super(params);
-        lineWidth = params.getFloat("linewidth", lineWidth);
+        lineWidth = params.getInteger("linewidth", lineWidth);
         color = params.getColor("color", color);
     }
 
@@ -48,14 +47,14 @@ public class Box extends View
      * Setter for the line width property.
      * @param lineWidth
      */
-    public void setLineWidth(final float lineWidth) {
+    public void setLineWidth(final int lineWidth) {
         this.lineWidth = lineWidth;
     }
 
     @Override
     public void drawSelf(final PoseStack ms, final double mx, final double my)
     {
-        Render.drawOutlineRect(ms, x, y, getWidth(), getHeight(), color, lineWidth);
+        drawLineRect(ms, x, y, width, height, color, lineWidth);
 
         super.drawSelf(ms, mx, my);
     }

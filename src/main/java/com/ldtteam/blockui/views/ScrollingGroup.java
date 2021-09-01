@@ -46,7 +46,6 @@ public class ScrollingGroup extends ScrollingView
             final int childY = lastChild.getY() + lastChild.getHeight();
 
             child.setPosition(0, childY);
-            child.setSize(getInteriorWidth(), child.getHeight());
         }
 
         container.computeContentHeight();
@@ -63,7 +62,6 @@ public class ScrollingGroup extends ScrollingView
         }
 
         child.setPosition(0, childY);
-        child.setSize(getInteriorWidth(), child.getHeight());
     }
 
     @Override

@@ -711,4 +711,16 @@ public class TextField extends Pane
          */
         boolean isAllowedCharacter(char c);
     }
+
+    protected int drawString(final PoseStack ms, final String text, final float x, final float y, final int color, final boolean shadow)
+    {
+        if (shadow)
+        {
+            return mc.font.drawShadow(ms, text, x, y, color);
+        }
+        else
+        {
+            return mc.font.draw(ms, text, x, y, color);
+        }
+    }
 }

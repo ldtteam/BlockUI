@@ -102,7 +102,7 @@ public final class Color
         final int r = Mth.clamp(Integer.parseInt(m.group(1)), 0, 255);
         final int g = Mth.clamp(Integer.parseInt(m.group(2)), 0, 255);
         final int b = Mth.clamp(Integer.parseInt(m.group(3)), 0, 255);
-        final int a = Mth.clamp((int) Double.parseDouble(m.group(4)) * 255, 0, 255);
+        final int a = m.groupCount() > 4 ? Mth.clamp((int) Double.parseDouble(m.group(4)) * 255, 0, 255) : 255;
 
         return (a << 24) | (r << 16) | (g << 8) | b;
     }

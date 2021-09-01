@@ -3,10 +3,10 @@ package com.ldtteam.blockui.controls;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.Parsers;
+import com.ldtteam.blockui.util.records.SizeI;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Tuple;
 
 /**
  * Image element with repeatable middle part.
@@ -68,9 +68,9 @@ public class ImageRepeatable extends Pane
 
     private void loadMapDimensions(final ResourceLocation rl)
     {
-        final Tuple<Integer, Integer> dimensions = Image.getImageDimensions(rl);
-        fileWidth = dimensions.getA();
-        fileHeight = dimensions.getB();
+        final SizeI dimensions = Image.getImageDimensions(rl);
+        fileWidth = dimensions.width();
+        fileHeight = dimensions.height();
     }
 
     /**
@@ -129,12 +129,25 @@ public class ImageRepeatable extends Pane
     @Override
     public void drawSelf(final PoseStack ms, final double mx, final double my)
     {
-        this.mc.getTextureManager().bindForSetup(resourceLocation);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
-        blitRepeatable(ms, x, y, width, height, u, v, uWidth, vHeight, fileWidth, fileHeight, uRepeat, vRepeat, repeatWidth, repeatHeight);
+        blitRepeatable(ms,
+            resourceLocation,
+            x,
+            y,
+            width,
+            height,
+            u,
+            v,
+            uWidth == 0 ? fileWidth : uWidth,
+            vHeight == 0 ? fileHeight : vHeight,
+            fileWidth,
+            fileHeight,
+            uRepeat,
+            vRepeat,
+            repeatWidth,
+            repeatHeight);
 
         RenderSystem.disableBlend();
     }

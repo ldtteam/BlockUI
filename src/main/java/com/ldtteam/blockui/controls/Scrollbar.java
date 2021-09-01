@@ -127,20 +127,17 @@ public class Scrollbar extends Pane
             return;
         }
 
-        final int scrollBarBackX1 = x + offsetX;
-        final int scrollBarBackX2 = scrollBarBackX1 + (getWidth() - 2);
-
         // Scroll Area Back
-        fill(ms, scrollBarBackX2, y + getHeight() + offsetY, scrollBarBackX1, y + offsetY, scrollbarBackground);
+        fill(ms, x + offsetX, y + offsetY, width - 2, height, scrollbarBackground);
 
-        final int scrollBarStartY = y + (int) getScrollBarYPos();
-        final int scrollBarEndY = scrollBarStartY + getBarHeight();
+        final int renderY = y + (int) getScrollBarYPos();
+        final int renderHeight = getBarHeight();
 
         // Scroll Bar (Bottom/Right Edge line) - Fill whole Scroll area
-        fill(ms, scrollBarBackX2, scrollBarEndY, scrollBarBackX1, scrollBarStartY, scrollbarColorHighlight);
+        fill(ms, x + offsetX, renderY, width - 2, renderHeight, scrollbarColorHighlight);
 
         // Scroll Bar (Inset color)
-        fill(ms, scrollBarBackX2 - 1, scrollBarEndY - 1, scrollBarBackX1, scrollBarStartY, scrollbarColor);
+        fill(ms, x + offsetX, renderY, width - 3, renderHeight - 1, scrollbarColor);
     }
 
     @Override
