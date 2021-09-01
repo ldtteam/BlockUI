@@ -321,8 +321,8 @@ public class ButtonImage extends Button
         ResourceLocation bind = image;
         int u = imageOffsetX;
         int v = imageOffsetY;
-        int w = imageWidth;
-        int h = imageHeight;
+        int w = imageWidth == 0 ? imageMapWidth : imageWidth;
+        int h = imageHeight == 0 ? imageMapHeight : imageHeight;
         int mapWidth = imageMapWidth;
         int mapHeight = imageMapHeight;
 
@@ -333,8 +333,8 @@ public class ButtonImage extends Button
                 bind = imageDisabled;
                 u = disabledOffsetX;
                 v = disabledOffsetY;
-                w = disabledWidth;
-                h = disabledHeight;
+                w = disabledWidth == 0 ? disabledMapWidth : disabledWidth;
+                h = disabledHeight == 0 ? disabledMapHeight : disabledHeight;
                 mapWidth = disabledMapWidth;
                 mapHeight = disabledMapHeight;
             }
@@ -347,8 +347,8 @@ public class ButtonImage extends Button
                 bind = imageHighlight;
                 u = highlightOffsetX;
                 v = highlightOffsetY;
-                w = highlightWidth;
-                h = highlightHeight;
+                w = highlightWidth == 0 ? highlightMapWidth : highlightWidth;
+                h = highlightHeight == 0 ? highlightMapHeight : highlightHeight;
                 mapWidth = highlightMapWidth;
                 mapHeight = highlightMapHeight;
             }
@@ -358,7 +358,7 @@ public class ButtonImage extends Button
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
-        blit(ms, bind, x, y, width, height, u, v, w == 0 ? width : w, h == 0 ? height : h, mapWidth, mapHeight);
+        blit(ms, bind, x, y, width, height, u, v, w, h, mapWidth, mapHeight);
 
         RenderSystem.disableBlend();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);

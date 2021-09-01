@@ -71,11 +71,11 @@ public class Image extends Pane
     private void checkBlitSize()
     {
         final String xmlLoc = window == null ? "unknown" : window.getXmlResourceLocation().toString();
-        if (u + (uWidth == 0 ? width : uWidth) > mapWidth)
+        if (u + (uWidth == 0 ? mapWidth : uWidth) > mapWidth)
         {
             throw new RuntimeException("Invalid blit width for image: id - " + id + " , window - " + xmlLoc);
         }
-        else if (v + (vHeight == 0 ? height : vHeight) > mapHeight)
+        else if (v + (vHeight == 0 ? mapHeight : vHeight) > mapHeight)
         {
             throw new RuntimeException("Invalid blit height for image: id - " + id + " , window - " + xmlLoc);
         }
@@ -192,8 +192,8 @@ public class Image extends Pane
                 height,
                 u,
                 v,
-                uWidth == 0 ? width : uWidth,
-                vHeight == 0 ? height : vHeight,
+                uWidth == 0 ? mapWidth : uWidth,
+                vHeight == 0 ? mapHeight : vHeight,
                 mapWidth,
                 mapHeight);
         }

@@ -132,7 +132,22 @@ public class ImageRepeatable extends Pane
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
-        blitRepeatable(ms, resourceLocation, x, y, width, height, u, v, uWidth, vHeight, fileWidth, fileHeight, uRepeat, vRepeat, repeatWidth, repeatHeight);
+        blitRepeatable(ms,
+            resourceLocation,
+            x,
+            y,
+            width,
+            height,
+            u,
+            v,
+            uWidth == 0 ? fileWidth : uWidth,
+            vHeight == 0 ? fileHeight : vHeight,
+            fileWidth,
+            fileHeight,
+            uRepeat,
+            vRepeat,
+            repeatWidth,
+            repeatHeight);
 
         RenderSystem.disableBlend();
     }
