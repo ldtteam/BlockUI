@@ -102,6 +102,7 @@ public class ItemIcon extends Pane
             mc.getItemRenderer().renderAndDecorateItem(itemStack, 0, 0);
             mc.getItemRenderer().renderGuiItemDecorations(font, itemStack, 0, 0);
 
+            RenderSystem.defaultBlendFunc();
             RenderSystem.disableBlend();
             MatrixUtils.popShaderMVstack();
             ms.popPose();

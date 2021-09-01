@@ -202,6 +202,6 @@ public class Image extends Pane
             blit(ms, resourceLocation, x, y, width, height);
         }
 
-        RenderSystem.enableBlend();
+        RenderSystem.disableBlend();
     }
 }
