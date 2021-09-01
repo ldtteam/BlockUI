@@ -262,8 +262,8 @@
     <xs:complexType name="gradientType">
         <xs:complexContent>
             <xs:extension base="paneType">
-                <xs:attribute name="gradientstart" type="xs:integer"/>
-                <xs:attribute name="gradientend" type="xs:integer"/>
+                <xs:attribute name="gradientstart" type="xs:string"/>
+                <xs:attribute name="gradientend" type="xs:string"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
