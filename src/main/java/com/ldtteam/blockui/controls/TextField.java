@@ -4,11 +4,11 @@ import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.views.View;
 import com.mojang.blaze3d.vertex.*;
+import com.mojang.math.Matrix4f;
 import com.mojang.blaze3d.platform.GlStateManager.LogicOp;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
@@ -20,10 +20,6 @@ public class TextField extends Pane
 {
     protected InputHandler handler;
 
-    /**
-     * Texture resource location.
-     */
-    private static final ResourceLocation TEXTURE = new ResourceLocation("textures/gui/widgets.png");
     private static final int RECT_COLOR = -3_092_272;
     private static final int DEFAULT_MAX_TEXT_LENGTH = 32;
     // Attributes
@@ -353,8 +349,7 @@ public class TextField extends Pane
         int textX = drawX;
         if (visibleString.length() > 0)
         {
-                        final String s1 = cursorVisible ? visibleString.substring(0, relativeCursorPosition) : visibleString;
-            mc.getTextureManager().bindForSetup(TEXTURE);
+            final String s1 = cursorVisible ? visibleString.substring(0, relativeCursorPosition) : visibleString;
             textX = drawString(ms, s1, textX, drawY, color, shadow);
         }
 
@@ -372,7 +367,6 @@ public class TextField extends Pane
         // Draw string after cursor
         if (visibleString.length() > 0 && cursorVisible && relativeCursorPosition < visibleString.length())
         {
-            mc.getTextureManager().bindForSetup(TEXTURE);
             drawString(ms, visibleString.substring(relativeCursorPosition), textX, drawY, color, shadow);
         }
 
@@ -381,11 +375,10 @@ public class TextField extends Pane
         {
             if (cursorBeforeEnd)
             {
-                fill(ms, cursorX, drawY - 1, cursorX + 1, drawY + 1 + mc.font.lineHeight, RECT_COLOR);
+                fill(ms, cursorX, drawY - 1, 1, 1 + mc.font.lineHeight, RECT_COLOR);
             }
             else
             {
-                mc.getTextureManager().bindForSetup(TEXTURE);
                 drawString(ms, "_", cursorX, drawY, color, shadow);
             }
         }
@@ -408,23 +401,22 @@ public class TextField extends Pane
                 selectionEndX = x + width;
             }
 
+            final Matrix4f m = ms.last().pose();
             final Tesselator tessellator = Tesselator.getInstance();
             RenderSystem.setShaderColor(0.0F, 0.0F, 1.0F, 1.0F);
             RenderSystem.disableTexture();
             RenderSystem.enableColorLogicOp();
             RenderSystem.logicOp(LogicOp.OR_REVERSE);
             RenderSystem.setShader(GameRenderer::getPositionShader);
+
             final BufferBuilder vertexBuffer = tessellator.getBuilder();
-
-            // There are several to choose from, look at DefaultVertexFormats for more info
-            vertexBuffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION);
-
-            // Since our points do not have any u,v this seems to be the correct code
-            vertexBuffer.vertex((double) selectionStartX, (double) drawY + 1 + mc.font.lineHeight, 0.0D).endVertex();
-            vertexBuffer.vertex((double) selectionEndX, (double) drawY + 1 + mc.font.lineHeight, 0.0D).endVertex();
-            vertexBuffer.vertex((double) selectionEndX, (double) drawY - 1, 0.0D).endVertex();
-            vertexBuffer.vertex((double) selectionStartX, (double) drawY - 1, 0.0D).endVertex();
+            vertexBuffer.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION);
+            vertexBuffer.vertex(m, selectionStartX, drawY - 1, 0.0f).endVertex();
+            vertexBuffer.vertex(m, selectionStartX, drawY + 1 + mc.font.lineHeight, 0.0f).endVertex();
+            vertexBuffer.vertex(m, selectionEndX, drawY + 1 + mc.font.lineHeight, 0.0f).endVertex();
+            vertexBuffer.vertex(m, selectionEndX, drawY - 1, 0.0f).endVertex();
             tessellator.end();
+
             RenderSystem.disableColorLogicOp();
             RenderSystem.enableTexture();
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
