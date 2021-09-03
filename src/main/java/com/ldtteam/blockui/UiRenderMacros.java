@@ -389,7 +389,7 @@ public class UiRenderMacros
         final int mapW,
         final int mapH)
     {
-        blit(ps, rl, x, y, w, h, (float) u / mapW, (float) v / mapH, (float) (u + w) / mapW, (float) (y + h) / mapH);
+        blit(ps, rl, x, y, w, h, (float) u / mapW, (float) v / mapH, (float) (u + w) / mapW, (float) (v + h) / mapH);
     }
 
     public static void blit(final PoseStack ps,
@@ -405,7 +405,7 @@ public class UiRenderMacros
         final int mapW,
         final int mapH)
     {
-        blit(ps, rl, x, y, w, h, (float) u / mapW, (float) v / mapH, (float) (u + uW) / mapW, (float) (y + vH) / mapH);
+        blit(ps, rl, x, y, w, h, (float) u / mapW, (float) v / mapH, (float) (u + uW) / mapW, (float) (v + vH) / mapH);
     }
 
     public static void blit(final PoseStack ps,
