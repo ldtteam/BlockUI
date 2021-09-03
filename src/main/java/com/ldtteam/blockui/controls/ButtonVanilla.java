@@ -116,8 +116,7 @@ public class ButtonVanilla extends Button
     @Override
     public void setSize(final int w, final int h)
     {
-        textWidth = w - (DEFAULT_BUTTON_WIDTH - TEXTURE_INNER_U_WIDTH);
-        textHeight = h - (DEFAULT_BUTTON_HEIGHT - TEXTURE_INNER_V_HEIGHT);
         super.setSize(w, h);
+        recalcTextBox();
     }
 }
