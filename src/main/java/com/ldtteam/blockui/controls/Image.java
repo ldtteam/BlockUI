@@ -47,7 +47,6 @@ public class Image extends Pane
     {
         super(params);
         resourceLocation = params.getResource("source", this::loadMapDimensions);
-        Objects.requireNonNull(resourceLocation);
 
         params.applyShorthand("imageoffset", Parsers.INT, 2, a -> {
             u = a.get(0);
@@ -179,6 +178,7 @@ public class Image extends Pane
     @Override
     public void drawSelf(final PoseStack ms, final double mx, final double my)
     {
+        Objects.requireNonNull(resourceLocation, () -> id + " | " + window.getXmlResourceLocation());
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 

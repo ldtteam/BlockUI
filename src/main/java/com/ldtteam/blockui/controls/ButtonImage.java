@@ -79,7 +79,6 @@ public class ButtonImage extends Button
     private void loadImageInfo(final PaneParams params)
     {
         image = params.getResource("source", this::loadImageDimensions);
-        Objects.requireNonNull(image);
 
         params.applyShorthand("imageoffset", Parsers.INT, 2, a -> {
             imageOffsetX = a.get(0);
@@ -318,6 +317,7 @@ public class ButtonImage extends Button
     @Override
     public void drawSelf(final PoseStack ms, final double mx, final double my)
     {
+        Objects.requireNonNull(image, () -> id + " | " + window.getXmlResourceLocation());
         ResourceLocation bind = image;
         int u = imageOffsetX;
         int v = imageOffsetY;
