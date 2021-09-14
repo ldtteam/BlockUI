@@ -1,0 +1,11 @@
+<window xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="blockOut.xsd" size="200 100">
+    <text id="note" size="100 100" pos="50 0"/>
+    <input id="filter" pos="0 0" size="200 20"/>
+    <list id="items" pos="0 22" size="200 78">
+        <box linewidth="1" size="200 18">
+            <itemicon id="icon" size="16 16" pos="1 1"/>
+            <text id="name" size="144 16" pos="18 1" color="white" textalign="MIDDLE_LEFT"/>
+            <text id="quantity" size="30 16" pos="162 1" color="white" textalign="MIDDLE_RIGHT"/>
+        </box>
+    </list>
+</window>

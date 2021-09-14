@@ -3,6 +3,7 @@ package com.ldtteam.blockui.hooks;
 import com.ldtteam.blockui.BOScreen;
 import com.ldtteam.blockui.hooks.TriggerMechanism.Type;
 import com.ldtteam.blockui.views.ScrollingList;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 /**
@@ -33,6 +34,10 @@ public class HookScreen extends BOScreen
             return;
         }
 
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.enableDepthTest();
+        RenderSystem.disableBlend();
+        RenderSystem.defaultBlendFunc();
         ms.translate(-width / 2, -height, 0.0d);
         window.draw(ms, -1, -1);
     }
