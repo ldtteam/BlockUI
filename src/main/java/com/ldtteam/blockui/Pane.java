@@ -631,6 +631,7 @@ public class Pane extends UiRenderMacros
     }
 
     // TODO: refactor: move logic to macros, keep local override here
+    // TODO: move to stencil test? especially scissors can't be used in world gui
     protected synchronized void scissorsStart(final PoseStack ms, final int contentWidth, final int contentHeight)
     {
         final int fbWidth = mc.getWindow().getWidth();
