@@ -14,6 +14,7 @@ import java.util.function.IntSupplier;
  */
 public class ScrollingList extends ScrollingView
 {
+    protected int childSpacing = 0;
     // Runtime
     protected DataProvider dataProvider;
     private PaneParams listNodeParams;
@@ -35,6 +36,7 @@ public class ScrollingList extends ScrollingView
     public ScrollingList(final PaneParams params)
     {
         super(params);
+        childSpacing = params.getInteger("childspacing", childSpacing);
         this.setMaxHeight(height);
     }
 
@@ -76,7 +78,7 @@ public class ScrollingList extends ScrollingView
      */
     public void refreshElementPanes()
     {
-        ((ScrollingListContainer) container).refreshElementPanes(dataProvider, listNodeParams, maxHeight);
+        ((ScrollingListContainer) container).refreshElementPanes(dataProvider, listNodeParams, maxHeight, childSpacing);
     }
 
     @Override

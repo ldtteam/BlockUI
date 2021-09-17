@@ -11,6 +11,8 @@ import com.ldtteam.blockui.PaneParams;
  */
 public class ScrollingGroup extends ScrollingView
 {
+    protected int childSpacing = 0;
+
     /**
      * Required default constructor.
      */
@@ -27,6 +29,7 @@ public class ScrollingGroup extends ScrollingView
     public ScrollingGroup(final PaneParams params)
     {
         super(params);
+        childSpacing = params.getInteger("childspacing", childSpacing);
     }
 
     /**
@@ -43,7 +46,7 @@ public class ScrollingGroup extends ScrollingView
         {
             final Pane child = container.children.get(i);
             final Pane lastChild = container.children.get(i-1);
-            final int childY = lastChild.getY() + lastChild.getHeight();
+            final int childY = lastChild.getY() + lastChild.getHeight() + childSpacing;
 
             child.setPosition(0, childY);
         }
@@ -58,7 +61,7 @@ public class ScrollingGroup extends ScrollingView
         if (children.size() >= 2)
         {
             final Pane lastChild = children.get(children.size() - 2);
-            childY = lastChild.getY() + lastChild.getHeight();
+            childY = lastChild.getY() + lastChild.getHeight() + childSpacing;
         }
 
         child.setPosition(0, childY);
@@ -70,7 +73,7 @@ public class ScrollingGroup extends ScrollingView
         super.removeChild(child);
 
         final int formerChildY = child.getY();
-        final int formerChildHeight = child.getHeight();
+        final int formerChildHeight = child.getHeight() + childSpacing;
 
         for (final Pane c : children)
         {
