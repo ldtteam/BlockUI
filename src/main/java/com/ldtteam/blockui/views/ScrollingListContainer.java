@@ -22,7 +22,7 @@ public class ScrollingListContainer extends ScrollingContainer
      * @param dataProvider   data provider object, shouldn't be null.
      * @param listNodeParams the xml parameters for this pane.
      */
-    public void refreshElementPanes(final ScrollingList.DataProvider dataProvider, final PaneParams listNodeParams, final int height)
+    public void refreshElementPanes(final ScrollingList.DataProvider dataProvider, final PaneParams listNodeParams, final int height, final int childSpacing)
     {
         final int numElements = (dataProvider != null) ? dataProvider.getElementCount() : 0;
         if (dataProvider != null)
@@ -30,7 +30,8 @@ public class ScrollingListContainer extends ScrollingContainer
             for (int i = 0; i < numElements; ++i)
             {
                 final Pane child;
-                if (listElementHeight * i + listElementHeight >= scrollY && listElementHeight * i <= scrollY + height)
+                final int childYpos = (childSpacing + listElementHeight) * i;
+                if (childYpos + listElementHeight >= scrollY && childYpos <= scrollY + height)
                 {
                     if (i < children.size())
                     {
@@ -49,7 +50,7 @@ public class ScrollingListContainer extends ScrollingContainer
                             listElementHeight = child.getHeight();
                         }
                     }
-                    child.setPosition(0, i * listElementHeight);
+                    child.setPosition(0, childYpos);
 
                     dataProvider.updateElement(i, child);
                 }
@@ -61,7 +62,7 @@ public class ScrollingListContainer extends ScrollingContainer
             removeChild(children.get(numElements));
         }
 
-        setContentHeight(numElements * listElementHeight);
+        setContentHeight(numElements * (listElementHeight + childSpacing) - childSpacing);
     }
 
     /**

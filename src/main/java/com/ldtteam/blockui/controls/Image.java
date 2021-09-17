@@ -46,7 +46,6 @@ public class Image extends Pane
     public Image(final PaneParams params)
     {
         super(params);
-        resourceLocation = params.getResource("source", this::loadMapDimensions);
 
         params.applyShorthand("imageoffset", Parsers.INT, 2, a -> {
             u = a.get(0);
@@ -57,6 +56,8 @@ public class Image extends Pane
             uWidth = a.get(0);
             vHeight = a.get(1);
         });
+
+        resourceLocation = params.getResource("source", this::loadMapDimensions);
     }
 
     private void loadMapDimensions(final ResourceLocation rl)
@@ -72,11 +73,11 @@ public class Image extends Pane
         final String xmlLoc = window == null ? "unknown" : window.getXmlResourceLocation().toString();
         if (u + (uWidth == 0 ? mapWidth : uWidth) > mapWidth)
         {
-            throw new RuntimeException("Invalid blit width for image: id - " + id + " , window - " + xmlLoc);
+            throw new RuntimeException("Invalid blit width for image: id - " + id + ", window - " + xmlLoc);
         }
         else if (v + (vHeight == 0 ? mapHeight : vHeight) > mapHeight)
         {
-            throw new RuntimeException("Invalid blit height for image: id - " + id + " , window - " + xmlLoc);
+            throw new RuntimeException("Invalid blit height for image: id - " + id + ", window - " + xmlLoc);
         }
     }
 

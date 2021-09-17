@@ -1,6 +1,8 @@
 package com.ldtteam.blockui.views;
 
 import com.ldtteam.blockui.*;
+import com.ldtteam.blockui.util.records.Pos2i.ImmutablePos2i;
+import com.ldtteam.blockui.util.records.Pos2i.MutablePos2i;
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.jetbrains.annotations.Nullable;
 
@@ -397,5 +399,21 @@ public class View extends Pane
             }
         }
         return invokedPositive;
+    }
+
+    protected MutablePos2i accumulatePosition(final MutablePos2i accumulator)
+    {
+        if (parent != null)
+        {
+            parent.accumulatePosition(accumulator);
+        }
+        accumulator.x += x;
+        accumulator.y += y;
+        return accumulator;
+    }
+
+    public ImmutablePos2i getAccumulatedPosition()
+    {
+        return accumulatePosition(new MutablePos2i()).toImmutable();
     }
 }

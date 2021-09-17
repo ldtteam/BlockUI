@@ -2,6 +2,7 @@ package com.ldtteam.blockui.mod;
 
 import com.ldtteam.blockui.hooks.HookManager;
 import com.ldtteam.blockui.hooks.HookRegistries;
+import com.ldtteam.blockui.mod.container.ContainerHook;
 import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -11,6 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.InputEvent.MouseScrollEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.event.TagsUpdatedEvent;
 import net.minecraftforge.event.TickEvent.ClientTickEvent;
 import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.eventbus.api.EventPriority;
@@ -70,5 +72,14 @@ public class ClientEventSubscriber
     {
         // cancel in-game scrolling when raytraced gui has scrolling list
         event.setCanceled(HookManager.onScroll(event.getScrollDelta()));
+    }
+
+    /**
+     * Hook test container gui.
+     */
+    @SubscribeEvent
+    public static void onTagsUpdated(final TagsUpdatedEvent event)
+    {
+        ContainerHook.init();
     }
 }

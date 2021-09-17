@@ -90,6 +90,7 @@
                 <xs:attribute name="wrap" type="xs:boolean"/>
                 <xs:attribute name="linespace" type="xs:integer"/>
                 <xs:attribute name="text" type="xs:string"/>
+                <xs:attribute name="label" type="xs:string"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -104,6 +105,15 @@
         </xs:complexContent>
     </xs:complexType>
 
+    <!-- Scroll view basic attributes and contents -->
+    <xs:complexType name="scrollViewType">
+        <xs:complexContent>
+            <xs:extension base="viewType">
+                <xs:attribute name="childspacing" type="xs:integer"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
     <!-- Master group for all panes that can be used -->
     <xs:group name="paneContainerGroup">
         <xs:choice>
@@ -111,13 +121,13 @@
             <xs:element name="view" type="viewType"/>
             <xs:element name="zoomdragview" type="zoomDragType"/>
             <xs:element name="group" type="groupType"/>
-            <xs:element name="scrollgroup" type="viewType"/>
+            <xs:element name="scrollgroup" type="scrollViewType"/>
             <xs:element name="list" type="listType"/>
             <xs:element name="button" type="buttonType"/>
             <xs:element name="buttonimage" type="buttonImageType"/>
             <xs:element name="toggle" type="toggleType"/>
             <xs:element name="text" type="textType"/>
-            <xs:element name="label" type="labelType"/>
+            <xs:element name="label" type="textType"/>
             <xs:element name="input" type="inputType"/>
             <xs:element name="image" type="imageType"/>
             <xs:element name="imagerepeat" type="imageRepeatType"/>
@@ -165,9 +175,8 @@
     <!-- <list> -->
     <xs:complexType name="listType">
         <xs:complexContent>
-            <xs:extension base="paneType">
+            <xs:extension base="scrollViewType">
                 <xs:group ref="paneContainerGroup" minOccurs="1" maxOccurs="1"/>
-                <xs:attribute name="padding" type="xs:integer"/>
                 <xs:attribute name="scrollbarOffset" type="fixedSizePair"/>
             </xs:extension>
         </xs:complexContent>
@@ -186,19 +195,8 @@
                 <xs:attribute name="disabled" type="xs:string"/>
                 <xs:attribute name="disabledoffset" type="fixedSizePair"/>
                 <xs:attribute name="disabledsize" type="fixedSizePair"/>
-                <!-- Label (optional) -->
-                <xs:attribute name="label" type="xs:string"/>
                 <xs:attribute name="textoffset" type="fixedSizePair"/>
                 <xs:attribute name="textbox" type="fixedSizePair"/>
-            </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <!-- <label> -->
-    <xs:complexType name="labelType">
-        <xs:complexContent>
-            <xs:extension base="textElementType">
-                <xs:attribute name="label" type="xs:string"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

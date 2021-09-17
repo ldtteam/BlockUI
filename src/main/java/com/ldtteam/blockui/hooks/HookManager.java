@@ -1,11 +1,19 @@
 package com.ldtteam.blockui.hooks;
 
 import com.ldtteam.blockui.hooks.TriggerMechanism.Type;
+import com.ldtteam.blockui.mod.Log;
 import com.mojang.blaze3d.vertex.PoseStack;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.IForgeRegistryEntry;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 
@@ -27,10 +35,6 @@ public abstract class HookManager<T, U extends IForgeRegistryEntry<U>, K>
      * list of registered hooks
      */
     private final List<HookEntry> registry = new ArrayList<>();
-    /**
-     * set of registered ForgeRegistry keys
-     */
-    private final Set<ResourceLocation> registryKeys = new HashSet<>();
     /**
      * list of windows being rendered
      */
@@ -69,20 +73,44 @@ public abstract class HookManager<T, U extends IForgeRegistryEntry<U>, K>
         final IGuiActionCallback<T> onClosedListener = Objects.requireNonNullElse((IGuiActionCallback<T>) onClose, IGuiActionCallback.noAction());
         final ResourceLocation registryKey = targetThing.getRegistryName();
 
-        if (registryKeys.contains(registryKey))
+        final Optional<HookEntry> existing = registry.stream()
+            .filter(hook -> hook.targetThing.getRegistryName().equals(registryKey) && hook.trigger.getType() == trigger.getType())
+            .findFirst();
+        if (existing.isPresent())
         {
-            final Optional<HookEntry> existing = registry.stream()
-                .filter(hook -> hook.targetThing.getRegistryName().equals(registryKey) && hook.trigger.getType() == trigger.getType())
-                .findFirst();
-            if (existing.isPresent())
-            {
-                throw new IllegalArgumentException(
-                    String.format("\"%s\" with trigger \"%s\" is already registerd!", targetThing, existing.get().trigger.getName()));
-            }
+            Log.getLogger()
+                .debug("Moving \"{}\" hook (with trigger \"{}\") from \"{}\" to \"{}\"",
+                    registryKey,
+                    existing.get().trigger.getName(),
+                    existing.get().guiLoc,
+                    guiLoc);
+            registry.remove(existing.get());
         }
 
         registry.add(new HookEntry(targetThing, guiLoc, expirationTime, trigger, shouldOpenTest, onOpenListener, onClosedListener));
-        registryKeys.add(registryKey);
+    }
+
+    /**
+     * Removes all hooks (regardless type) for given registry key.
+     *
+     * @param resLoc registry key to remove
+     * @return true if anything got removed
+     */
+    public boolean unregister(final ResourceLocation resLoc)
+    {
+        return registry.removeIf(hook -> hook.targetThing.getRegistryName().equals(resLoc));
+    }
+
+    /**
+     * Removes all hooks for given registry key and trigger type.
+     *
+     * @param resLoc      registry key to remove
+     * @param triggerType trigger type
+     * @return true if anything got removed
+     */
+    public boolean unregister(final ResourceLocation resLoc, final Type triggerType)
+    {
+        return registry.removeIf(hook -> hook.targetThing.getRegistryName().equals(resLoc) && hook.trigger.getType() == triggerType);
     }
 
     /**

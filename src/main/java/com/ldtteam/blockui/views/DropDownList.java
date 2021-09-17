@@ -5,6 +5,7 @@ import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.controls.Button;
 import com.ldtteam.blockui.controls.ButtonHandler;
 import com.ldtteam.blockui.controls.Text;
+import com.ldtteam.blockui.util.records.Pos2i;
 import com.ldtteam.blockui.Parsers;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.network.chat.MutableComponent;
@@ -57,11 +58,6 @@ public class DropDownList extends View implements ButtonHandler
     protected int selectedIndex = -1;
 
     /**
-     * Temporary fix until new release
-     */
-    protected int dropDownFixX = 0;
-
-    /**
      * Default constructor required by Blockout.
      */
     public DropDownList()
@@ -78,13 +74,11 @@ public class DropDownList extends View implements ButtonHandler
     {
         super(params);
         dropDownWidth = width;
-        dropDownHeight = (width);
+        dropDownHeight = height;
         params.applyShorthand("dropDownSize", Parsers.INT, 2, a -> {
             dropDownWidth = a.get(0);
             dropDownHeight = a.get(1);
         });
-
-        dropDownFixX = params.getInteger("dropfixx", dropDownFixX);
 
         button = Button.construct(params);
         button.putInside(this);
@@ -99,7 +93,6 @@ public class DropDownList extends View implements ButtonHandler
             list.setMaxHeight(params.getInteger("maxContentHeight", 0));
         }
         list.setSize(dropDownWidth, dropDownHeight);
-        list.setPosition((x + width / 2) - dropDownWidth / 2 + dropDownFixX, y + height);
         list.putInside(overlay);
         list.parseChildren(params);
 
@@ -123,6 +116,9 @@ public class DropDownList extends View implements ButtonHandler
             }
             else
             {
+                final Pos2i rootPos = this.getAccumulatedPosition();
+                list.setPosition(rootPos.x() + width / 2 - dropDownWidth / 2, rootPos.y() + height);
+
                 overlay.setSize(this.getWindow().getInteriorWidth(), this.getWindow().getInteriorHeight());
                 overlay.putInside(buttonIn.getWindow());
                 open();
