@@ -5,6 +5,9 @@ import com.ldtteam.blockui.hooks.TriggerMechanism.Type;
 import com.ldtteam.blockui.views.ScrollingList;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.ReportedException;
 
 /**
  * Screen wrapper.
@@ -12,11 +15,13 @@ import com.mojang.blaze3d.vertex.PoseStack;
 public class HookScreen extends BOScreen
 {
     private final boolean captureScroll;
+    private final HookWindow<?, ?> windowTyped;
     private ScrollingList scrollListener = null;
 
-    HookScreen(final HookWindow<?> window)
+    HookScreen(final HookWindow<?, ?> window)
     {
         super(window);
+        this.windowTyped = window;
         captureScroll = window.windowHolder.hook.trigger.getType() == Type.RAY_TRACE;
     }
 
@@ -39,7 +44,20 @@ public class HookScreen extends BOScreen
         RenderSystem.disableBlend();
         RenderSystem.defaultBlendFunc();
         ms.translate(-width / 2, -height, 0.0d);
-        window.draw(ms, -1, -1);
+        try
+        {
+            window.draw(ms, -1, -1);
+            window.drawLast(ms, -1, -1);
+        }
+        catch (final Exception e)
+        {
+            final CrashReport crashReport = CrashReport.forThrowable(e, "Rendering Hook BO screen");
+            final CrashReportCategory category = crashReport.addCategory("Hook BO screen rendering details");
+            category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
+            category.setDetail("Hook thing type", () -> windowTyped.getHookThingType().getRegistryName().toString());
+            category.setDetail("Hook thing", () -> windowTyped.getHookThing().toString());
+            throw new ReportedException(crashReport);
+        }
     }
 
     @Override
@@ -53,7 +71,20 @@ public class HookScreen extends BOScreen
     {
         if (captureScroll && scrollListener != null && scrollDiff != 0)
         {
-            scrollListener.scrollInput(scrollDiff * 10, scrollListener.getX() + 1, scrollListener.getY() + 1);
+            try
+            {
+                scrollListener.scrollInput(scrollDiff * 10, scrollListener.getX() + 1, scrollListener.getY() + 1);
+            }
+            catch (final Exception e)
+            {
+                final CrashReport crashReport = CrashReport.forThrowable(e, "MouseScroll event for Hook BO screen");
+                final CrashReportCategory category = crashReport.addCategory("Hook BO screen scroll event details");
+                category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
+                category.setDetail("Scroll value", () -> Double.toString(scrollDiff));
+                category.setDetail("Hook thing type", () -> windowTyped.getHookThingType().getRegistryName().toString());
+                category.setDetail("Hook thing", () -> windowTyped.getHookThing().toString());
+                throw new ReportedException(crashReport);
+            }
             return true; // TODO: would be nice to not stop event propagation when scrolling list is not scrollable
         }
         return false;
@@ -68,40 +99,64 @@ public class HookScreen extends BOScreen
     @Override
     public void tick()
     {
-        if (minecraft != null)
+        try
         {
-            if (!isOpen)
+            if (minecraft != null)
             {
-                if (captureScroll)
+                if (!isOpen)
                 {
-                    scrollListener = window.findFirstPaneByType(ScrollingList.class);
-                    if (scrollListener != null)
+                    if (captureScroll)
                     {
-                        HookManager.setScrollListener(this);
+                        scrollListener = window.findFirstPaneByType(ScrollingList.class);
+                        if (scrollListener != null)
+                        {
+                            HookManager.setScrollListener(this);
+                        }
                     }
+                    window.onOpened();
+                    isOpen = true;
                 }
-                window.onOpened();
-                isOpen = true;
+                else
+                {
+                    window.onUpdate();
+                }
             }
-            else
-            {
-                window.onUpdate();
-            }
+        }
+        catch (final Exception e)
+        {
+            final CrashReport crashReport = CrashReport.forThrowable(e, "Ticking/Updating Hook BO screen");
+            final CrashReportCategory category = crashReport.addCategory("Hook BO screen update details");
+            category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
+            category.setDetail("Is opened", () -> Boolean.toString(isOpen));
+            category.setDetail("Hook thing type", () -> windowTyped.getHookThingType().getRegistryName().toString());
+            category.setDetail("Hook thing", () -> windowTyped.getHookThing().toString());
+            throw new ReportedException(crashReport);
         }
     }
 
     @Override
     public void removed()
     {
-        window.onClosed();
+        try
+        {
+            window.onClosed();
+        }
+        catch (final Exception e)
+        {
+            final CrashReport crashReport = CrashReport.forThrowable(e, "Closing Hook BO screen");
+            final CrashReportCategory category = crashReport.addCategory("Hook BO screen closing details");
+            category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
+            category.setDetail("Is opened", () -> Boolean.toString(isOpen));
+            throw new ReportedException(crashReport);
+        }
         if (HookManager.getScrollListener() == this)
         {
             HookManager.setScrollListener(null);
         }
     }
 
-    public HookWindow<?> getWindow()
+    public HookWindow<?, ?> getWindow()
     {
-        return (HookWindow<?>) window;
+        return windowTyped;
     }
 }

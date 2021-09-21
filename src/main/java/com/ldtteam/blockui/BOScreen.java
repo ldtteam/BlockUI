@@ -1,15 +1,18 @@
 package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.views.BOWindow;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Matrix4f;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.ReportedException;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraft.util.BitStorage;
 import net.minecraftforge.client.ForgeRenderTypes;
 import net.minecraftforge.client.gui.ForgeIngameGui;
 import net.minecraftforge.client.gui.OverlayRegistry;
-import net.minecraft.network.chat.TextComponent;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -165,16 +168,32 @@ public class BOScreen extends Screen
         RenderSystem.enableDepthTest();
         RenderSystem.disableBlend();
         RenderSystem.defaultBlendFunc();
-        window.draw(newMs, calcRelativeX(mx), calcRelativeY(my));
-        window.drawLast(newMs, calcRelativeX(mx), calcRelativeY(my));
 
-        // restore vanilla state
-        shaderPs.popPose();
-        RenderSystem.setProjectionMatrix(oldProjection);
-        RenderSystem.applyModelViewMatrix();
+        try
+        {
+            window.draw(newMs, calcRelativeX(mx), calcRelativeY(my));
+            window.drawLast(newMs, calcRelativeX(mx), calcRelativeY(my));
+        }
+        catch (final Exception e)
+        {
+            final CrashReport crashReport = CrashReport.forThrowable(e, "Rendering BO screen");
+            final CrashReportCategory category = crashReport.addCategory("BO screen rendering details");
+            category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
+            category.setDetail("Scaling mode (window render type)", () -> window.getRenderType().name());
+            category.setDetail("Vanilla gui scale", () -> Double.toString(mcScale));
+            category.setDetail("BO gui scale", () -> Double.toString(renderScale));
+            throw new ReportedException(crashReport);
+        }
+        finally
+        {
+            // restore vanilla state
+            shaderPs.popPose();
+            RenderSystem.setProjectionMatrix(oldProjection);
+            RenderSystem.applyModelViewMatrix();
 
-        minecraft.getItemRenderer().blitOffset = oldZ;
-        ForgeRenderTypes.enableTextTextureLinearFiltering = oldFilteringValue;
+            minecraft.getItemRenderer().blitOffset = oldZ;
+            ForgeRenderTypes.enableTextTextureLinearFiltering = oldFilteringValue;
+        }
     }
 
     @Override
@@ -183,7 +202,18 @@ public class BOScreen extends Screen
         // keys without printable representation
         if (key >= 0 && key <= GLFW.GLFW_KEY_LAST)
         {
-            return ACCEPTED_KEY_PRESSED_MAP.get(key) == 0 || window.onKeyTyped('\0', key);
+            try
+            {
+                return ACCEPTED_KEY_PRESSED_MAP.get(key) == 0 || window.onKeyTyped('\0', key);
+            }
+            catch (final Exception e)
+            {
+                final CrashReport crashReport = CrashReport.forThrowable(e, "KeyPressed event for BO screen");
+                final CrashReportCategory category = crashReport.addCategory("BO screen key event details");
+                category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
+                category.setDetail("GLFW key value", () -> Integer.toString(key));
+                throw new ReportedException(crashReport);
+            }
         }
         return false;
     }
@@ -191,7 +221,18 @@ public class BOScreen extends Screen
     @Override
     public boolean charTyped(final char ch, final int key)
     {
-        return window.onKeyTyped(ch, key);
+        try
+        {
+            return window.onKeyTyped(ch, key);
+        }
+        catch (final Exception e)
+        {
+            final CrashReport crashReport = CrashReport.forThrowable(e, "CharTyped event for BO screen");
+            final CrashReportCategory category = crashReport.addCategory("BO screen char event details");
+            category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
+            category.setDetail("Char value", () -> Character.toString(ch));
+            throw new ReportedException(crashReport);
+        }
     }
 
     @Override
@@ -199,15 +240,26 @@ public class BOScreen extends Screen
     {
         final double mx = calcRelativeX(mxIn);
         final double my = calcRelativeY(myIn);
-        if (keyCode == GLFW.GLFW_MOUSE_BUTTON_LEFT)
+        try
         {
-            // Adjust coordinate to origin of window
-            isMouseLeftDown = true;
-            return window.click(mx, my);
+            if (keyCode == GLFW.GLFW_MOUSE_BUTTON_LEFT)
+            {
+                // Adjust coordinate to origin of window
+                isMouseLeftDown = true;
+                return window.click(mx, my);
+            }
+            else if (keyCode == GLFW.GLFW_MOUSE_BUTTON_RIGHT)
+            {
+                return window.rightClick(mx, my);
+            }
         }
-        else if (keyCode == GLFW.GLFW_MOUSE_BUTTON_RIGHT)
+        catch (final Exception e)
         {
-            return window.rightClick(mx, my);
+            final CrashReport crashReport = CrashReport.forThrowable(e, "MousePressed event for BO screen");
+            final CrashReportCategory category = crashReport.addCategory("BO screen mouse event details");
+            category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
+            category.setDetail("GLFW mouse key value", () -> Integer.toString(keyCode));
+            throw new ReportedException(crashReport);
         }
         return false;
     }
@@ -217,7 +269,18 @@ public class BOScreen extends Screen
     {
         if (scrollDiff != 0)
         {
-            return window.scrollInput(scrollDiff * 10, calcRelativeX(mx), calcRelativeY(my));
+            try
+            {
+                return window.scrollInput(scrollDiff * 10, calcRelativeX(mx), calcRelativeY(my));
+            }
+            catch (final Exception e)
+            {
+                final CrashReport crashReport = CrashReport.forThrowable(e, "MouseScroll event for BO screen");
+                final CrashReportCategory category = crashReport.addCategory("BO screen scroll event details");
+                category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
+                category.setDetail("Scroll value", () -> Double.toString(scrollDiff));
+                throw new ReportedException(crashReport);
+            }
         }
         return false;
     }
@@ -225,7 +288,17 @@ public class BOScreen extends Screen
     @Override
     public boolean mouseDragged(final double xIn, final double yIn, final int speed, final double deltaX, final double deltaY)
     {
-        return window.onMouseDrag(calcRelativeX(xIn), calcRelativeY(yIn), speed, deltaX, deltaY);
+        try
+        {
+            return window.onMouseDrag(calcRelativeX(xIn), calcRelativeY(yIn), speed, deltaX, deltaY);
+        }
+        catch (final Exception e)
+        {
+            final CrashReport crashReport = CrashReport.forThrowable(e, "MouseDragged event for BO screen");
+            final CrashReportCategory category = crashReport.addCategory("BO screen mouse event details");
+            category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
+            throw new ReportedException(crashReport);
+        }
     }
 
     @Override
@@ -235,7 +308,18 @@ public class BOScreen extends Screen
         {
             // Adjust coordinate to origin of window
             isMouseLeftDown = false;
-            return window.onMouseReleased(calcRelativeX(mxIn), calcRelativeY(myIn));
+            try
+            {
+                return window.onMouseReleased(calcRelativeX(mxIn), calcRelativeY(myIn));
+            }
+            catch (final Exception e)
+            {
+                final CrashReport crashReport = CrashReport.forThrowable(e, "MouseReleased event for BO screen");
+                final CrashReportCategory category = crashReport.addCategory("BO screen mouse event details");
+                category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
+                category.setDetail("GLFW mouse key value", () -> Integer.toString(keyCode));
+                throw new ReportedException(crashReport);
+            }
         }
         return false;
     }
@@ -250,32 +334,57 @@ public class BOScreen extends Screen
     @Override
     public void tick()
     {
-        if (minecraft != null)
+        try
         {
-            if (!isOpen)
+            if (minecraft != null)
             {
-                window.onOpened();
-                isOpen = true;
-            }
-            else
-            {
-                window.onUpdate();
-
-                if (!minecraft.player.isAlive() || minecraft.player.dead)
+                if (!isOpen)
                 {
-                    minecraft.player.closeContainer();
+                    window.onOpened();
+                    isOpen = true;
+                }
+                else
+                {
+                    window.onUpdate();
+
+                    if (!minecraft.player.isAlive() || minecraft.player.dead)
+                    {
+                        minecraft.player.closeContainer();
+                    }
                 }
             }
+        }
+        catch (final Exception e)
+        {
+            final CrashReport crashReport = CrashReport.forThrowable(e, "Ticking/Updating BO screen");
+            final CrashReportCategory category = crashReport.addCategory("BO screen update details");
+            category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
+            category.setDetail("Is opened", () -> Boolean.toString(isOpen));
+            throw new ReportedException(crashReport);
         }
     }
 
     @Override
     public void removed()
     {
-        window.onClosed();
-        BOWindow.clearFocus();
-        minecraft.keyboardHandler.setSendRepeatsToGui(false);
-        OverlayRegistry.enableOverlay(ForgeIngameGui.CROSSHAIR_ELEMENT, true);
+        try
+        {
+            window.onClosed();
+        }
+        catch (final Exception e)
+        {
+            final CrashReport crashReport = CrashReport.forThrowable(e, "Closing BO screen");
+            final CrashReportCategory category = crashReport.addCategory("BO screen closing details");
+            category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
+            category.setDetail("Is opened", () -> Boolean.toString(isOpen));
+            throw new ReportedException(crashReport);
+        }
+        finally
+        {
+            BOWindow.clearFocus();
+            minecraft.keyboardHandler.setSendRepeatsToGui(false);
+            OverlayRegistry.enableOverlay(ForgeIngameGui.CROSSHAIR_ELEMENT, true);
+        }
     }
 
     @Override

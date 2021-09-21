@@ -260,7 +260,7 @@ public abstract class HookManager<T, U extends IForgeRegistryEntry<U>, K>
         public WindowEntry(final long lastTimeAccessed,
             final T thing,
             final HookManager<T, U, K>.HookEntry hook,
-            final Function<WindowEntry, HookWindow<T>> windowFactory)
+            final Function<WindowEntry, HookWindow<T, U>> windowFactory)
         {
             this.lastTimeAccessed = lastTimeAccessed;
             this.thing = thing;
