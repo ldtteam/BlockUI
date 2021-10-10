@@ -1,0 +1,4 @@
+{
+    "blockui.container_gui.client_side_only": "Содержимое видно только при игре на локальном сервере (одиночная игра).",
+    "blockui.container_gui.empty": "Нет содержимого."
+}
