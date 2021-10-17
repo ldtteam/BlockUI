@@ -47,7 +47,7 @@ public class ScrollingListContainer extends ScrollingContainer
 
                         if (i == 0)
                         {
-                            listElementHeight = child.getHeight();
+                            listElementHeight = child.getHeight() + childSpacing;
                         }
                     }
                     child.setPosition(0, childYpos);

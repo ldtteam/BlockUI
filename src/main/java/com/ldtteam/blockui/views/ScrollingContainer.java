@@ -100,20 +100,25 @@ public class ScrollingContainer extends View
         return scrollY;
     }
 
-    public void setScrollY(final double offset)
+    /**
+     * @param scroll new scroll value [pixels]
+     * @return true if scroll offset changed
+     */
+    public boolean setScrollY(final double scroll)
     {
-        scrollY = offset;
-
+        final double oldScroll = scrollY;
         final double maxScrollY = getMaxScrollY();
+
+        scrollY = scroll;
         if (scrollY > maxScrollY)
         {
             scrollY = maxScrollY;
         }
-
-        if (scrollY < 0)
+        else if (scrollY < 0)
         {
             scrollY = 0;
         }
+        return oldScroll != scrollY;
     }
 
     public int getContentHeight()

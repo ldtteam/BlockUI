@@ -3,6 +3,7 @@ package com.ldtteam.blockui.views;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.controls.Scrollbar;
+import com.ldtteam.blockui.util.records.Pos2i.MutablePos2i;
 
 /**
  * Basic scrolling view.
@@ -75,8 +76,7 @@ public class ScrollingView extends View
     @Override
     public boolean scrollInput(final double wheel, final double mx, final double my)
     {
-        this.setScrollY(getScrollY() - (int) wheel);
-        return true;
+        return setScrollY(getScrollY() - (int) wheel);
     }
 
     public ScrollingContainer getContainer()
@@ -110,9 +110,13 @@ public class ScrollingView extends View
         return container.getScrollY();
     }
 
-    public void setScrollY(final double offset)
+    /**
+     * @param scroll new scroll value [pixels]
+     * @return true if scroll offset changed
+     */
+    public boolean setScrollY(final double scroll)
     {
-        container.setScrollY(offset);
+        return container.setScrollY(scroll);
     }
 
     /**

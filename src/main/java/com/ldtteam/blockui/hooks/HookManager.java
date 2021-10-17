@@ -159,7 +159,7 @@ public abstract class HookManager<T, U extends IForgeRegistryEntry<U>, K>
                         activeWindows.put(key, window);
                         window.screen.init(Minecraft.getInstance(), window.screen.getWindow().getWidth(), window.screen.getWindow().getHeight());
                     }
-                    else // already existing entry
+                    else if (entry != null) // already existing entry
                     {
                         entry.lastTimeAccessed = now;
                     }

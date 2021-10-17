@@ -73,7 +73,7 @@ public class HookScreen extends BOScreen
         {
             try
             {
-                scrollListener.scrollInput(scrollDiff * 10, scrollListener.getX() + 1, scrollListener.getY() + 1);
+                return scrollListener.scrollInput(scrollDiff * 10, scrollListener.getX() + 1, scrollListener.getY() + 1);
             }
             catch (final Exception e)
             {
@@ -85,7 +85,6 @@ public class HookScreen extends BOScreen
                 category.setDetail("Hook thing", () -> windowTyped.getHookThing().toString());
                 throw new ReportedException(crashReport);
             }
-            return true; // TODO: would be nice to not stop event propagation when scrolling list is not scrollable
         }
         return false;
     }

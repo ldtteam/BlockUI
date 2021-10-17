@@ -110,6 +110,7 @@
         <xs:complexContent>
             <xs:extension base="viewType">
                 <xs:attribute name="childspacing" type="xs:integer"/>
+                <xs:attribute name="scrollbarOffset" type="fixedSizePair"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -177,7 +178,6 @@
         <xs:complexContent>
             <xs:extension base="scrollViewType">
                 <xs:group ref="paneContainerGroup" minOccurs="1" maxOccurs="1"/>
-                <xs:attribute name="scrollbarOffset" type="fixedSizePair"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -290,6 +290,7 @@
                 <xs:attribute name="dropDownSize" type="fixedSizePair"/>
                 <xs:attribute name="source" type="xs:string"/>
                 <xs:attribute name="textcolor" type="xs:string"/>
+                <xs:attribute name="scrollbarOffset" type="fixedSizePair"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
