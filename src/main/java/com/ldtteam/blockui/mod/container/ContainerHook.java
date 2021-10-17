@@ -22,7 +22,6 @@ import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.registries.ForgeRegistries;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,15 +29,11 @@ import java.util.Set;
 
 public class ContainerHook
 {
+    public static boolean ENABLE = false;
     public static Tag<BlockEntityType<?>> container_guis;
 
     public static void init()
     {
-        if (!FMLEnvironment.production)
-        {
-            return;
-        }
-
         final ResourceLocation gui_loc = new ResourceLocation(BlockUI.MOD_ID, "gui/container.xml");
 
         for (final BlockEntityType<?> beType : ForgeRegistries.BLOCK_ENTITIES)
@@ -46,7 +41,7 @@ public class ContainerHook
             if (beType.isIn(container_guis))
             {
                 HookRegistries.TILE_ENTITY_HOOKS
-                    .register(beType, gui_loc, TriggerMechanism.getRayTrace(), null, ContainerHook::onContainerGuiOpen, null);
+                    .register(beType, gui_loc, TriggerMechanism.getRayTrace(), (thing, type) -> ENABLE, ContainerHook::onContainerGuiOpen, null);
             }
         }
     }
