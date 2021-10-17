@@ -16,6 +16,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.RenderProperties;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -120,6 +121,11 @@ public class ItemIcon extends Pane
 
     public List<Component> getModifiedItemStackTooltip()
     {
+        if (itemStack == null)
+        {
+            return Collections.emptyList();
+        }
+
         final List<Component> result = window.getScreen().getTooltipFromItem(itemStack);
         result.add(1, FIX_VANILLA_TOOLTIP);
         return result;
