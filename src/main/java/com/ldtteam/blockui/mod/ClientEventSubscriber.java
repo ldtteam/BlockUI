@@ -11,7 +11,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.InputEvent.MouseScrollEvent;
-import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.client.event.RenderLevelLastEvent;
 import net.minecraftforge.event.TagsUpdatedEvent;
 import net.minecraftforge.event.TickEvent.ClientTickEvent;
 import net.minecraftforge.event.TickEvent.Phase;
@@ -28,14 +28,14 @@ public class ClientEventSubscriber
      * @param event the catched event.
      */
     @SubscribeEvent
-    public static void renderWorldLastEvent(@NotNull final RenderWorldLastEvent event)
+    public static void renderWorldLastEvent(@NotNull final RenderLevelLastEvent event)
     {
-        final PoseStack ps = event.getMatrixStack();
+        final PoseStack ps = event.getPoseStack();
         final Vec3 viewPosition = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
 
         ps.pushPose();
         ps.translate(-viewPosition.x(), -viewPosition.y(), -viewPosition.z());
-        HookRegistries.render(ps, event.getPartialTicks());
+        HookRegistries.render(ps, event.getPartialTick());
         ps.popPose();
     }
 

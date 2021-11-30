@@ -10,6 +10,7 @@ import net.minecraft.ReportedException;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.util.BitStorage;
+import net.minecraft.util.SimpleBitStorage;
 import net.minecraftforge.client.ForgeRenderTypes;
 import net.minecraftforge.client.gui.ForgeIngameGui;
 import net.minecraftforge.client.gui.OverlayRegistry;
@@ -27,7 +28,7 @@ public class BOScreen extends Screen
     protected double y = 0;
     public static boolean isMouseLeftDown = false;
     protected boolean isOpen = false;
-    private static final BitStorage ACCEPTED_KEY_PRESSED_MAP = new BitStorage(1, GLFW.GLFW_KEY_LAST + 1);
+    private static final BitStorage ACCEPTED_KEY_PRESSED_MAP = new SimpleBitStorage(1, GLFW.GLFW_KEY_LAST + 1);
 
     static
     {
