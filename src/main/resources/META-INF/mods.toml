@@ -1,5 +1,5 @@
 modLoader="javafml"
-loaderVersion="[38, 40)"
+loaderVersion="[38,)"
 license="GPL3"
 
 [[mods]]
@@ -16,7 +16,7 @@ UI Library mod, use ctrl+alt+shift+x to open a test-ui
 [[dependencies.blockui]]
     modId="forge"
     mandatory=true
-    versionRange="[38, 40)"
+    versionRange="[38,)"
     ordering="NONE"
     side="BOTH"
 
