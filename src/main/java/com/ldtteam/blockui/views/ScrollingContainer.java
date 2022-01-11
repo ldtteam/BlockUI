@@ -3,6 +3,7 @@ package com.ldtteam.blockui.views;
 import com.ldtteam.blockui.MouseEventCallback;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
+import com.ldtteam.blockui.util.records.Pos2i;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 /**
@@ -140,6 +141,18 @@ public class ScrollingContainer extends View
     {
         setScrollY(scrollY + deltaY);
     }
+
+    protected Pos2i.MutablePos2i accumulatePosition(final Pos2i.MutablePos2i accumulator)
+    {
+        if (parent != null)
+        {
+            parent.accumulatePosition(accumulator);
+        }
+        accumulator.x += x;
+        accumulator.y += y - scrollY;
+        return accumulator;
+    }
+
 
     @Override
     public boolean mouseEventProcessor(final double mx,
