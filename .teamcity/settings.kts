@@ -67,7 +67,7 @@ project {
 
 object Alpha : Project({
     name = "Alpha"
-    description = "Alpha version builds of domum ornamentum"
+    description = "Alpha version builds of BlockUI"
 
     buildType(Alpha_Release)
 
@@ -222,7 +222,7 @@ object PullRequests2_CommonBuildCounter : BuildType({
 
 object Release : Project({
     name = "Release"
-    description = "Beta version builds of domum ornamentum"
+    description = "Beta version builds of BlockUI"
 
     buildType(Release_Release)
 
