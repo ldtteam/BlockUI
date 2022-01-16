@@ -11,7 +11,6 @@ import com.mojang.math.Vector4f;
 import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
@@ -45,7 +44,8 @@ public class Pane extends UiRenderMacros
      * Should be only used during drawing methods. Outside drawing scope value may be outdated.
      */
     protected boolean wasCursorInPane = false;
-    private List<MutableComponent> toolTipLines = new ArrayList<>();
+    @Nullable
+    private List<MutableComponent> toolTipLines = null;
 
     /**
      * Default constructor.
@@ -487,11 +487,11 @@ public class Pane extends UiRenderMacros
         window = w;
 
         // can't gen tooltip from xml until first window is set
-        if (!toolTipLines.isEmpty())
+        if (toolTipLines != null && !toolTipLines.isEmpty())
         {
             final TooltipBuilder ttBuilder = PaneBuilders.tooltipBuilder().hoverPane(this);
             toolTipLines.forEach(ttBuilder::appendNL);
-            toolTipLines.clear(); // do not regen it when window has changed (unlikely to happen) cuz onHover might have changed
+            toolTipLines = null; // do not regen it when window has changed (unlikely to happen) cuz onHover might have changed
             onHover = ttBuilder.build();
         }
 

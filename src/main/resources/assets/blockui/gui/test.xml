@@ -16,6 +16,9 @@
             <button size="100 100" label="7" textscale="10"/>
             <button size="100 100" label="8" textscale="10"/>
             <button size="100 100" label="9" textscale="10"/>
+            <dropdown size="100 20">
+                <image size="100 100" source="blockui:textures/gui/button.png"/>
+            </dropdown>
             <button size="100 100" label="10" textscale="10"/>
             <button size="100 100" label="11" textscale="10"/>
             <button size="100 100" label="12" textscale="10"/>

@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public final class Parsers
 {
@@ -62,7 +61,8 @@ public final class Parsers
     /** Applies the TEXT parser across multiple lines */
     public static Function<String, List<MutableComponent>> MULTILINE = v -> Arrays.stream(Parsers.RAW_TEXT.apply(v).split("(\\\\n|\\n)"))
         .map(TextComponent::new)
-        .collect(Collectors.toList());
+        .map(MutableComponent.class::cast)
+        .toList();
 
     /** Parses a color from hex, rgba, name, or pure value */
     public static Function<String, Integer> COLOR = v -> {

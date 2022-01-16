@@ -285,6 +285,8 @@ public abstract class AbstractTextElement extends Pane
             || Math.abs((float) Math.round(newScaleY) - newScaleY) > FILTERING_THRESHOLD)
         {
             // smooth the texture
+            // if (newScaleX < window.getScreen().getVanillaGuiScale() || newScaleY < window.getScreen().getVanillaGuiScale())
+            // TODO: figure out how to not linear filter when mag filter is used, might just want to use direct ogl call
             ForgeRenderTypes.enableTextTextureLinearFiltering = true;
             ms.scale((float) textScale, (float) textScale, 1.0f);
         }

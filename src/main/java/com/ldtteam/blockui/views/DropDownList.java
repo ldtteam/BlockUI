@@ -7,7 +7,6 @@ import com.ldtteam.blockui.controls.ButtonHandler;
 import com.ldtteam.blockui.controls.Text;
 import com.ldtteam.blockui.util.records.Pos2i;
 import com.ldtteam.blockui.Parsers;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
 
@@ -81,6 +80,7 @@ public class DropDownList extends View implements ButtonHandler
         });
 
         button = Button.construct(params);
+        button.setPosition(0, 0);
         button.putInside(this);
 
         overlay = new OverlayView();
@@ -294,29 +294,11 @@ public class DropDownList extends View implements ButtonHandler
         button.setEnabled(e);
         list.setEnabled(e);
     }
-
+    
     @Override
-    public void drawSelf(final PoseStack ms, final double mx, final double my)
+    public void parseChildren(PaneParams params)
     {
-        button.drawSelf(ms, mx, my);
-    }
-
-    @Override
-    public void drawSelfLast(final PoseStack ms, final double mx, final double my)
-    {
-        button.drawSelfLast(ms, mx, my);
-    }
-
-    @Override
-    public boolean click(final double mx, final double my)
-    {
-        return button.click(mx, my);
-    }
-
-    @Override
-    public boolean canHandleClick(final double mx, final double my)
-    {
-        return button.canHandleClick(mx, my);
+        // noop cuz this element only has button (that was already set up in ctor)
     }
 
     /**
