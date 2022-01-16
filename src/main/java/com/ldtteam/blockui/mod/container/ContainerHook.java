@@ -7,7 +7,6 @@ import com.ldtteam.blockui.controls.Text;
 import com.ldtteam.blockui.controls.TextField;
 import com.ldtteam.blockui.hooks.HookRegistries;
 import com.ldtteam.blockui.hooks.TriggerMechanism;
-import com.ldtteam.blockui.hooks.TriggerMechanism.Type;
 import com.ldtteam.blockui.mod.BlockUI;
 import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.views.BOWindow;
@@ -46,7 +45,7 @@ public class ContainerHook
         }
     }
 
-    public static void onContainerGuiOpen(final BlockEntity thing, final BOWindow window, final Type triggerType)
+    public static void onContainerGuiOpen(final BlockEntity thing, final BOWindow window, final TriggerMechanism triggerType)
     {
         if (!Minecraft.getInstance().hasSingleplayerServer())
         {

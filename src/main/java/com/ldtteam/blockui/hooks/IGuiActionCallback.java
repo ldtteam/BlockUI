@@ -1,6 +1,5 @@
 package com.ldtteam.blockui.hooks;
 
-import com.ldtteam.blockui.hooks.TriggerMechanism.Type;
 import com.ldtteam.blockui.views.BOWindow;
 
 /**
@@ -19,7 +18,7 @@ public interface IGuiActionCallback<T>
      * @param window      window attached to instance above
      * @param triggerType trigger condition type
      */
-    void onAction(final T thing, final BOWindow window, final Type triggerType);
+    void onAction(final T thing, final BOWindow window, final TriggerMechanism triggerType);
 
     /**
      * @return default impl with no action

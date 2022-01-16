@@ -2,7 +2,6 @@ package com.ldtteam.blockui.hooks;
 
 import com.ldtteam.blockui.Loader;
 import com.ldtteam.blockui.views.BOWindow;
-
 import net.minecraftforge.registries.IForgeRegistryEntry;
 
 /**
@@ -24,13 +23,13 @@ public class HookWindow<T, U extends IForgeRegistryEntry<U>> extends BOWindow
     @Override
     public void onOpened()
     {
-        windowHolder.hook.onOpen.onAction(windowHolder.thing, this, windowHolder.hook.trigger.getType());
+        windowHolder.hook.onOpen.onAction(windowHolder.thing, this, windowHolder.hook.trigger);
     }
 
     @Override
     public void onClosed()
     {
-        windowHolder.hook.onClose.onAction(windowHolder.thing, this, windowHolder.hook.trigger.getType());
+        windowHolder.hook.onClose.onAction(windowHolder.thing, this, windowHolder.hook.trigger);
     }
 
     public T getHookThing()

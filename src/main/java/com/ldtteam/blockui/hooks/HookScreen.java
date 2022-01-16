@@ -1,7 +1,7 @@
 package com.ldtteam.blockui.hooks;
 
 import com.ldtteam.blockui.BOScreen;
-import com.ldtteam.blockui.hooks.TriggerMechanism.Type;
+import com.ldtteam.blockui.hooks.TriggerMechanism.RayTraceTriggerMechanism;
 import com.ldtteam.blockui.views.ScrollingList;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -22,7 +22,7 @@ public class HookScreen extends BOScreen
     {
         super(window);
         this.windowTyped = window;
-        captureScroll = window.windowHolder.hook.trigger.getType() == Type.RAY_TRACE;
+        captureScroll = window.windowHolder.hook.trigger instanceof RayTraceTriggerMechanism;
     }
 
     @Override
