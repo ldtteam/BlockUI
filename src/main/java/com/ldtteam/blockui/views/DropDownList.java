@@ -285,7 +285,9 @@ public class DropDownList extends View implements ButtonHandler
     @Override
     public void setVisible(final boolean v)
     {
+        super.setVisible(v);
         button.setVisible(v);
+        list.setVisible(v);
     }
 
     @Override
