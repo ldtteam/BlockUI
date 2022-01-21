@@ -291,6 +291,7 @@ public class DropDownList extends View implements ButtonHandler
     @Override
     public void setEnabled(final boolean e)
     {
+        super.setEnabled(e);
         button.setEnabled(e);
         list.setEnabled(e);
     }
