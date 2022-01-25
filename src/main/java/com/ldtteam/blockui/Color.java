@@ -17,27 +17,32 @@ public final class Color
     static
     {
         // Would love to load these from a file
-        nameToColorMap.put("aqua", 0x00FFFF);
-        nameToColorMap.put("black", 0x000000);
-        nameToColorMap.put("blue", 0x0000FF);
-        nameToColorMap.put("cyan", 0x00FFFF);
-        nameToColorMap.put("fuchsia", 0xFF00FF);
-        nameToColorMap.put("green", 0x008000);
-        nameToColorMap.put("ivory", 0xFFFFF0);
-        nameToColorMap.put("lime", 0x00FF00);
-        nameToColorMap.put("magenta", 0xFF00FF);
-        nameToColorMap.put("orange", 0xFFA500);
-        nameToColorMap.put("orangered", 0xFF4500);
-        nameToColorMap.put("purple", 0x800080);
-        nameToColorMap.put("red", 0xFF0000);
-        nameToColorMap.put("white", 0xFFFFFF);
-        nameToColorMap.put("yellow", 0xFFFF00);
-        nameToColorMap.put("gray", 0x808080);
-        nameToColorMap.put("darkgray", 0xA9A9A9);
-        nameToColorMap.put("dimgray", 0x696969);
-        nameToColorMap.put("lightgray", 0xD3D3D3);
-        nameToColorMap.put("slategray", 0x708090);
-        nameToColorMap.put("darkgreen", 0x006400);
+        putRGB("aqua", 0x00FFFF);
+        putRGB("black", 0x000000);
+        putRGB("blue", 0x0000FF);
+        putRGB("cyan", 0x00FFFF);
+        putRGB("fuchsia", 0xFF00FF);
+        putRGB("green", 0x008000);
+        putRGB("ivory", 0xFFFFF0);
+        putRGB("lime", 0x00FF00);
+        putRGB("magenta", 0xFF00FF);
+        putRGB("orange", 0xFFA500);
+        putRGB("orangered", 0xFF4500);
+        putRGB("purple", 0x800080);
+        putRGB("red", 0xFF0000);
+        putRGB("white", 0xFFFFFF);
+        putRGB("yellow", 0xFFFF00);
+        putRGB("gray", 0x808080);
+        putRGB("darkgray", 0xA9A9A9);
+        putRGB("dimgray", 0x696969);
+        putRGB("lightgray", 0xD3D3D3);
+        putRGB("slategray", 0x708090);
+        putRGB("darkgreen", 0x006400);
+    }
+
+    private static void putRGB(final String colorName, final int colorRGB)
+    {
+        nameToColorMap.put(colorName, 0xff000000 | colorRGB);
     }
 
     private Color()
@@ -52,9 +57,9 @@ public final class Color
      * @param def   the fallback value
      * @return the parsed or defaulted color integer
      */
-    public static int parse(String color, int def)
+    public static int parse(final String color, final int def)
     {
-        Integer result = Parsers.COLOR.apply(color);
+        final Integer result = Parsers.COLOR.apply(color);
         return result != null ? result : def;
     }
 
@@ -67,8 +72,8 @@ public final class Color
      */
     public static int getByName(final String name, final int def)
     {
-        final Integer i = nameToColorMap.get(name.toLowerCase(Locale.ENGLISH));
-        return i != null ? i : def;
+        final Integer color = getByName(name);
+        return color != null ? color : def;
     }
 
     /**
@@ -97,7 +102,7 @@ public final class Color
         return ((a & 0xff) << 24) | ((r & 0xff) << 16) | ((g & 0xff) << 8) | (b & 0xff);
     }
 
-    public static int rgbaToInt(Matcher m)
+    public static int rgbaToInt(final Matcher m)
     {
         final int r = Mth.clamp(Integer.parseInt(m.group(1)), 0, 255);
         final int g = Mth.clamp(Integer.parseInt(m.group(2)), 0, 255);
