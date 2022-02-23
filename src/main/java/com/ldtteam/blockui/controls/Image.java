@@ -89,6 +89,17 @@ public class Image extends Pane
     }
 
     /**
+     * Set the map dimensions of the image to render.
+     * @param height the map height.
+     * @param width the map width.
+     */
+    public void setMapDimensions(final int height, final int width)
+    {
+        this.mapHeight = height;
+        this.mapWidth = width;
+    }
+
+    /**
      * Load and image from a {@link ResourceLocation} and return a {@link Tuple} containing its width and height.
      *
      * @param resourceLocation The {@link ResourceLocation} pointing to the image.
