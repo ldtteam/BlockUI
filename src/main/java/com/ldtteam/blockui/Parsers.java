@@ -69,7 +69,7 @@ public final class Parsers
         Matcher m = HEXADECIMAL_PATTERN.matcher(v);
         if (m.find())
         {
-            return Integer.parseInt(m.group(), 16);
+            return Integer.parseInt(m.group(1), 16);
         }
 
         m = RGBA_PATTERN.matcher(v);
