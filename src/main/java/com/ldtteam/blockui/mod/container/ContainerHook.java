@@ -30,7 +30,7 @@ import java.util.Set;
 
 public class ContainerHook
 {
-    public static TagKey<BlockEntityType<?>> CONTAINER_TAG = TagKey.create(Registry.BLOCK_ENTITY_TYPE_REGISTRY, new ResourceLocation(BlockUI.MOD_ID, "container_gui"));
+    //public static TagKey<BlockEntityType<?>> CONTAINER_TAG = TagKey.create(Registry.BLOCK_ENTITY_TYPE_REGISTRY, new ResourceLocation(BlockUI.MOD_ID, "container_gui"));
 
     public static boolean ENABLE = false;
 
