@@ -13,10 +13,12 @@ import com.ldtteam.blockui.views.BOWindow;
 import com.ldtteam.blockui.views.ScrollingList;
 import com.ldtteam.blockui.views.ScrollingList.DataProvider;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.Registry;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.Tag;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -28,21 +30,21 @@ import java.util.Set;
 
 public class ContainerHook
 {
+    public static TagKey<BlockEntityType<?>> CONTAINER_TAG = TagKey.create(Registry.BLOCK_ENTITY_TYPE_REGISTRY, new ResourceLocation(BlockUI.MOD_ID, "container_gui"));
+
     public static boolean ENABLE = false;
-    public static Tag<BlockEntityType<?>> container_guis;
 
     public static void init()
     {
         final ResourceLocation gui_loc = new ResourceLocation(BlockUI.MOD_ID, "gui/container.xml");
-
-        for (final BlockEntityType<?> beType : ForgeRegistries.BLOCK_ENTITIES)
+        //todo re-enable in the future.
+        /*for (final BlockEntityType<?> beType : ForgeRegistries.BLOCK_ENTITIES)
         {
-            if (beType.isIn(container_guis))
+            if (Registry.BLOCK_ENTITY_TYPE.getHolder(beType.getRegistryName()).map(holder -> holder.is(CONTAINER_TAG)))
             {
-                HookRegistries.TILE_ENTITY_HOOKS
-                    .register(beType, gui_loc, TriggerMechanism.getRayTrace(), (thing, type) -> ENABLE, ContainerHook::onContainerGuiOpen, null);
+                HookRegistries.TILE_ENTITY_HOOKS.register(beType, gui_loc, TriggerMechanism.getRayTrace(), (thing, type) -> ENABLE, ContainerHook::onContainerGuiOpen, null);
             }
-        }
+        }*/
     }
 
     public static void onContainerGuiOpen(final BlockEntity thing, final BOWindow window, final TriggerMechanism triggerType)
