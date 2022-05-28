@@ -1,6 +1,5 @@
 package com.ldtteam.blockui;
 
-import com.ldtteam.blockui.mod.Log;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.TextComponent;
@@ -12,6 +11,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import static com.ldtteam.blockui.mod.BlockUI.MOD_LOG;
 
 public final class Parsers
 {
@@ -107,7 +107,7 @@ public final class Parsers
             }
             catch (final NumberFormatException | IndexOutOfBoundsException | IllegalStateException ex)
             {
-                Log.getLogger().warn(ex);
+                MOD_LOG.warn(ex);
             }
 
             return null;
@@ -155,7 +155,7 @@ public final class Parsers
             }
             catch (IllegalArgumentException | NullPointerException e)
             {
-                Log.getLogger().warn("Attempt to access non-existent enumeration '" + v + "'.");
+                MOD_LOG.warn("Attempt to access non-existent enumeration '" + v + "'.");
             }
             return null;
         };

@@ -3,7 +3,6 @@ package com.ldtteam.blockui.controls;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.Parsers;
-import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.util.records.SizeI;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -16,6 +15,7 @@ import javax.imageio.stream.ImageInputStream;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Objects;
+import static com.ldtteam.blockui.mod.BlockUI.MOD_LOG;
 
 /**
  * Simple image element.
@@ -129,7 +129,7 @@ public class Image extends Pane
             }
             catch (final IOException e)
             {
-                Log.getLogger().warn(e);
+                MOD_LOG.warn(e);
             }
             finally
             {

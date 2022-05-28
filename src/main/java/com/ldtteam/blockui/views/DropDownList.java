@@ -4,7 +4,6 @@ import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.controls.Button;
 import com.ldtteam.blockui.controls.ButtonHandler;
-import com.ldtteam.blockui.controls.Text;
 import com.ldtteam.blockui.util.records.Pos2i;
 import com.ldtteam.blockui.Parsers;
 import net.minecraft.network.chat.MutableComponent;

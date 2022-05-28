@@ -1,16 +1,15 @@
 package com.ldtteam.blockui;
 
-import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.views.View;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.MutableComponent;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
-
 import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import static com.ldtteam.blockui.mod.BlockUI.MOD_LOG;
 
 /**
  * Special parameters for the panes.
@@ -113,7 +112,7 @@ public class PaneParams
             }
             catch (ClassCastException cce)
             {
-                Log.getLogger().warn("Invalid property: previous value of key does not match type.");
+                MOD_LOG.warn("Invalid property: previous value of key does not match type.");
             }
         }
 

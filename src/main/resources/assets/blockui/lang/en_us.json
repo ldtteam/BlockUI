@@ -1,4 +1,8 @@
 {
     "blockui.container_gui.client_side_only": "Container content is visible only when playing on integrated server (singleplayer, no lan).",
-    "blockui.container_gui.empty": "This container is empty."
+    "blockui.container_gui.empty": "This container is empty.",
+    "blockui.config.default.boolean": "[Default: {0}]",
+    "blockui.config.default.long": "[Default: {0}, min: {1}, max: {2}]",
+    "blockui.config.default.double": "[Default: {0}, min: {1}, max: {2}]",
+    "blockui.config.default.enum": "[Default: {0}]"
 }

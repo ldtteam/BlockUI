@@ -1,12 +1,9 @@
 package com.ldtteam.blockui.hooks;
 
-import com.ldtteam.blockui.mod.Log;
 import com.mojang.blaze3d.vertex.PoseStack;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.registries.IForgeRegistryEntry;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +12,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
+import static com.ldtteam.blockui.mod.BlockUI.MOD_LOG;
 
 /**
  * Core class for managing and handling gui hooks
@@ -55,6 +53,7 @@ public abstract class HookManager<T, U extends IForgeRegistryEntry<U>, K>
      * @param onClose        gets fired when gui is closed
      * @see IGuiHookable for gui callbacks
      */
+    @SuppressWarnings("unchecked")
     protected void registerInternal(final U targetThing,
         final ResourceLocation guiLoc,
         final long expirationTime,
@@ -77,12 +76,11 @@ public abstract class HookManager<T, U extends IForgeRegistryEntry<U>, K>
             .findFirst();
         if (existing.isPresent())
         {
-            Log.getLogger()
-                .debug("Moving \"{}\" hook (with trigger \"{}\") from \"{}\" to \"{}\"",
-                    registryKey,
-                    existing.get().trigger.getName(),
-                    existing.get().guiLoc,
-                    guiLoc);
+            MOD_LOG.debug("Moving \"{}\" hook (with trigger \"{}\") from \"{}\" to \"{}\"",
+                registryKey,
+                existing.get().trigger.getName(),
+                existing.get().guiLoc,
+                guiLoc);
             registry.remove(existing.get());
         }
 

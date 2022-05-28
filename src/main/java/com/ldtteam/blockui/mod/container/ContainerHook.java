@@ -8,25 +8,20 @@ import com.ldtteam.blockui.controls.TextField;
 import com.ldtteam.blockui.hooks.HookRegistries;
 import com.ldtteam.blockui.hooks.TriggerMechanism;
 import com.ldtteam.blockui.mod.BlockUI;
-import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.views.BOWindow;
 import com.ldtteam.blockui.views.ScrollingList;
 import com.ldtteam.blockui.views.ScrollingList.DataProvider;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.Registry;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.Tag;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraftforge.registries.ForgeRegistries;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import static com.ldtteam.blockui.mod.BlockUI.MOD_LOG;
 
 public class ContainerHook
 {
@@ -78,9 +73,8 @@ public class ContainerHook
         else
         {
             HookRegistries.TILE_ENTITY_HOOKS.unregister(thing.getType().getRegistryName(), triggerType);
-            Log.getLogger()
-                .error("Removing container gui for type \"{}\" because it's not instance of Container class.",
-                    thing.getType().getRegistryName());
+            MOD_LOG.error("Removing container gui for type \"{}\" because it's not instance of Container class.",
+                thing.getType().getRegistryName());
         }
     }
 

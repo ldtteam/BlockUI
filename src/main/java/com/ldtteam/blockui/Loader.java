@@ -1,7 +1,6 @@
 package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.controls.*;
-import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.views.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
@@ -17,6 +16,7 @@ import java.util.function.Function;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import static com.ldtteam.blockui.mod.BlockUI.MOD_LOG;
 
 /**
  * Utilities to load xml files.
@@ -37,9 +37,7 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
         register("list", ScrollingList::new);
         register("text", Text::new);
         register("button", Button::construct);
-        register("buttonimage", Button::construct); // TODO: remove, but we don't want to deal with xml changes now
         register("toggle", ToggleButton::new);
-        register("label", Text::new); // TODO: remove, but we don't want to deal with xml changes now
         register("input", TextFieldVanilla::new);
         register("image", Image::new);
         register("imagerepeat", ImageRepeatable::new);
@@ -88,11 +86,11 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
 
         if (paneFactories.containsKey(new ResourceLocation(paneType.getPath())))
         {
-            Log.getLogger().warn("Namespace override for " + paneType.getPath() + " not found. Using default.");
+            MOD_LOG.warn("Namespace override for " + paneType.getPath() + " not found. Using default.");
             return paneFactories.get(new ResourceLocation(paneType.getPath())).apply(params);
         }
 
-        Log.getLogger().error("There is no factory method for " + paneType.getPath());
+        MOD_LOG.error("There is no factory method for " + paneType.getPath());
         return null;
     }
 
@@ -191,7 +189,7 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
             }
             catch (final IOException | SAXException e)
             {
-                Log.getLogger().error("Failed to load xml at: " + rl.toString(), e);
+                MOD_LOG.error("Failed to load xml at: " + rl.toString(), e);
                 return;
             }
 

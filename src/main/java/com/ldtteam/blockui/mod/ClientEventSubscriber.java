@@ -28,6 +28,7 @@ public class ClientEventSubscriber
      * @param event the catched event.
      */
     @SubscribeEvent
+    @SuppressWarnings("resource")
     public static void renderWorldLastEvent(@NotNull final RenderLevelLastEvent event)
     {
         final PoseStack ps = event.getPoseStack();
@@ -46,6 +47,7 @@ public class ClientEventSubscriber
      * @param event the catched event.
      */
     @SubscribeEvent
+    @SuppressWarnings("resource")
     public static void onClientTickEvent(final ClientTickEvent event)
     {
         if (event.phase == Phase.START && Screen.hasAltDown() && Screen.hasControlDown() && Screen.hasShiftDown()

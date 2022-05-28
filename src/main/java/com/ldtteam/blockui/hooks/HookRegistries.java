@@ -156,6 +156,7 @@ public final class HookRegistries
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         protected List<Entity> findTriggered(final EntityType<?> entityType, final TriggerMechanism trigger)
         {
             final Minecraft mc = Minecraft.getInstance();
