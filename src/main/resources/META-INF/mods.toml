@@ -1,11 +1,12 @@
 modLoader="javafml"
-loaderVersion="${fml_range}"
-license="GPL3"
-
+loaderVersion="${fmlRange}"
+license="GPL 3.0"
+issueTrackerURL="https://github.com/ldtteam/blockui/issues/new/choose"
 [[mods]]
 modId="blockui"
 version="${version}"
 displayName="UI Library Mod"
+displayURL="https://minecolonies.com/"
 logoFile=""
 credits="LDT Team"
 authors="LDT Team"
@@ -16,13 +17,13 @@ UI Library mod, use ctrl+alt+shift+x to open a test-ui
 [[dependencies.blockui]]
     modId="forge"
     mandatory=true
-    versionRange="${forge_range}"
+    versionRange="${forgeRange}"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.blockui]]
     modId="minecraft"
     mandatory=true
-    versionRange="${minecraft_range}"
+    versionRange="${minecraftRange}"
     ordering="NONE"
     side="BOTH"
