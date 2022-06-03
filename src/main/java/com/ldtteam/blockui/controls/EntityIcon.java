@@ -84,13 +84,19 @@ public class EntityIcon extends Pane
     public void setEntity(@NotNull Entity entity)
     {
         this.entity = entity;
-        this.setHoverPane(null);
+        if (onHover instanceof Tooltip)
+        {
+            ((Tooltip) onHover).setText(this.entity.getDisplayName());
+        }
     }
 
     public void resetEntity()
     {
         this.entity = null;
-        this.setHoverPane(null);
+        if (onHover instanceof Tooltip)
+        {
+            ((Tooltip) onHover).clearText();
+        }
     }
 
     public void setCount(final int count)
