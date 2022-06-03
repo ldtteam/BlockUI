@@ -3,19 +3,12 @@ package com.ldtteam.blockui.controls;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneBuilders;
 import com.ldtteam.blockui.PaneParams;
-import com.ldtteam.blockui.Render;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
@@ -84,18 +77,18 @@ public class EntityIcon extends Pane
     public void setEntity(@NotNull Entity entity)
     {
         this.entity = entity;
-        if (onHover instanceof Tooltip)
+        if (onHover instanceof final Tooltip tooltip)
         {
-            ((Tooltip) onHover).setText(this.entity.getDisplayName());
+            tooltip.setText(this.entity.getDisplayName());
         }
     }
 
     public void resetEntity()
     {
         this.entity = null;
-        if (onHover instanceof Tooltip)
+        if (onHover instanceof final Tooltip tooltip)
         {
-            ((Tooltip) onHover).clearText();
+            tooltip.clearText();
         }
     }
 
@@ -127,7 +120,7 @@ public class EntityIcon extends Pane
             final int cx = (getWidth() / 2);
             final int by = getHeight();
             final int offsetY = 2;
-            Render.drawEntity(ms, cx, by - offsetY, scale, this.headyaw, this.yaw, this.pitch, this.entity);
+            drawEntity(ms, cx, by - offsetY, scale, this.headyaw, this.yaw, this.pitch, this.entity);
 
             if (this.count != 1)
             {

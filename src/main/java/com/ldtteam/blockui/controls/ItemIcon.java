@@ -68,9 +68,9 @@ public class ItemIcon extends Pane
     public void setItem(final ItemStack itemStackIn)
     {
         this.itemStack = itemStackIn;
-        if (onHover instanceof Tooltip)
+        if (onHover instanceof final Tooltip tooltip)
         {
-            ((Tooltip) onHover).setTextOld(getModifiedItemStackTooltip());
+            tooltip.setTextOld(getModifiedItemStackTooltip());
         }
     }
 

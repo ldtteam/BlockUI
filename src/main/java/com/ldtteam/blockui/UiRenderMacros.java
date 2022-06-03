@@ -7,9 +7,15 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 import com.mojang.math.Matrix4f;
+import com.mojang.math.Quaternion;
+import com.mojang.math.Vector3f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 
 /**
  * Our replacement for GuiComponent.
@@ -600,5 +606,62 @@ public class UiRenderMacros
         buffer.vertex(mat, xEnd, yStart, 0).uv(uMax, vMin).endVertex();
         buffer.vertex(mat, xStart, yEnd, 0).uv(uMin, vMax).endVertex();
         buffer.vertex(mat, xEnd, yEnd, 0).uv(uMax, vMax).endVertex();
+    }
+
+    /**
+     * Render an entity on a GUI.
+     * @param poseStack matrix
+     * @param x horizontal center position
+     * @param y vertical bottom position
+     * @param scale scaling factor
+     * @param headYaw adjusts look rotation
+     * @param yaw adjusts body rotation
+     * @param pitch adjusts look rotation
+     * @param entity the entity to render
+     */
+    public static void drawEntity(final PoseStack poseStack, final int x, final int y, final double scale,
+                                  final float headYaw, final float yaw, final float pitch, final Entity entity)
+    {
+        final LivingEntity livingEntity = (entity instanceof LivingEntity) ? (LivingEntity) entity : null;
+        final Minecraft mc = Minecraft.getInstance();
+        if (entity.level == null) entity.level = mc.level;
+        poseStack.pushPose();
+        poseStack.translate((float) x, (float) y, 1050.0F);
+        poseStack.scale(1.0F, 1.0F, -1.0F);
+        poseStack.translate(0.0D, 0.0D, 1000.0D);
+        poseStack.scale((float) scale, (float) scale, (float) scale);
+        final Quaternion pitchRotation = Vector3f.XP.rotationDegrees(pitch);
+        poseStack.mulPose(Vector3f.ZP.rotationDegrees(180.0F));
+        poseStack.mulPose(pitchRotation);
+        final float oldYaw = entity.getYRot();
+        final float oldPitch = entity.getXRot();
+        final float oldYawOffset = livingEntity == null ? 0F : livingEntity.yBodyRot;
+        final float oldPrevYawHead = livingEntity == null ? 0F : livingEntity.yHeadRotO;
+        final float oldYawHead = livingEntity == null ? 0F : livingEntity.yHeadRot;
+        entity.setYRot(180.0F + (float) headYaw);
+        entity.setXRot(-pitch);
+        if (livingEntity != null)
+        {
+            livingEntity.yBodyRot = 180.0F + yaw;
+            livingEntity.yHeadRot = entity.getYRot();
+            livingEntity.yHeadRotO = entity.getYRot();
+        }
+        final EntityRenderDispatcher dispatcher = mc.getEntityRenderDispatcher();
+        pitchRotation.conj();
+        dispatcher.overrideCameraOrientation(pitchRotation);
+        dispatcher.setRenderShadow(false);
+        final MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
+        RenderSystem.runAsFancy(() -> dispatcher.render(entity, 0.0D, 0.0D, 0.0D, 0.0F, 1.0F, poseStack, buffers, 0x00F000F0));
+        buffers.endBatch();
+        dispatcher.setRenderShadow(true);
+        entity.setYRot(oldYaw);
+        entity.setXRot(oldPitch);
+        if (livingEntity != null)
+        {
+            livingEntity.yBodyRot = oldYawOffset;
+            livingEntity.yHeadRotO = oldPrevYawHead;
+            livingEntity.yHeadRot = oldYawHead;
+        }
+        poseStack.popPose();
     }
 }
