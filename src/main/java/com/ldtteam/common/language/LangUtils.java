@@ -1,6 +1,7 @@
 package com.ldtteam.common.language;
 
 import com.ldtteam.blockui.mod.BlockUI;
+import com.ldtteam.common.sideless.Sideless;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.entity.player.Player;
@@ -16,15 +17,17 @@ import java.util.function.BiConsumer;
 @SuppressWarnings("deprecation")
 public class LangUtils
 {
-    static final Map<String, FormatFactory> FORMAT_FACTORIES = new HashMap<>();
+    static final Map<String, Formatter<?>> FORMAT_FACTORIES = new HashMap<>();
 
     static
     {
-        // example usage: new TranslatableComponent("this is {0, playerName}", player)
-        addFormatFactory("playerNameRaw", Player.class, (player, stringBuf) -> stringBuf.append(player.getName().getContents()));
-        addFormatFactory("playerName", Player.class, (player, stringBuf) -> stringBuf.append(player.getDisplayName().getContents()));
-        addFormatFactory("playerGamemode", Player.class, (player, stringBuf) -> stringBuf.append(player.isCreative()));
-        addFormatFactory("playerUUID", Player.class, (player, stringBuf) -> stringBuf.append(player.getUUID().toString()));
+        // example usage: new TranslatableComponent("this is {0, pName}", player)
+        addFormatFactory("pNameRaw", Player.class, (player, stringBuf) -> stringBuf.append(player.getName().getContents()));
+        addFormatFactory("pName", Player.class, (player, stringBuf) -> stringBuf.append(player.getDisplayName().getContents()));
+        addFormatFactory("pGamemode",
+            Player.class,
+            (player, stringBuf) -> stringBuf.append(Sideless.getPlayerGameMode(player).getShortDisplayName().getContents()));
+        addFormatFactory("pUUID", Player.class, (player, stringBuf) -> stringBuf.append(player.getUUID().toString()));
     }
 
     public static <T> void addFormatFactory(final String key, final Class<T> formatClazz, final BiConsumer<T, StringBuffer> formatter)

@@ -11,7 +11,7 @@ logoFile=""
 credits="LDT Team"
 authors="LDT Team"
 description='''
-UI Library mod, use ctrl+alt+shift+x to open a test-ui
+UI Library mod, use /blockui test to open a test-ui
 '''
 
 [[dependencies.blockui]]

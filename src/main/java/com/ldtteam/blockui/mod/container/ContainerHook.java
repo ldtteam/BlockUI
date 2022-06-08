@@ -32,8 +32,12 @@ public class ContainerHook
     public static void init()
     {
         final ResourceLocation gui_loc = new ResourceLocation(BlockUI.MOD_ID, "gui/container.xml");
-        //todo re-enable in the future.
-        /*for (final BlockEntityType<?> beType : ForgeRegistries.BLOCK_ENTITIES)
+        // todo re-enable in the future.
+        /*
+        ContainerHook.container_guis = ForgeTagHandler.makeWrapperTag(ForgeRegistries.BLOCK_ENTITIES,
+            new ResourceLocation(BlockUI.MOD_ID, "container_gui"));
+        
+        for (final BlockEntityType<?> beType : ForgeRegistries.BLOCK_ENTITIES)
         {
             if (Registry.BLOCK_ENTITY_TYPE.getHolder(beType.getRegistryName()).map(holder -> holder.is(CONTAINER_TAG)))
             {
