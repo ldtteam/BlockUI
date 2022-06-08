@@ -13,17 +13,11 @@ import com.ldtteam.blockui.views.BOWindow;
 import com.ldtteam.blockui.views.ScrollingList;
 import com.ldtteam.blockui.views.ScrollingList.DataProvider;
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.Registry;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.tags.Tag;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraftforge.registries.ForgeRegistries;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -53,7 +47,7 @@ public class ContainerHook
         {
             window.findPaneOfTypeByID("items", ScrollingList.class).off();
             window.findPaneOfTypeByID("filter", TextField.class).off();
-            window.findPaneOfTypeByID("note", Text.class).setText(new TranslatableComponent("blockui.container_gui.client_side_only"));
+            window.findPaneOfTypeByID("note", Text.class).setText(Component.translatable("blockui.container_gui.client_side_only"));
             return;
         }
         else if (Minecraft.getInstance()
@@ -67,7 +61,7 @@ public class ContainerHook
             {
                 window.findPaneOfTypeByID("items", ScrollingList.class).off();
                 window.findPaneOfTypeByID("filter", TextField.class).off();
-                window.findPaneOfTypeByID("note", Text.class).setText(new TranslatableComponent("blockui.container_gui.empty"));
+                window.findPaneOfTypeByID("note", Text.class).setText(Component.translatable("blockui.container_gui.empty"));
             }
             else
             {
@@ -77,10 +71,10 @@ public class ContainerHook
         }
         else
         {
-            HookRegistries.TILE_ENTITY_HOOKS.unregister(thing.getType().getRegistryName(), triggerType);
-            Log.getLogger()
-                .error("Removing container gui for type \"{}\" because it's not instance of Container class.",
-                    thing.getType().getRegistryName());
+            // HookRegistries.TILE_ENTITY_HOOKS.unregister(thing.getType().getRegistryName(), triggerType);
+            // Log.getLogger()
+            //     .error("Removing container gui for type \"{}\" because it's not instance of Container class.",
+            //         thing.getType().getRegistryName());
         }
     }
 
@@ -147,11 +141,11 @@ public class ContainerHook
                 }
                 else
                 {
-                    final Set<String> filterSet = Set.of(filter.split(" "));
-                    filteredItems = allItems.stream()
-                        .filter(info -> Set.of(info.is.getHoverName().getString().split(" ")).containsAll(filterSet)
-                            || Set.of(info.is.getItem().getRegistryName().getPath().split(" ")).containsAll(filterSet))
-                        .toList();
+                    // final Set<String> filterSet = Set.of(filter.split(" "));
+                    // filteredItems = allItems.stream()
+                    //     .filter(info -> Set.of(info.is.getHoverName().getString().split(" ")).containsAll(filterSet)
+                    //         || Set.of(info.is.getItem().getRegistryName().getPath().split(" ")).containsAll(filterSet))
+                    //     .toList();
                 }
             }
             return filteredItems.size();
@@ -166,7 +160,7 @@ public class ContainerHook
             {
                 icon.setItem(info.is);
                 rowPane.findPaneOfTypeByID("name", Text.class).setText(info.is.getHoverName());
-                rowPane.findPaneOfTypeByID("quantity", Text.class).setText(new TextComponent(Integer.toString(info.count)));
+                rowPane.findPaneOfTypeByID("quantity", Text.class).setText(Component.literal(Integer.toString(info.count)));
             }
         }
 

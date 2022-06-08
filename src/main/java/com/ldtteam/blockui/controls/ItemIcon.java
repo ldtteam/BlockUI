@@ -10,6 +10,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -25,7 +26,7 @@ import java.util.List;
 public class ItemIcon extends Pane
 {
     private static final float DEFAULT_ITEMSTACK_SIZE = 16f;
-    private static final SpacerTextComponent FIX_VANILLA_TOOLTIP = new SpacerTextComponent(1);
+    private static final MutableComponent FIX_VANILLA_TOOLTIP = SpacerTextComponent.of(1);
 
     /**
      * ItemStack represented in the itemIcon.

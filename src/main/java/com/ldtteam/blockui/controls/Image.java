@@ -120,8 +120,8 @@ public class Image extends Pane
         while (it.hasNext())
         {
             final ImageReader reader = it.next();
-            try (ImageInputStream stream = ImageIO
-                .createImageInputStream(Minecraft.getInstance().getResourceManager().getResource(resourceLocation).getInputStream()))
+            try (ImageInputStream stream =
+                ImageIO.createImageInputStream(Minecraft.getInstance().getResourceManager().open(resourceLocation)))
             {
                 reader.setInput(stream);
 

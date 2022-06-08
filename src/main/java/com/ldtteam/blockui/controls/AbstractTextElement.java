@@ -12,8 +12,8 @@ import com.mojang.math.Matrix4f;
 import com.mojang.math.Vector4f;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraftforge.client.ForgeRenderTypes;
 import org.jetbrains.annotations.Nullable;
@@ -197,11 +197,11 @@ public abstract class AbstractTextElement extends Pane
 
         final int maxWidth = (int) (textWidth / textScale) - (textShadow ? 1 : 0);
         preparedText = text.stream().flatMap(textBlock -> {
-            if (textBlock == TextComponent.EMPTY)
+            if (textBlock.getContents() == ComponentContents.EMPTY)
             {
                 return Stream.of(FormattedCharSequence.EMPTY);
             }
-            else if (textBlock instanceof SpacerTextComponent spacer)
+            else if (textBlock.getContents() instanceof SpacerTextComponent spacer)
             {
                 return Stream.of(spacer.getVisualOrderText());
             }
@@ -500,15 +500,9 @@ public abstract class AbstractTextElement extends Pane
     /**
      * @return emptyString if empty, otherwise first line as string
      */
-        public String getTextAsString()
+    public String getTextAsString()
     {
         return isTextEmpty() ? "" : text.get(0).getString();
-    }
-
-    @Deprecated
-    public void setText(final String text)
-    {
-        setText(new TextComponent(text));
     }
 
     /**

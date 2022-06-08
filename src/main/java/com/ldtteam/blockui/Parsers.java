@@ -2,8 +2,8 @@ package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.mod.Log;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import java.util.ArrayList;
@@ -55,12 +55,12 @@ public final class Parsers
     /** Parses a potentially translatable portion of text as a component */
     public static Function<String, MutableComponent> TEXT = v -> {
         final String result = RAW_TEXT.apply(v);
-        return result == null ? null : new TextComponent(result);
+        return result == null ? null : Component.literal(result);
     };
 
     /** Applies the TEXT parser across multiple lines */
     public static Function<String, List<MutableComponent>> MULTILINE = v -> Arrays.stream(Parsers.RAW_TEXT.apply(v).split("(\\\\n|\\n)"))
-        .map(TextComponent::new)
+        .map(Component::literal)
         .map(MutableComponent.class::cast)
         .toList();
 

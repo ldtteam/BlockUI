@@ -2,12 +2,11 @@ package com.ldtteam.blockui.hooks;
 
 import com.ldtteam.blockui.Loader;
 import com.ldtteam.blockui.views.BOWindow;
-import net.minecraftforge.registries.IForgeRegistryEntry;
 
 /**
  * Window wrapper
  */
-public class HookWindow<T, U extends IForgeRegistryEntry<U>> extends BOWindow
+public class HookWindow<T, U> extends BOWindow
 {
     protected final HookManager<T, U, ?>.WindowEntry windowHolder;
 

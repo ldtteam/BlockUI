@@ -54,7 +54,7 @@ public class HookScreen extends BOScreen
             final CrashReport crashReport = CrashReport.forThrowable(e, "Rendering Hook BO screen");
             final CrashReportCategory category = crashReport.addCategory("Hook BO screen rendering details");
             category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
-            category.setDetail("Hook thing type", () -> windowTyped.getHookThingType().getRegistryName().toString());
+            // TODO: category.setDetail("Hook thing type", () -> windowTyped.getHookThingType().getRegistryName().toString());
             category.setDetail("Hook thing", () -> windowTyped.getHookThing().toString());
             throw new ReportedException(crashReport);
         }
@@ -81,7 +81,7 @@ public class HookScreen extends BOScreen
                 final CrashReportCategory category = crashReport.addCategory("Hook BO screen scroll event details");
                 category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
                 category.setDetail("Scroll value", () -> Double.toString(scrollDiff));
-                category.setDetail("Hook thing type", () -> windowTyped.getHookThingType().getRegistryName().toString());
+                // TODO: category.setDetail("Hook thing type", () -> windowTyped.getHookThingType().getRegistryName().toString());
                 category.setDetail("Hook thing", () -> windowTyped.getHookThing().toString());
                 throw new ReportedException(crashReport);
             }
@@ -127,7 +127,7 @@ public class HookScreen extends BOScreen
             final CrashReportCategory category = crashReport.addCategory("Hook BO screen update details");
             category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
             category.setDetail("Is opened", () -> Boolean.toString(isOpen));
-            category.setDetail("Hook thing type", () -> windowTyped.getHookThingType().getRegistryName().toString());
+            // TODO: category.setDetail("Hook thing type", () -> windowTyped.getHookThingType().getRegistryName().toString());
             category.setDetail("Hook thing", () -> windowTyped.getHookThing().toString());
             throw new ReportedException(crashReport);
         }

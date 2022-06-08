@@ -5,7 +5,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.registries.IForgeRegistryEntry;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,7 +22,7 @@ import java.util.function.Function;
  * @param <U> forge-register type
  * @param <K> hashable thing to hash T, can be same as T
  */
-public abstract class HookManager<T, U extends IForgeRegistryEntry<U>, K>
+public abstract class HookManager<T, U, K>
 {
     /**
      * active ray trace scroll listener
@@ -67,13 +66,18 @@ public abstract class HookManager<T, U extends IForgeRegistryEntry<U>, K>
         Objects.requireNonNull(guiLoc, "Gui location can't be null!");
         Objects.requireNonNull(trigger, "Trigger can't be null!");
 
+        if (true)
+        {
+            return; // TODO: move to object holders?
+        }
+
         final BiPredicate<T, TriggerMechanism> shouldOpenTest = Objects.requireNonNullElse((BiPredicate<T, TriggerMechanism>) shouldOpen, (t, tt) -> true);
         final IGuiActionCallback<T> onOpenListener = Objects.requireNonNullElse((IGuiActionCallback<T>) onOpen, IGuiActionCallback.noAction());
         final IGuiActionCallback<T> onClosedListener = Objects.requireNonNullElse((IGuiActionCallback<T>) onClose, IGuiActionCallback.noAction());
-        final ResourceLocation registryKey = targetThing.getRegistryName();
+        final ResourceLocation registryKey = null; // targetThing.getRegistryName();
 
         final Optional<HookEntry> existing = registry.stream()
-            .filter(hook -> hook.targetThing.getRegistryName().equals(registryKey) && hook.trigger.getClass() == trigger.getClass())
+            .filter(hook -> true /* hook.targetThing.getRegistryName().equals(registryKey) */ && hook.trigger.getClass() == trigger.getClass())
             .findFirst();
         if (existing.isPresent())
         {
@@ -97,7 +101,8 @@ public abstract class HookManager<T, U extends IForgeRegistryEntry<U>, K>
      */
     public boolean unregister(final ResourceLocation resLoc)
     {
-        return registry.removeIf(hook -> hook.targetThing.getRegistryName().equals(resLoc));
+        return true;
+        //TODO: return registry.removeIf(hook -> hook.targetThing.getRegistryName().equals(resLoc));
     }
 
     /**
@@ -109,7 +114,8 @@ public abstract class HookManager<T, U extends IForgeRegistryEntry<U>, K>
      */
     public boolean unregister(final ResourceLocation resLoc, final TriggerMechanism triggerType)
     {
-        return registry.removeIf(hook -> hook.targetThing.getRegistryName().equals(resLoc) && hook.trigger.getClass() == triggerType.getClass());
+        return true;
+        //TODO: return registry.removeIf(hook -> hook.targetThing.getRegistryName().equals(resLoc) && hook.trigger.getClass() == triggerType.getClass());
     }
 
     /**

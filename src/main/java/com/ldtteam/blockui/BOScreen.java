@@ -8,7 +8,7 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.BitStorage;
 import net.minecraft.util.SimpleBitStorage;
 import net.minecraftforge.client.ForgeRenderTypes;
@@ -115,7 +115,7 @@ public class BOScreen extends Screen
      */
     public BOScreen(final BOWindow w)
     {
-        super(new TextComponent("Blockout GUI"));
+        super(Component.literal("Blockout GUI"));
         window = w;
     }
 

@@ -1,33 +1,20 @@
 package com.ldtteam.blockui.util;
 
-import net.minecraft.network.chat.BaseComponent;
+import net.minecraft.network.chat.ComponentContents;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.FormattedCharSink;
 
 /**
  * Allows to add customsized spacer into text. Works ONLY in OUR text elements.
  */
-public class SpacerTextComponent extends BaseComponent
+public record SpacerTextComponent(int pixelHeight) implements ComponentContents
 {
-    private final int pixelHeight;
-
-    public SpacerTextComponent(final int pixelHeight)
+    public static MutableComponent of(final int pixelHeight)
     {
-        this.pixelHeight = pixelHeight;
+        return MutableComponent.create(new SpacerTextComponent(pixelHeight));
     }
 
-    public int getPixelHeight()
-    {
-        return pixelHeight;
-    }
-
-    @Override
-    public BaseComponent plainCopy()
-    {
-        return new SpacerTextComponent(pixelHeight);
-    }
-
-    @Override
     public FormattedCharSequence getVisualOrderText()
     {
         return new FormattedSpacerComponent(pixelHeight);

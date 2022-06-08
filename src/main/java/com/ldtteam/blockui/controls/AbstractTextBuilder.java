@@ -9,7 +9,6 @@ import com.ldtteam.blockui.util.SpacerTextComponent;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.ClickEvent;
@@ -100,7 +99,7 @@ public abstract class AbstractTextBuilder<P extends AbstractTextElement, R exten
     public R pixelSpacer(final int spacerHeight)
     {
         newLine();
-        text.add(new SpacerTextComponent(spacerHeight));
+        text.add(SpacerTextComponent.of(spacerHeight));
         return thiz;
     }
 
@@ -127,7 +126,7 @@ public abstract class AbstractTextBuilder<P extends AbstractTextElement, R exten
         newLine();
         for (int i = 0; i < count; i++)
         {
-            text.add((MutableComponent) TextComponent.EMPTY);
+            text.add(Component.empty());
         }
         return thiz;
     }
