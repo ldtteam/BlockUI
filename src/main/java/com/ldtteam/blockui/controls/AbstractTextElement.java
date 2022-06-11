@@ -12,7 +12,6 @@ import com.mojang.math.Matrix4f;
 import com.mojang.math.Vector4f;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraftforge.client.ForgeRenderTypes;
@@ -197,11 +196,7 @@ public abstract class AbstractTextElement extends Pane
 
         final int maxWidth = (int) (textWidth / textScale) - (textShadow ? 1 : 0);
         preparedText = text.stream().flatMap(textBlock -> {
-            if (textBlock.getContents() == ComponentContents.EMPTY)
-            {
-                return Stream.of(FormattedCharSequence.EMPTY);
-            }
-            else if (textBlock.getContents() instanceof SpacerTextComponent spacer)
+            if (textBlock.getContents() instanceof SpacerTextComponent spacer)
             {
                 return Stream.of(spacer.getVisualOrderText());
             }
@@ -220,7 +215,7 @@ public abstract class AbstractTextElement extends Pane
             preparedText = preparedText.subList(0, Math.min(preparedText.size(), maxHeight / lineHeight));
 
             final int heightSum = preparedText.stream()
-                .mapToInt(textBlock -> textBlock instanceof FormattedSpacerComponent spacer ? spacer.getPixelHeight() + textLinespace : lineHeight)
+                .mapToInt(textBlock -> textBlock instanceof FormattedSpacerComponent spacer ? spacer.pixelHeight() + textLinespace : lineHeight)
                 .sum();
             renderedTextWidth = (int) (preparedText.stream().mapToInt(mc.font::width).max().orElse(maxWidth) * textScale);
             renderedTextHeight = (int) ((Math.min(heightSum, maxHeight) - 1 - textLinespace) * textScale);
@@ -307,7 +302,7 @@ public abstract class AbstractTextElement extends Pane
             }
             else if (row instanceof FormattedSpacerComponent spacer)
             {
-                lineShift += spacer.getPixelHeight() + textLinespace;
+                lineShift += spacer.pixelHeight() + textLinespace;
                 continue;
             }
 

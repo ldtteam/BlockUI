@@ -13,32 +13,41 @@ import com.ldtteam.blockui.views.BOWindow;
 import com.ldtteam.blockui.views.ScrollingList;
 import com.ldtteam.blockui.views.ScrollingList.DataProvider;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraftforge.registries.ForgeRegistries;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 public class ContainerHook
 {
-    //public static TagKey<BlockEntityType<?>> CONTAINER_TAG = TagKey.create(Registry.BLOCK_ENTITY_TYPE_REGISTRY, new ResourceLocation(BlockUI.MOD_ID, "container_gui"));
-
-    public static boolean ENABLE = false;
+    public static TagKey<BlockEntityType<?>> CONTAINER_TAG = ForgeRegistries.BLOCK_ENTITIES.tags().createTagKey(new ResourceLocation(BlockUI.MOD_ID, "container_gui"));
 
     public static void init()
     {
-        final ResourceLocation gui_loc = new ResourceLocation(BlockUI.MOD_ID, "gui/container.xml");
-        //todo re-enable in the future.
-        /*for (final BlockEntityType<?> beType : ForgeRegistries.BLOCK_ENTITIES)
+        if (true)
         {
-            if (Registry.BLOCK_ENTITY_TYPE.getHolder(beType.getRegistryName()).map(holder -> holder.is(CONTAINER_TAG)))
-            {
-                HookRegistries.TILE_ENTITY_HOOKS.register(beType, gui_loc, TriggerMechanism.getRayTrace(), (thing, type) -> ENABLE, ContainerHook::onContainerGuiOpen, null);
-            }
-        }*/
+            return;
+        }
+
+        final ResourceLocation gui_loc = new ResourceLocation(BlockUI.MOD_ID, "gui/container.xml");
+        // TODO: properly support tag reloading
+        for (final BlockEntityType<?> beType : ForgeRegistries.BLOCK_ENTITIES.tags().getTag(CONTAINER_TAG))
+        {
+            HookRegistries.BLOCK_ENTITY_HOOKS.register(beType,
+                gui_loc,
+                TriggerMechanism.getRayTrace(),
+                (thing, type) -> true,
+                ContainerHook::onContainerGuiOpen,
+                null);
+        }
     }
 
     public static void onContainerGuiOpen(final BlockEntity thing, final BOWindow window, final TriggerMechanism triggerType)
@@ -50,12 +59,26 @@ public class ContainerHook
             window.findPaneOfTypeByID("note", Text.class).setText(Component.translatable("blockui.container_gui.client_side_only"));
             return;
         }
-        else if (Minecraft.getInstance()
-            .getSingleplayerServer()
-            .getLevel(thing.getLevel().dimension())
-            .getChunkAt(thing.getBlockPos())
-            .getBlockEntity(thing.getBlockPos()) instanceof Container container)
+        else
         {
+            final IntegratedServer integratedServer = Minecraft.getInstance().getSingleplayerServer();
+            final BlockEntity worldBlockEntity = integratedServer.getLevel(thing.getLevel().dimension())
+                .getChunkAt(thing.getBlockPos())
+                .getBlockEntity(thing.getBlockPos());
+
+            final Container container = worldBlockEntity instanceof Container c ? c :
+                (worldBlockEntity.getType() == BlockEntityType.ENDER_CHEST ? integratedServer.getPlayerList()
+                    .getPlayer(integratedServer.getSingleplayerProfile().getId())
+                    .getEnderChestInventory() : null);
+
+            if (container == null)
+            {
+                HookRegistries.BLOCK_ENTITY_HOOKS.unregister(thing.getType(), triggerType);
+                Log.getLogger()
+                    .error("Removing container gui for type \"{}\" because it's not instance of Container class.",
+                        ForgeRegistries.BLOCK_ENTITIES.getKey(thing.getType()));
+            }
+
             final ContainerInfo containerInfo = new ContainerInfo(container);
             if (containerInfo.allItems.isEmpty())
             {
@@ -68,13 +91,6 @@ public class ContainerHook
                 window.findPaneOfTypeByID("items", ScrollingList.class).setDataProvider(containerInfo);
                 window.findPaneOfTypeByID("filter", TextField.class).setHandler(containerInfo);
             }
-        }
-        else
-        {
-            // HookRegistries.TILE_ENTITY_HOOKS.unregister(thing.getType().getRegistryName(), triggerType);
-            // Log.getLogger()
-            //     .error("Removing container gui for type \"{}\" because it's not instance of Container class.",
-            //         thing.getType().getRegistryName());
         }
     }
 
@@ -141,11 +157,11 @@ public class ContainerHook
                 }
                 else
                 {
-                    // final Set<String> filterSet = Set.of(filter.split(" "));
-                    // filteredItems = allItems.stream()
-                    //     .filter(info -> Set.of(info.is.getHoverName().getString().split(" ")).containsAll(filterSet)
-                    //         || Set.of(info.is.getItem().getRegistryName().getPath().split(" ")).containsAll(filterSet))
-                    //     .toList();
+                    final Set<String> filterSet = Set.of(filter.split(" "));
+                    filteredItems = allItems.stream()
+                        .filter(info -> Set.of(info.is.getHoverName().getString().split(" ")).containsAll(filterSet)
+                            || Set.of(ForgeRegistries.ITEMS.getKey(info.is.getItem()).getPath().split(" _")).containsAll(filterSet))
+                        .toList();
                 }
             }
             return filteredItems.size();

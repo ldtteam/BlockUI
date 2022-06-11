@@ -20,20 +20,8 @@ public record SpacerTextComponent(int pixelHeight) implements ComponentContents
         return new FormattedSpacerComponent(pixelHeight);
     }
 
-    public class FormattedSpacerComponent implements FormattedCharSequence
+    public record FormattedSpacerComponent(int pixelHeight) implements FormattedCharSequence
     {
-        private final int pixelHeight;
-
-        private FormattedSpacerComponent(final int pixelHeight)
-        {
-            this.pixelHeight = pixelHeight;
-        }
-
-        public int getPixelHeight()
-        {
-            return pixelHeight;
-        }
-
         @Override
         public boolean accept(final FormattedCharSink p_13732_)
         {

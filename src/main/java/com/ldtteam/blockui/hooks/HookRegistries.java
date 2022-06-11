@@ -16,6 +16,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,10 +37,10 @@ public final class HookRegistries
     /**
      * TileEntityType registry
      */
-    public static final TileEntityReg TILE_ENTITY_HOOKS = new TileEntityReg();
+    public static final BlockEntityReg BLOCK_ENTITY_HOOKS = new BlockEntityReg();
 
     // should be in the same order as world render
-    private static final HookManager<?, ?, ?>[] REGISTRIES = {TILE_ENTITY_HOOKS, ENTITY_HOOKS};
+    private static final HookManager<?, ?, ?>[] REGISTRIES = {BLOCK_ENTITY_HOOKS, ENTITY_HOOKS};
 
     public static void tick(final long ticks)
     {
@@ -61,6 +62,7 @@ public final class HookRegistries
     {
         private EntityReg()
         {
+            super(ForgeRegistries.ENTITIES);
         }
 
         /**
@@ -201,10 +203,11 @@ public final class HookRegistries
         }
     }
 
-    public static class TileEntityReg extends HookManager<BlockEntity, BlockEntityType<?>, BlockPos>
+    public static class BlockEntityReg extends HookManager<BlockEntity, BlockEntityType<?>, BlockPos>
     {
-        private TileEntityReg()
+        private BlockEntityReg()
         {
+            super(ForgeRegistries.BLOCK_ENTITIES);
         }
 
         /**

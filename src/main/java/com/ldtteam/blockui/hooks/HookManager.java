@@ -2,10 +2,9 @@ package com.ldtteam.blockui.hooks;
 
 import com.ldtteam.blockui.mod.Log;
 import com.mojang.blaze3d.vertex.PoseStack;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
-
+import net.minecraftforge.registries.IForgeRegistry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -38,8 +37,11 @@ public abstract class HookManager<T, U, K>
      */
     private final Map<K, WindowEntry> activeWindows = new HashMap<>();
 
-    protected HookManager()
+    private final IForgeRegistry<U> typeRegistryReference;
+
+    protected HookManager(final IForgeRegistry<U> typeRegistryReference)
     {
+        this.typeRegistryReference = typeRegistryReference;
     }
 
     /**
@@ -54,6 +56,7 @@ public abstract class HookManager<T, U, K>
      * @param onClose        gets fired when gui is closed
      * @see IGuiHookable for gui callbacks
      */
+    @SuppressWarnings("unchecked")
     protected void registerInternal(final U targetThing,
         final ResourceLocation guiLoc,
         final long expirationTime,
@@ -66,18 +69,13 @@ public abstract class HookManager<T, U, K>
         Objects.requireNonNull(guiLoc, "Gui location can't be null!");
         Objects.requireNonNull(trigger, "Trigger can't be null!");
 
-        if (true)
-        {
-            return; // TODO: move to object holders?
-        }
-
         final BiPredicate<T, TriggerMechanism> shouldOpenTest = Objects.requireNonNullElse((BiPredicate<T, TriggerMechanism>) shouldOpen, (t, tt) -> true);
         final IGuiActionCallback<T> onOpenListener = Objects.requireNonNullElse((IGuiActionCallback<T>) onOpen, IGuiActionCallback.noAction());
         final IGuiActionCallback<T> onClosedListener = Objects.requireNonNullElse((IGuiActionCallback<T>) onClose, IGuiActionCallback.noAction());
-        final ResourceLocation registryKey = null; // targetThing.getRegistryName();
+        final ResourceLocation registryKey = typeRegistryReference.getKey(targetThing);
 
         final Optional<HookEntry> existing = registry.stream()
-            .filter(hook -> true /* hook.targetThing.getRegistryName().equals(registryKey) */ && hook.trigger.getClass() == trigger.getClass())
+            .filter(hook -> hook.getTargetThingRegistryKey().equals(registryKey) && hook.trigger.getClass() == trigger.getClass())
             .findFirst();
         if (existing.isPresent())
         {
@@ -101,21 +99,42 @@ public abstract class HookManager<T, U, K>
      */
     public boolean unregister(final ResourceLocation resLoc)
     {
-        return true;
-        //TODO: return registry.removeIf(hook -> hook.targetThing.getRegistryName().equals(resLoc));
+        return registry.removeIf(hook -> hook.getTargetThingRegistryKey().equals(resLoc));
+    }
+
+    /**
+     * Removes all hooks (regardless type) for given registry thing.
+     *
+     * @param  thing registry thing to remove
+     * @return       true if anything got removed
+     */
+    public boolean unregister(final U thing)
+    {
+        return unregister(typeRegistryReference.getKey(thing));
     }
 
     /**
      * Removes all hooks for given registry key and trigger type.
      *
-     * @param resLoc      registry key to remove
-     * @param triggerType trigger type
-     * @return true if anything got removed
+     * @param  resLoc      registry key to remove
+     * @param  triggerType trigger type
+     * @return             true if anything got removed
      */
     public boolean unregister(final ResourceLocation resLoc, final TriggerMechanism triggerType)
     {
-        return true;
-        //TODO: return registry.removeIf(hook -> hook.targetThing.getRegistryName().equals(resLoc) && hook.trigger.getClass() == triggerType.getClass());
+        return registry.removeIf(hook -> hook.getTargetThingRegistryKey().equals(resLoc) && hook.trigger.getClass() == triggerType.getClass());
+    }
+
+    /**
+     * Removes all hooks for given registry thing and trigger type.
+     *
+     * @param  thing       registry thing to remove
+     * @param  triggerType trigger type
+     * @return             true if anything got removed
+     */
+    public boolean unregister(final U thing, final TriggerMechanism triggerType)
+    {
+        return unregister(typeRegistryReference.getKey(thing), triggerType);
     }
 
     /**
@@ -250,6 +269,11 @@ public abstract class HookManager<T, U, K>
             this.shouldOpen = shouldOpen;
             this.onOpen = onOpen;
             this.onClose = onClose;
+        }
+
+        public ResourceLocation getTargetThingRegistryKey()
+        {
+            return typeRegistryReference.getKey(targetThing);
         }
     }
 

@@ -3,6 +3,8 @@ package com.ldtteam.blockui.hooks;
 import com.ldtteam.blockui.Loader;
 import com.ldtteam.blockui.views.BOWindow;
 
+import net.minecraft.resources.ResourceLocation;
+
 /**
  * Window wrapper
  */
@@ -36,9 +38,9 @@ public class HookWindow<T, U> extends BOWindow
         return windowHolder.thing;
     }
 
-    public U getHookThingType()
+    public ResourceLocation getHookThingRegistryKey()
     {
-        return windowHolder.hook.targetThing;
+        return windowHolder.hook.getTargetThingRegistryKey();
     }
 
     @Override
