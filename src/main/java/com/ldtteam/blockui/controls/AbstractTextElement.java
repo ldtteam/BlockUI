@@ -527,7 +527,16 @@ public abstract class AbstractTextElement extends Pane
     public void setSize(final int w, final int h)
     {
         super.setSize(w, h);
+        this.setTextSize(w, h);
+    }
 
+    /**
+     * Set the text size.
+     * @param w the width.
+     * @param h the height.
+     */
+    public void setTextSize(final int w, final int h)
+    {
         textWidth = width;
         textHeight = height;
         recalcTextRendering();
