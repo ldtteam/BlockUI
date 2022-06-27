@@ -1,5 +1,9 @@
 package com.ldtteam.blockui;
 
+import com.ldtteam.blockui.mod.Log;
+import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
+import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -13,9 +17,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import java.io.IOException;
 
 /**
  * Our replacement for GuiComponent.
@@ -425,6 +434,7 @@ public class UiRenderMacros
         final float uMax,
         final float vMax)
     {
+        checkOutOfJarResLoc(rl);
         Minecraft.getInstance().getTextureManager().bindForSetup(rl);
         RenderSystem.setShaderTexture(0, rl);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
@@ -437,6 +447,36 @@ public class UiRenderMacros
         buffer.vertex(m, x + w, y + h, 0).uv(uMax, vMax).endVertex();
         buffer.vertex(m, x + w, y, 0).uv(uMax, vMin).endVertex();
         Tesselator.getInstance().end();
+    }
+
+    private static void checkOutOfJarResLoc(final ResourceLocation rl)
+    {
+        final TextureManager tm = Minecraft.getInstance().getTextureManager();
+        if (tm.getTexture(rl, null) == null && rl instanceof OutOfJarResourceLocation nioResLoc)
+        {
+            final AbstractTexture texture = new AbstractTexture()
+            {
+                @Override
+                public void load(ResourceManager p_117955_) throws IOException
+                {}
+            };
+
+            try (var is = OutOfJarResourceLocation.openStream(nioResLoc, Minecraft.getInstance().getResourceManager()))
+            {
+                final NativeImage nativeImage = NativeImage.read(is);
+                TextureUtil.prepareImage(texture.getId(), 0, nativeImage.getWidth(), nativeImage.getHeight());
+                nativeImage.upload(0, 0, 0, true);
+
+                tm.register(nioResLoc, texture);
+            }
+            catch (final IOException e)
+            {
+                Log.getLogger().error("Can't load image: " + nioResLoc.toString(), e);
+
+                texture.releaseId();
+                tm.register(nioResLoc, MissingTextureAtlasSprite.getTexture());
+            }
+        }
     }
 
     /**
@@ -540,6 +580,7 @@ public class UiRenderMacros
         // bot left corner
         populateBlitTriangles(buffer, mat, xEnd, xEnd + uLeft, yEnd, yEnd + vLeft, restMinU, restMaxU, restMinV, restMaxV);
 
+        checkOutOfJarResLoc(rl);
         Minecraft.getInstance().getTextureManager().bindForSetup(rl);
         RenderSystem.setShaderTexture(0, rl);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
