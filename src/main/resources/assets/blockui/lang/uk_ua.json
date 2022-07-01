@@ -1,0 +1,4 @@
+{
+    "blockui.container_gui.client_side_only": "Вміст контейнера видно лише під час гри на внутрішньому сервері (гра наодинці).",
+    "blockui.container_gui.empty": "Цей контейнер порожній."
+}
