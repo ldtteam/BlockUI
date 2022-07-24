@@ -62,7 +62,7 @@ public final class HookRegistries
     {
         private EntityReg()
         {
-            super(ForgeRegistries.ENTITIES);
+            super(ForgeRegistries.ENTITY_TYPES);
         }
 
         /**
@@ -207,7 +207,7 @@ public final class HookRegistries
     {
         private BlockEntityReg()
         {
-            super(ForgeRegistries.BLOCK_ENTITIES);
+            super(ForgeRegistries.BLOCK_ENTITY_TYPES);
         }
 
         /**

@@ -28,7 +28,7 @@ import java.util.Set;
 
 public class ContainerHook
 {
-    public static TagKey<BlockEntityType<?>> CONTAINER_TAG = ForgeRegistries.BLOCK_ENTITIES.tags().createTagKey(new ResourceLocation(BlockUI.MOD_ID, "container_gui"));
+    public static TagKey<BlockEntityType<?>> CONTAINER_TAG = ForgeRegistries.BLOCK_ENTITY_TYPES.tags().createTagKey(new ResourceLocation(BlockUI.MOD_ID, "container_gui"));
 
     public static void init()
     {
@@ -39,7 +39,7 @@ public class ContainerHook
 
         final ResourceLocation gui_loc = new ResourceLocation(BlockUI.MOD_ID, "gui/container.xml");
         // TODO: properly support tag reloading
-        for (final BlockEntityType<?> beType : ForgeRegistries.BLOCK_ENTITIES.tags().getTag(CONTAINER_TAG))
+        for (final BlockEntityType<?> beType : ForgeRegistries.BLOCK_ENTITY_TYPES.tags().getTag(CONTAINER_TAG))
         {
             HookRegistries.BLOCK_ENTITY_HOOKS.register(beType,
                 gui_loc,
@@ -76,7 +76,7 @@ public class ContainerHook
                 HookRegistries.BLOCK_ENTITY_HOOKS.unregister(thing.getType(), triggerType);
                 Log.getLogger()
                     .error("Removing container gui for type \"{}\" because it's not instance of Container class.",
-                        ForgeRegistries.BLOCK_ENTITIES.getKey(thing.getType()));
+                        ForgeRegistries.BLOCK_ENTITY_TYPES.getKey(thing.getType()));
             }
 
             final ContainerInfo containerInfo = new ContainerInfo(container);

@@ -49,7 +49,7 @@ public class EntityIcon extends Pane
 
     public void setEntity(@NotNull ResourceLocation entityId)
     {
-        final EntityType<?> entityType = ForgeRegistries.ENTITIES.getValue(entityId);
+        final EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(entityId);
         if (entityType != null)
         {
             setEntity(entityType);

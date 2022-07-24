@@ -5,6 +5,8 @@ import com.ldtteam.blockui.views.BOWindow;
 
 import net.minecraft.resources.ResourceLocation;
 
+import com.ldtteam.blockui.views.BOWindow.WindowRenderType;
+
 /**
  * Window wrapper
  */

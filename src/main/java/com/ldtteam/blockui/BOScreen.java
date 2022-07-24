@@ -7,13 +7,18 @@ import com.mojang.math.Matrix4f;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.BitStorage;
 import net.minecraft.util.SimpleBitStorage;
 import net.minecraftforge.client.ForgeRenderTypes;
-import net.minecraftforge.client.gui.ForgeIngameGui;
-import net.minecraftforge.client.gui.OverlayRegistry;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.gui.overlay.ForgeGui;
+import net.minecraftforge.client.gui.overlay.GuiOverlayManager;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -329,7 +334,15 @@ public class BOScreen extends Screen
     public void init()
     {
         minecraft.keyboardHandler.setSendRepeatsToGui(true);
-        OverlayRegistry.enableOverlay(ForgeIngameGui.CROSSHAIR_ELEMENT, false);
+    }
+
+    @SubscribeEvent
+    public static void renderOverlay(final RenderGuiOverlayEvent event)
+    {
+        if (Minecraft.getInstance().screen instanceof BOScreen && event.getOverlay().id().equals(VanillaGuiOverlay.CROSSHAIR.id()))
+        {
+            event.setCanceled(true);
+        }
     }
 
     @Override
@@ -384,7 +397,6 @@ public class BOScreen extends Screen
         {
             BOWindow.clearFocus();
             minecraft.keyboardHandler.setSendRepeatsToGui(false);
-            OverlayRegistry.enableOverlay(ForgeIngameGui.CROSSHAIR_ELEMENT, true);
         }
     }
 

@@ -14,7 +14,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.client.RenderProperties;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Collections;
@@ -95,7 +95,7 @@ public class ItemIcon extends Pane
             ms.scale(this.getWidth() / DEFAULT_ITEMSTACK_SIZE, this.getHeight() / DEFAULT_ITEMSTACK_SIZE, 1.0f);
             MatrixUtils.pushShaderMVstack(ms);
 
-            Font font = RenderProperties.get(itemStack).getFont(itemStack);
+            Font font = IClientItemExtensions.DEFAULT.getFont(itemStack, IClientItemExtensions.FontContext.ITEM_COUNT);
             if (font == null)
             {
                 font = mc.font;

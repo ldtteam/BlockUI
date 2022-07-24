@@ -10,7 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
-import net.minecraftforge.client.event.InputEvent.MouseScrollEvent;
+import net.minecraftforge.client.event.InputEvent.MouseScrollingEvent;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
 import net.minecraftforge.event.TagsUpdatedEvent;
 import net.minecraftforge.event.TickEvent.ClientTickEvent;
@@ -68,7 +68,7 @@ public class ClientEventSubscriber
      * @param event the catched event.
      */
     @SubscribeEvent(priority = EventPriority.HIGHEST)
-    public static void onMouseScrollEvent(final MouseScrollEvent event)
+    public static void onMouseScrollEvent(final MouseScrollingEvent event)
     {
         // cancel in-game scrolling when raytraced gui has scrolling list
         event.setCanceled(HookManager.onScroll(event.getScrollDelta()));
