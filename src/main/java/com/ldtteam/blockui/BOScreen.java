@@ -345,6 +345,15 @@ public class BOScreen extends Screen
         }
     }
 
+    /**
+     * Get the open window here.
+     * @return the window.
+     */
+    public BOWindow getWindow()
+    {
+        return window;
+    }
+
     @Override
     public void tick()
     {
