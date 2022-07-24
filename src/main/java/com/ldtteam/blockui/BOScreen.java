@@ -339,7 +339,7 @@ public class BOScreen extends Screen
     @SubscribeEvent
     public static void renderOverlay(final RenderGuiOverlayEvent event)
     {
-        if (Minecraft.getInstance().screen instanceof BOScreen && event.getOverlay().id().equals(VanillaGuiOverlay.CROSSHAIR.id()))
+        if (Minecraft.getInstance().screen instanceof BOScreen && event.getOverlay() == VanillaGuiOverlay.CROSSHAIR.type())
         {
             event.setCanceled(true);
         }
