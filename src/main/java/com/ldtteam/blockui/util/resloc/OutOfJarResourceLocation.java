@@ -19,7 +19,7 @@ public class OutOfJarResourceLocation extends ResourceLocation
         this.nioPath = path;
     }
 
-    public OutOfJarResourceLocation of(final String namespace, final Path path)
+    public static OutOfJarResourceLocation of(final String namespace, final Path path)
     {
         final Path fullPath = path.toAbsolutePath().normalize();
         return new OutOfJarResourceLocation(namespace,
@@ -28,7 +28,7 @@ public class OutOfJarResourceLocation extends ResourceLocation
     }
 
     @SuppressWarnings("resource")
-    public OutOfJarResourceLocation ofMinecraftFolder(final String namespace, final String... parts)
+    public static OutOfJarResourceLocation ofMinecraftFolder(final String namespace, final String... parts)
     {
         Path path = Minecraft.getInstance().gameDirectory.toPath().resolve(namespace);
         for (int i = 0; i < parts.length; i++)
