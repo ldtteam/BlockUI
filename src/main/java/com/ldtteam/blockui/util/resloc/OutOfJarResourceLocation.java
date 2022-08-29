@@ -24,16 +24,16 @@ public class OutOfJarResourceLocation extends ResourceLocation
         final Path fullPath = path.toAbsolutePath().normalize();
         return new OutOfJarResourceLocation(namespace,
             fullPath,
-            fullPath.toString().toLowerCase().replace('\\', '/').replace(':', '_'));
+            fullPath.toString().toLowerCase().replace('\\', '/').replaceAll("[^a-z0-9/._-]", "_"));
     }
 
     @SuppressWarnings("resource")
     public static OutOfJarResourceLocation ofMinecraftFolder(final String namespace, final String... parts)
     {
         Path path = Minecraft.getInstance().gameDirectory.toPath().resolve(namespace);
-        for (int i = 0; i < parts.length; i++)
+        for (final String part : parts)
         {
-            path.resolve(parts[i]);
+            path = path.resolve(part);
         }
         return of(namespace, path);
     }
