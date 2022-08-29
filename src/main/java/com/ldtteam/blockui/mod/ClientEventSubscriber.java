@@ -1,5 +1,6 @@
 package com.ldtteam.blockui.mod;
 
+import com.ldtteam.blockui.BOScreen;
 import com.ldtteam.blockui.hooks.HookManager;
 import com.ldtteam.blockui.hooks.HookRegistries;
 import com.ldtteam.blockui.mod.container.ContainerHook;
@@ -11,7 +12,9 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.InputEvent.MouseScrollingEvent;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
+import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TagsUpdatedEvent;
 import net.minecraftforge.event.TickEvent.ClientTickEvent;
 import net.minecraftforge.event.TickEvent.Phase;
@@ -81,5 +84,14 @@ public class ClientEventSubscriber
     public static void onTagsUpdated(final TagsUpdatedEvent event)
     {
         ContainerHook.init();
+    }
+
+    @SubscribeEvent
+    public static void renderOverlay(final RenderGuiOverlayEvent event)
+    {
+        if (Minecraft.getInstance().screen instanceof BOScreen && event.getOverlay() == VanillaGuiOverlay.CROSSHAIR.type())
+        {
+            event.setCanceled(true);
+        }
     }
 }

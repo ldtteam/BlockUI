@@ -7,18 +7,11 @@ import com.mojang.math.Matrix4f;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.BitStorage;
 import net.minecraft.util.SimpleBitStorage;
 import net.minecraftforge.client.ForgeRenderTypes;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.client.gui.overlay.ForgeGui;
-import net.minecraftforge.client.gui.overlay.GuiOverlayManager;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -334,15 +327,6 @@ public class BOScreen extends Screen
     public void init()
     {
         minecraft.keyboardHandler.setSendRepeatsToGui(true);
-    }
-
-    @SubscribeEvent
-    public static void renderOverlay(final RenderGuiOverlayEvent event)
-    {
-        if (Minecraft.getInstance().screen instanceof BOScreen && event.getOverlay() == VanillaGuiOverlay.CROSSHAIR.type())
-        {
-            event.setCanceled(true);
-        }
     }
 
     /**
