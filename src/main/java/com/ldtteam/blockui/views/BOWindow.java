@@ -228,7 +228,14 @@ public class BOWindow extends View
     {
         if (key == GLFW.GLFW_KEY_ESCAPE)
         {
-            close();
+            if (getFocus() != null)
+            {
+                clearFocus();
+            }
+            else
+            {
+                close();
+            }
             return true;
         }
         return false;
