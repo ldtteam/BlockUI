@@ -1,0 +1,4 @@
+{
+    "blockui.container_gui.client_side_only": "O conteúdo do contêiner é visível apenas ao jogar no servidor integrado (singleplayer, sem ser o modo lan).",
+    "blockui.container_gui.empty": "Este contêiner está vazio."
+}
