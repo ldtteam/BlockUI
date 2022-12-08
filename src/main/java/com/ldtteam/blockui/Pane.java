@@ -7,7 +7,7 @@ import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
-import com.mojang.math.Vector4f;
+import org.joml.Vector4f;
 import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.Nullable;
 
@@ -639,8 +639,8 @@ public class Pane extends UiRenderMacros
 
         final Vector4f start = new Vector4f(x, y, 0.0f, 1.0f);
         final Vector4f end = new Vector4f(x + width, y + height, 0.0f, 1.0f);
-        start.transform(ms.last().pose());
-        end.transform(ms.last().pose());
+        ms.last().pose().transform(start);
+        ms.last().pose().transform(end);
 
         int scissorsXstart = Mth.clamp((int) Math.floor(start.x()), 0, fbWidth);
         int scissorsXend = Mth.clamp((int) Math.floor(end.x()), 0, fbWidth);
