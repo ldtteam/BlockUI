@@ -1,15 +1,32 @@
 package com.ldtteam.blockui;
 
+import com.ldtteam.blockui.mod.Log;
+import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
+import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat.Mode;
-import com.mojang.math.Matrix4f;
+import com.mojang.math.Axis;
+import org.joml.Matrix4f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+
+import java.io.IOException;
 
 /**
  * Our replacement for GuiComponent.
@@ -419,6 +436,7 @@ public class UiRenderMacros
         final float uMax,
         final float vMax)
     {
+        checkOutOfJarResLoc(rl);
         Minecraft.getInstance().getTextureManager().bindForSetup(rl);
         RenderSystem.setShaderTexture(0, rl);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
@@ -431,6 +449,36 @@ public class UiRenderMacros
         buffer.vertex(m, x + w, y + h, 0).uv(uMax, vMax).endVertex();
         buffer.vertex(m, x + w, y, 0).uv(uMax, vMin).endVertex();
         Tesselator.getInstance().end();
+    }
+
+    private static void checkOutOfJarResLoc(final ResourceLocation rl)
+    {
+        final TextureManager tm = Minecraft.getInstance().getTextureManager();
+        if (tm.getTexture(rl, null) == null && rl instanceof OutOfJarResourceLocation nioResLoc)
+        {
+            final AbstractTexture texture = new AbstractTexture()
+            {
+                @Override
+                public void load(ResourceManager p_117955_) throws IOException
+                {}
+            };
+
+            try (var is = OutOfJarResourceLocation.openStream(nioResLoc, Minecraft.getInstance().getResourceManager()))
+            {
+                final NativeImage nativeImage = NativeImage.read(is);
+                TextureUtil.prepareImage(texture.getId(), 0, nativeImage.getWidth(), nativeImage.getHeight());
+                nativeImage.upload(0, 0, 0, true);
+
+                tm.register(nioResLoc, texture);
+            }
+            catch (final IOException e)
+            {
+                Log.getLogger().error("Can't load image: " + nioResLoc.toString(), e);
+
+                texture.releaseId();
+                tm.register(nioResLoc, MissingTextureAtlasSprite.getTexture());
+            }
+        }
     }
 
     /**
@@ -534,6 +582,7 @@ public class UiRenderMacros
         // bot left corner
         populateBlitTriangles(buffer, mat, xEnd, xEnd + uLeft, yEnd, yEnd + vLeft, restMinU, restMaxU, restMinV, restMaxV);
 
+        checkOutOfJarResLoc(rl);
         Minecraft.getInstance().getTextureManager().bindForSetup(rl);
         RenderSystem.setShaderTexture(0, rl);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
@@ -600,5 +649,62 @@ public class UiRenderMacros
         buffer.vertex(mat, xEnd, yStart, 0).uv(uMax, vMin).endVertex();
         buffer.vertex(mat, xStart, yEnd, 0).uv(uMin, vMax).endVertex();
         buffer.vertex(mat, xEnd, yEnd, 0).uv(uMax, vMax).endVertex();
+    }
+
+    /**
+     * Render an entity on a GUI.
+     * @param poseStack matrix
+     * @param x horizontal center position
+     * @param y vertical bottom position
+     * @param scale scaling factor
+     * @param headYaw adjusts look rotation
+     * @param yaw adjusts body rotation
+     * @param pitch adjusts look rotation
+     * @param entity the entity to render
+     */
+    public static void drawEntity(final PoseStack poseStack, final int x, final int y, final double scale,
+                                  final float headYaw, final float yaw, final float pitch, final Entity entity)
+    {
+        final LivingEntity livingEntity = (entity instanceof LivingEntity) ? (LivingEntity) entity : null;
+        final Minecraft mc = Minecraft.getInstance();
+        if (entity.level == null) entity.level = mc.level;
+        poseStack.pushPose();
+        poseStack.translate((float) x, (float) y, 1050.0F);
+        poseStack.scale(1.0F, 1.0F, -1.0F);
+        poseStack.translate(0.0D, 0.0D, 1000.0D);
+        poseStack.scale((float) scale, (float) scale, (float) scale);
+        final Quaternionf pitchRotation = Axis.XP.rotationDegrees(pitch);
+        poseStack.mulPose(Axis.ZP.rotationDegrees(180.0F));
+        poseStack.mulPose(pitchRotation);
+        final float oldYaw = entity.getYRot();
+        final float oldPitch = entity.getXRot();
+        final float oldYawOffset = livingEntity == null ? 0F : livingEntity.yBodyRot;
+        final float oldPrevYawHead = livingEntity == null ? 0F : livingEntity.yHeadRotO;
+        final float oldYawHead = livingEntity == null ? 0F : livingEntity.yHeadRot;
+        entity.setYRot(180.0F + (float) headYaw);
+        entity.setXRot(-pitch);
+        if (livingEntity != null)
+        {
+            livingEntity.yBodyRot = 180.0F + yaw;
+            livingEntity.yHeadRot = entity.getYRot();
+            livingEntity.yHeadRotO = entity.getYRot();
+        }
+        final EntityRenderDispatcher dispatcher = mc.getEntityRenderDispatcher();
+        pitchRotation.conjugate();
+        dispatcher.overrideCameraOrientation(pitchRotation);
+        dispatcher.setRenderShadow(false);
+        final MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
+        RenderSystem.runAsFancy(() -> dispatcher.render(entity, 0.0D, 0.0D, 0.0D, 0.0F, 1.0F, poseStack, buffers, 0x00F000F0));
+        buffers.endBatch();
+        dispatcher.setRenderShadow(true);
+        entity.setYRot(oldYaw);
+        entity.setXRot(oldPitch);
+        if (livingEntity != null)
+        {
+            livingEntity.yBodyRot = oldYawOffset;
+            livingEntity.yHeadRotO = oldPrevYawHead;
+            livingEntity.yHeadRot = oldYawHead;
+        }
+        poseStack.popPose();
     }
 }

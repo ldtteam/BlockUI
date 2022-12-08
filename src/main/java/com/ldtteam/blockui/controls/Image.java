@@ -5,6 +5,7 @@ import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.Parsers;
 import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.util.records.SizeI;
+import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
@@ -89,6 +90,17 @@ public class Image extends Pane
     }
 
     /**
+     * Set the map dimensions of the image to render.
+     * @param height the map height.
+     * @param width the map width.
+     */
+    public void setMapDimensions(final int height, final int width)
+    {
+        this.mapHeight = height;
+        this.mapWidth = width;
+    }
+
+    /**
      * Load and image from a {@link ResourceLocation} and return a {@link Tuple} containing its width and height.
      *
      * @param resourceLocation The {@link ResourceLocation} pointing to the image.
@@ -109,8 +121,8 @@ public class Image extends Pane
         while (it.hasNext())
         {
             final ImageReader reader = it.next();
-            try (ImageInputStream stream = ImageIO
-                .createImageInputStream(Minecraft.getInstance().getResourceManager().getResource(resourceLocation).getInputStream()))
+            try (ImageInputStream stream =
+                ImageIO.createImageInputStream(OutOfJarResourceLocation.openStream(resourceLocation, Minecraft.getInstance().getResourceManager())))
             {
                 reader.setInput(stream);
 

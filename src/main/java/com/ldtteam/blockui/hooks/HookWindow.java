@@ -3,12 +3,12 @@ package com.ldtteam.blockui.hooks;
 import com.ldtteam.blockui.Loader;
 import com.ldtteam.blockui.views.BOWindow;
 
-import net.minecraftforge.registries.IForgeRegistryEntry;
+import net.minecraft.resources.ResourceLocation;
 
 /**
  * Window wrapper
  */
-public class HookWindow<T, U extends IForgeRegistryEntry<U>> extends BOWindow
+public class HookWindow<T, U> extends BOWindow
 {
     protected final HookManager<T, U, ?>.WindowEntry windowHolder;
 
@@ -24,13 +24,13 @@ public class HookWindow<T, U extends IForgeRegistryEntry<U>> extends BOWindow
     @Override
     public void onOpened()
     {
-        windowHolder.hook.onOpen.onAction(windowHolder.thing, this, windowHolder.hook.trigger.getType());
+        windowHolder.hook.onOpen.onAction(windowHolder.thing, this, windowHolder.hook.trigger);
     }
 
     @Override
     public void onClosed()
     {
-        windowHolder.hook.onClose.onAction(windowHolder.thing, this, windowHolder.hook.trigger.getType());
+        windowHolder.hook.onClose.onAction(windowHolder.thing, this, windowHolder.hook.trigger);
     }
 
     public T getHookThing()
@@ -38,9 +38,9 @@ public class HookWindow<T, U extends IForgeRegistryEntry<U>> extends BOWindow
         return windowHolder.thing;
     }
 
-    public U getHookThingType()
+    public ResourceLocation getHookThingRegistryKey()
     {
-        return windowHolder.hook.targetThing;
+        return windowHolder.hook.getTargetThingRegistryKey();
     }
 
     @Override

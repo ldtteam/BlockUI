@@ -4,12 +4,10 @@ import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.controls.Button;
 import com.ldtteam.blockui.controls.ButtonHandler;
-import com.ldtteam.blockui.controls.Text;
 import com.ldtteam.blockui.util.records.Pos2i;
 import com.ldtteam.blockui.Parsers;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 
 import java.util.function.Consumer;
 
@@ -81,6 +79,7 @@ public class DropDownList extends View implements ButtonHandler
         });
 
         button = Button.construct(params);
+        button.setPosition(0, 0);
         button.putInside(this);
 
         overlay = new OverlayView();
@@ -155,13 +154,9 @@ public class DropDownList extends View implements ButtonHandler
      */
     private void onButtonClickedFromList(final Button buttonIn)
     {
-        final Text idLabel = buttonIn.getParent().findPaneOfTypeByID("id", Text.class);
-        if (idLabel != null)
-        {
-            final int index = Integer.parseInt(idLabel.getTextAsString());
-            setSelectedIndex(index);
-            close();
-        }
+        final int index = list.getListElementIndexByPane(buttonIn);
+        setSelectedIndex(index);
+        close();
     }
 
     /**
@@ -271,12 +266,6 @@ public class DropDownList extends View implements ButtonHandler
         final Button choiceButton = rowPane.findPaneOfTypeByID("button", Button.class);
         if (choiceButton != null)
         {
-            // is idLabel necessary ?
-            final Text idLabel = rowPane.findPaneOfTypeByID("id", Text.class);
-            if (idLabel != null)
-            {
-                idLabel.setText(new TextComponent(Integer.toString(index)));
-            }
             choiceButton.setText(label);
             choiceButton.setHandler(this);
         }
@@ -285,38 +274,23 @@ public class DropDownList extends View implements ButtonHandler
     @Override
     public void setVisible(final boolean v)
     {
+        super.setVisible(v);
         button.setVisible(v);
+        list.setVisible(v);
     }
 
     @Override
     public void setEnabled(final boolean e)
     {
+        super.setEnabled(e);
         button.setEnabled(e);
         list.setEnabled(e);
     }
-
+    
     @Override
-    public void drawSelf(final PoseStack ms, final double mx, final double my)
+    public void parseChildren(PaneParams params)
     {
-        button.drawSelf(ms, mx, my);
-    }
-
-    @Override
-    public void drawSelfLast(final PoseStack ms, final double mx, final double my)
-    {
-        button.drawSelfLast(ms, mx, my);
-    }
-
-    @Override
-    public boolean click(final double mx, final double my)
-    {
-        return button.click(mx, my);
-    }
-
-    @Override
-    public boolean canHandleClick(final double mx, final double my)
-    {
-        return button.canHandleClick(mx, my);
+        // noop cuz this element only has button (that was already set up in ctor)
     }
 
     /**
@@ -341,7 +315,7 @@ public class DropDownList extends View implements ButtonHandler
 
         default MutableComponent getLabelNew(final int index)
         {
-            return new TextComponent(getLabel(index));
+            return Component.literal(getLabel(index));
         }
     }
 

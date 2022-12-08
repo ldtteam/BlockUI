@@ -1,32 +1,24 @@
 package com.ldtteam.blockui.hooks;
 
-import java.util.function.Supplier;
+import java.util.function.DoubleSupplier;
 
 /**
  * Triggers for opening guis
  */
-public class TriggerMechanism<T>
+public sealed class TriggerMechanism
 {
-    static final TriggerMechanism<?>[] TRIGGER_MECHANISMS = new TriggerMechanism[2];
+    private static final RangeTriggerMechanism DISTANCE_TRIGGER = new RangeTriggerMechanism("dist", () -> 16.0d, 10, 0);
+    private static final RayTraceTriggerMechanism RAY_TRACE_TRIGGER = new RayTraceTriggerMechanism("ray_trace", 1, 1);
 
-    private static final TriggerMechanism<Double> DISTANCE_TRIGGER = new TriggerMechanism<>(Type.DISTANCE, "dist", () -> 16.0d, 10, 0);
-    private static final TriggerMechanism<?> RAY_TRACE_TRIGGER = new TriggerMechanism<>(Type.RAY_TRACE, "ray_trace", () -> null, 1, 1);
+    protected final String name;
+    protected final int tickEveryXTicks;
+    protected int priority;
 
-    private final Type type;
-    private final String name;
-    private final Supplier<T> config;
-    private final int tickEveryXTicks;
-    private int priority;
-
-    private TriggerMechanism(final Type type, final String name, final Supplier<T> config, final int tickEveryXTicks, final int priority)
+    private TriggerMechanism(final String name, final int tickEveryXTicks, final int priority)
     {
-        this.type = type;
         this.name = name;
-        this.config = config;
         this.tickEveryXTicks = tickEveryXTicks;
         this.priority = priority;
-
-        TRIGGER_MECHANISMS[type.id] = this;
     }
 
     /**
@@ -35,7 +27,7 @@ public class TriggerMechanism<T>
      *
      * @return ray trace trigger
      */
-    public static TriggerMechanism<?> getRayTrace()
+    public static RayTraceTriggerMechanism getRayTrace()
     {
         return RAY_TRACE_TRIGGER;
     }
@@ -45,7 +37,7 @@ public class TriggerMechanism<T>
      *
      * @return 16 blocks distance trigger
      */
-    public static TriggerMechanism<Double> getDistance()
+    public static RangeTriggerMechanism getDistance()
     {
         return DISTANCE_TRIGGER;
     }
@@ -56,39 +48,19 @@ public class TriggerMechanism<T>
      * @param blocks detection radius
      * @return <code>blocks</code> blocks distance trigger
      */
-    public static TriggerMechanism<Double> getDistance(final double blocks)
+    public static RangeTriggerMechanism getDistance(final double blocks)
     {
-        return new TriggerMechanism<>(DISTANCE_TRIGGER.type,
-            DISTANCE_TRIGGER.name,
-            () -> blocks,
-            DISTANCE_TRIGGER.tickEveryXTicks,
-            DISTANCE_TRIGGER.priority);
+        return new RangeTriggerMechanism(DISTANCE_TRIGGER.name, () -> blocks, DISTANCE_TRIGGER.tickEveryXTicks, DISTANCE_TRIGGER.priority);
     }
 
     /**
      * Overwrite current trigger priority.
      *
      * @param priority new priority
-     * @return self
      */
-    public TriggerMechanism<T> priority(final int priority)
+    public void setPriority(final int priority)
     {
         this.priority = priority;
-        return this;
-    }
-
-    /**
-     * @return trigger mechanism type
-     * @see Type
-     */
-    public Type getType()
-    {
-        return type;
-    }
-
-    int getId()
-    {
-        return type.id;
     }
 
     String getName()
@@ -104,32 +76,32 @@ public class TriggerMechanism<T>
         return ticks % tickEveryXTicks == 0;
     }
 
-    boolean isLowerPriority(final TriggerMechanism<?> other)
+    boolean isLowerPriority(final TriggerMechanism other)
     {
         return priority < other.priority;
     }
 
-    /**
-     * @return specific data for trigger
-     */
-    public T getConfig()
+    public static final class RangeTriggerMechanism extends TriggerMechanism
     {
-        return config.get();
+        private final DoubleSupplier rangeSupplier;
+
+        private RangeTriggerMechanism(final String name, final DoubleSupplier rangeSupplier, final int tickEveryXTicks, final int priority)
+        {
+            super(name, tickEveryXTicks, priority);
+            this.rangeSupplier = rangeSupplier;
+        }
+
+        public double getSearchRange()
+        {
+            return rangeSupplier.getAsDouble();
+        }
     }
 
-    /**
-     * Trigger type
-     */
-    public enum Type
+    public static final class RayTraceTriggerMechanism extends TriggerMechanism
     {
-        DISTANCE(0),
-        RAY_TRACE(1);
-
-        private final int id;
-
-        private Type(final int id)
+        private RayTraceTriggerMechanism(final String name, final int tickEveryXTicks, final int priority)
         {
-            this.id = id;
+            super(name, tickEveryXTicks, priority);
         }
     }
 }

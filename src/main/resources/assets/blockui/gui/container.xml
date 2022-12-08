@@ -1,4 +1,4 @@
-<window xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="blockOut.xsd" size="200 100">
+<window xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="block_ui.xsd" size="200 100">
     <text id="note" size="100 100" pos="50 0"/>
     <input id="filter" pos="0 0" size="200 20"/>
     <list id="items" pos="0 22" size="200 78">

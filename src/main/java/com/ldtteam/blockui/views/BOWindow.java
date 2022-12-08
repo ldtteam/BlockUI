@@ -228,7 +228,14 @@ public class BOWindow extends View
     {
         if (key == GLFW.GLFW_KEY_ESCAPE)
         {
-            close();
+            if (getFocus() != null)
+            {
+                clearFocus();
+            }
+            else
+            {
+                close();
+            }
             return true;
         }
         return false;
@@ -299,7 +306,7 @@ public class BOWindow extends View
          */
         OVERSIZED((mcWindow, window) -> {
             final double fs = FULLSCREEN.calcRenderScale(mcWindow, window);
-            final int userScale = window.mc.options.guiScale;
+            final int userScale = window.mc.options.guiScale().get();
             return fs < 1.0d ? fs : Math.min(Math.floor(fs), userScale == 0 ? Double.MAX_VALUE : userScale);
         }),
         /**
@@ -307,7 +314,7 @@ public class BOWindow extends View
          */
         OVERSIZED_VANILLA((mcWindow, window) -> {
             final double fs_vanilla = FULLSCREEN_VANILLA.calcRenderScale(mcWindow, window);
-            final int userScale = window.mc.options.guiScale;
+            final int userScale = window.mc.options.guiScale().get();
             return fs_vanilla < 1.0d ? fs_vanilla : Math.min(Math.floor(fs_vanilla), userScale == 0 ? Double.MAX_VALUE : userScale);
         });
 

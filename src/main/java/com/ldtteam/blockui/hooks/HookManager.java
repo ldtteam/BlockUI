@@ -1,13 +1,10 @@
 package com.ldtteam.blockui.hooks;
 
-import com.ldtteam.blockui.hooks.TriggerMechanism.Type;
 import com.ldtteam.blockui.mod.Log;
 import com.mojang.blaze3d.vertex.PoseStack;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.registries.IForgeRegistryEntry;
-
+import net.minecraftforge.registries.IForgeRegistry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +21,7 @@ import java.util.function.Function;
  * @param <U> forge-register type
  * @param <K> hashable thing to hash T, can be same as T
  */
-public abstract class HookManager<T, U extends IForgeRegistryEntry<U>, K>
+public abstract class HookManager<T, U, K>
 {
     /**
      * active ray trace scroll listener
@@ -40,8 +37,11 @@ public abstract class HookManager<T, U extends IForgeRegistryEntry<U>, K>
      */
     private final Map<K, WindowEntry> activeWindows = new HashMap<>();
 
-    protected HookManager()
+    private final IForgeRegistry<U> typeRegistryReference;
+
+    protected HookManager(final IForgeRegistry<U> typeRegistryReference)
     {
+        this.typeRegistryReference = typeRegistryReference;
     }
 
     /**
@@ -56,11 +56,12 @@ public abstract class HookManager<T, U extends IForgeRegistryEntry<U>, K>
      * @param onClose        gets fired when gui is closed
      * @see IGuiHookable for gui callbacks
      */
+    @SuppressWarnings("unchecked")
     protected void registerInternal(final U targetThing,
         final ResourceLocation guiLoc,
         final long expirationTime,
-        final TriggerMechanism<?> trigger,
-        final BiPredicate<? extends T, Type> shouldOpen,
+        final TriggerMechanism trigger,
+        final BiPredicate<? extends T, TriggerMechanism> shouldOpen,
         final IGuiActionCallback<? extends T> onOpen,
         final IGuiActionCallback<? extends T> onClose)
     {
@@ -68,13 +69,13 @@ public abstract class HookManager<T, U extends IForgeRegistryEntry<U>, K>
         Objects.requireNonNull(guiLoc, "Gui location can't be null!");
         Objects.requireNonNull(trigger, "Trigger can't be null!");
 
-        final BiPredicate<T, Type> shouldOpenTest = Objects.requireNonNullElse((BiPredicate<T, Type>) shouldOpen, (t, tt) -> true);
+        final BiPredicate<T, TriggerMechanism> shouldOpenTest = Objects.requireNonNullElse((BiPredicate<T, TriggerMechanism>) shouldOpen, (t, tt) -> true);
         final IGuiActionCallback<T> onOpenListener = Objects.requireNonNullElse((IGuiActionCallback<T>) onOpen, IGuiActionCallback.noAction());
         final IGuiActionCallback<T> onClosedListener = Objects.requireNonNullElse((IGuiActionCallback<T>) onClose, IGuiActionCallback.noAction());
-        final ResourceLocation registryKey = targetThing.getRegistryName();
+        final ResourceLocation registryKey = typeRegistryReference.getKey(targetThing);
 
         final Optional<HookEntry> existing = registry.stream()
-            .filter(hook -> hook.targetThing.getRegistryName().equals(registryKey) && hook.trigger.getType() == trigger.getType())
+            .filter(hook -> hook.getTargetThingRegistryKey().equals(registryKey) && hook.trigger.getClass() == trigger.getClass())
             .findFirst();
         if (existing.isPresent())
         {
@@ -98,19 +99,42 @@ public abstract class HookManager<T, U extends IForgeRegistryEntry<U>, K>
      */
     public boolean unregister(final ResourceLocation resLoc)
     {
-        return registry.removeIf(hook -> hook.targetThing.getRegistryName().equals(resLoc));
+        return registry.removeIf(hook -> hook.getTargetThingRegistryKey().equals(resLoc));
+    }
+
+    /**
+     * Removes all hooks (regardless type) for given registry thing.
+     *
+     * @param  thing registry thing to remove
+     * @return       true if anything got removed
+     */
+    public boolean unregister(final U thing)
+    {
+        return unregister(typeRegistryReference.getKey(thing));
     }
 
     /**
      * Removes all hooks for given registry key and trigger type.
      *
-     * @param resLoc      registry key to remove
-     * @param triggerType trigger type
-     * @return true if anything got removed
+     * @param  resLoc      registry key to remove
+     * @param  triggerType trigger type
+     * @return             true if anything got removed
      */
-    public boolean unregister(final ResourceLocation resLoc, final Type triggerType)
+    public boolean unregister(final ResourceLocation resLoc, final TriggerMechanism triggerType)
     {
-        return registry.removeIf(hook -> hook.targetThing.getRegistryName().equals(resLoc) && hook.trigger.getType() == triggerType);
+        return registry.removeIf(hook -> hook.getTargetThingRegistryKey().equals(resLoc) && hook.trigger.getClass() == triggerType.getClass());
+    }
+
+    /**
+     * Removes all hooks for given registry thing and trigger type.
+     *
+     * @param  thing       registry thing to remove
+     * @param  triggerType trigger type
+     * @return             true if anything got removed
+     */
+    public boolean unregister(final U thing, final TriggerMechanism triggerType)
+    {
+        return unregister(typeRegistryReference.getKey(thing), triggerType);
     }
 
     /**
@@ -118,7 +142,7 @@ public abstract class HookManager<T, U extends IForgeRegistryEntry<U>, K>
      * @param trigger   hook trigger
      * @return all things of thingType being triggered by trigger of given hook
      */
-    protected abstract List<T> findTriggered(final U thingType, final TriggerMechanism<?> trigger);
+    protected abstract List<T> findTriggered(final U thingType, final TriggerMechanism trigger);
 
     /**
      * @param thing instance of registered type
@@ -147,8 +171,8 @@ public abstract class HookManager<T, U extends IForgeRegistryEntry<U>, K>
                     final K key = keyMapper(thing);
                     final WindowEntry entry = activeWindows.get(key);
 
-                    if ((entry == null || entry.hook.trigger.isLowerPriority(hook.trigger))
-                        && hook.shouldOpen.test(thing, hook.trigger.getType())) // new entry or override
+                    // new entry or override
+                    if ((entry == null || entry.hook.trigger.isLowerPriority(hook.trigger)) && hook.shouldOpen.test(thing, hook.trigger))
                     {
                         if (entry != null)
                         {
@@ -159,7 +183,8 @@ public abstract class HookManager<T, U extends IForgeRegistryEntry<U>, K>
                         activeWindows.put(key, window);
                         window.screen.init(Minecraft.getInstance(), window.screen.getWindow().getWidth(), window.screen.getWindow().getHeight());
                     }
-                    else if (entry != null) // already existing entry
+                    // already existing entry
+                    else if (entry != null)
                     {
                         entry.lastTimeAccessed = now;
                     }
@@ -224,16 +249,16 @@ public abstract class HookManager<T, U extends IForgeRegistryEntry<U>, K>
         protected final U targetThing;
         protected final ResourceLocation guiLoc;
         protected final long expirationTime;
-        protected final TriggerMechanism<?> trigger;
-        protected final BiPredicate<T, Type> shouldOpen;
+        protected final TriggerMechanism trigger;
+        protected final BiPredicate<T, TriggerMechanism> shouldOpen;
         protected final IGuiActionCallback<T> onOpen;
         protected final IGuiActionCallback<T> onClose;
 
         private HookEntry(final U targetThing,
             final ResourceLocation guiLoc,
             final long expirationTime,
-            final TriggerMechanism<?> trigger,
-            final BiPredicate<T, Type> shouldOpen,
+            final TriggerMechanism trigger,
+            final BiPredicate<T, TriggerMechanism> shouldOpen,
             final IGuiActionCallback<T> onOpen,
             final IGuiActionCallback<T> onClose)
         {
@@ -244,6 +269,11 @@ public abstract class HookManager<T, U extends IForgeRegistryEntry<U>, K>
             this.shouldOpen = shouldOpen;
             this.onOpen = onOpen;
             this.onClose = onClose;
+        }
+
+        public ResourceLocation getTargetThingRegistryKey()
+        {
+            return typeRegistryReference.getKey(targetThing);
         }
     }
 

@@ -8,12 +8,11 @@ import com.ldtteam.blockui.util.SpacerTextComponent.FormattedSpacerComponent;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector4f;
+import org.joml.Matrix4f;
+import org.joml.Vector4f;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraftforge.client.ForgeRenderTypes;
 import org.jetbrains.annotations.Nullable;
@@ -197,11 +196,7 @@ public abstract class AbstractTextElement extends Pane
 
         final int maxWidth = (int) (textWidth / textScale) - (textShadow ? 1 : 0);
         preparedText = text.stream().flatMap(textBlock -> {
-            if (textBlock == TextComponent.EMPTY)
-            {
-                return Stream.of(FormattedCharSequence.EMPTY);
-            }
-            else if (textBlock instanceof SpacerTextComponent spacer)
+            if (textBlock.getContents() instanceof SpacerTextComponent spacer)
             {
                 return Stream.of(spacer.getVisualOrderText());
             }
@@ -220,7 +215,7 @@ public abstract class AbstractTextElement extends Pane
             preparedText = preparedText.subList(0, Math.min(preparedText.size(), maxHeight / lineHeight));
 
             final int heightSum = preparedText.stream()
-                .mapToInt(textBlock -> textBlock instanceof FormattedSpacerComponent spacer ? spacer.getPixelHeight() + textLinespace : lineHeight)
+                .mapToInt(textBlock -> textBlock instanceof FormattedSpacerComponent spacer ? spacer.pixelHeight() + textLinespace : lineHeight)
                 .sum();
             renderedTextWidth = (int) (preparedText.stream().mapToInt(mc.font::width).max().orElse(maxWidth) * textScale);
             renderedTextHeight = (int) ((Math.min(heightSum, maxHeight) - 1 - textLinespace) * textScale);
@@ -275,7 +270,7 @@ public abstract class AbstractTextElement extends Pane
         final Matrix4f matrix4f = ms.last().pose();
 
         final Vector4f temp = new Vector4f(1, 1, 0, 0);
-        temp.transform(matrix4f);
+        matrix4f.transform(temp);
         final float oldScaleX = temp.x();
         final float oldScaleY = temp.y();
         final float newScaleX = (float) Math.round(oldScaleX * textScale * FILTERING_ROUNDING) / FILTERING_ROUNDING;
@@ -285,6 +280,8 @@ public abstract class AbstractTextElement extends Pane
             || Math.abs((float) Math.round(newScaleY) - newScaleY) > FILTERING_THRESHOLD)
         {
             // smooth the texture
+            // if (newScaleX < window.getScreen().getVanillaGuiScale() || newScaleY < window.getScreen().getVanillaGuiScale())
+            // TODO: figure out how to not linear filter when mag filter is used, might just want to use direct ogl call
             ForgeRenderTypes.enableTextTextureLinearFiltering = true;
             ms.scale((float) textScale, (float) textScale, 1.0f);
         }
@@ -305,7 +302,7 @@ public abstract class AbstractTextElement extends Pane
             }
             else if (row instanceof FormattedSpacerComponent spacer)
             {
-                lineShift += spacer.getPixelHeight() + textLinespace;
+                lineShift += spacer.pixelHeight() + textLinespace;
                 continue;
             }
 
@@ -498,15 +495,9 @@ public abstract class AbstractTextElement extends Pane
     /**
      * @return emptyString if empty, otherwise first line as string
      */
-        public String getTextAsString()
+    public String getTextAsString()
     {
         return isTextEmpty() ? "" : text.get(0).getString();
-    }
-
-    @Deprecated
-    public void setText(final String text)
-    {
-        setText(new TextComponent(text));
     }
 
     /**
@@ -536,7 +527,16 @@ public abstract class AbstractTextElement extends Pane
     public void setSize(final int w, final int h)
     {
         super.setSize(w, h);
+        this.setTextSize(w, h);
+    }
 
+    /**
+     * Set the text size.
+     * @param w the width.
+     * @param h the height.
+     */
+    public void setTextSize(final int w, final int h)
+    {
         textWidth = width;
         textHeight = height;
         recalcTextRendering();

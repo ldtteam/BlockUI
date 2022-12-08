@@ -3,16 +3,13 @@ package com.ldtteam.blockui;
 import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Matrix4f;
+import org.joml.Matrix4f;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.util.BitStorage;
+import net.minecraft.network.chat.Component;
 import net.minecraftforge.client.ForgeRenderTypes;
-import net.minecraftforge.client.gui.ForgeIngameGui;
-import net.minecraftforge.client.gui.OverlayRegistry;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -27,85 +24,6 @@ public class BOScreen extends Screen
     protected double y = 0;
     public static boolean isMouseLeftDown = false;
     protected boolean isOpen = false;
-    private static final BitStorage ACCEPTED_KEY_PRESSED_MAP = new BitStorage(1, GLFW.GLFW_KEY_LAST + 1);
-
-    static
-    {
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_A, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_C, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_V, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_X, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_ESCAPE, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_ENTER, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_TAB, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_BACKSPACE, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_INSERT, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_DELETE, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_RIGHT, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_LEFT, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_DOWN, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_UP, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_PAGE_UP, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_PAGE_DOWN, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_HOME, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_END, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_CAPS_LOCK, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_SCROLL_LOCK, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_NUM_LOCK, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_PRINT_SCREEN, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_PAUSE, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F1, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F2, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F3, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F4, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F5, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F6, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F7, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F8, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F9, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F10, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F11, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F12, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F13, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F14, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F15, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F16, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F17, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F18, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F19, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F20, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F21, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F22, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F23, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F24, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_F25, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_KP_0, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_KP_1, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_KP_2, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_KP_3, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_KP_4, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_KP_5, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_KP_6, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_KP_7, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_KP_8, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_KP_9, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_KP_DECIMAL, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_KP_DIVIDE, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_KP_MULTIPLY, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_KP_SUBTRACT, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_KP_ADD, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_KP_ENTER, 1);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_KP_EQUAL, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_LEFT_SHIFT, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_LEFT_CONTROL, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_LEFT_ALT, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_LEFT_SUPER, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_RIGHT_SHIFT, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_RIGHT_CONTROL, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_RIGHT_ALT, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_RIGHT_SUPER, 0);
-        ACCEPTED_KEY_PRESSED_MAP.set(GLFW.GLFW_KEY_MENU, 1);
-    }
 
     /**
      * Create a GuiScreen from a BlockOut window.
@@ -114,7 +32,7 @@ public class BOScreen extends Screen
      */
     public BOScreen(final BOWindow w)
     {
-        super(new TextComponent("Blockout GUI"));
+        super(Component.literal("Blockout GUI"));
         window = w;
     }
 
@@ -156,7 +74,7 @@ public class BOScreen extends Screen
         // replace vanilla projection
         final PoseStack shaderPs = RenderSystem.getModelViewStack();
         final Matrix4f oldProjection = RenderSystem.getProjectionMatrix();
-        RenderSystem.setProjectionMatrix(Matrix4f.orthographic(0.0F, (float) fbWidth, 0.0F, (float) fbHeight, -10000.0F, 50000.0F));
+        RenderSystem.setProjectionMatrix((new Matrix4f()).setOrtho(0.0F, (float) fbWidth, 0.0F, (float) fbHeight, -10000.0F, 50000.0F));
         shaderPs.pushPose();
         shaderPs.setIdentity();
 
@@ -204,7 +122,7 @@ public class BOScreen extends Screen
         {
             try
             {
-                return ACCEPTED_KEY_PRESSED_MAP.get(key) == 0 || window.onKeyTyped('\0', key);
+                return window.onKeyTyped('\0', key);
             }
             catch (final Exception e)
             {
@@ -324,11 +242,13 @@ public class BOScreen extends Screen
         return false;
     }
 
-    @Override
-    public void init()
+    /**
+     * Get the open window here.
+     * @return the window.
+     */
+    public BOWindow getWindow()
     {
-        minecraft.keyboardHandler.setSendRepeatsToGui(true);
-        OverlayRegistry.enableOverlay(ForgeIngameGui.CROSSHAIR_ELEMENT, false);
+        return window;
     }
 
     @Override
@@ -382,8 +302,6 @@ public class BOScreen extends Screen
         finally
         {
             BOWindow.clearFocus();
-            minecraft.keyboardHandler.setSendRepeatsToGui(false);
-            OverlayRegistry.enableOverlay(ForgeIngameGui.CROSSHAIR_ELEMENT, true);
         }
     }
 

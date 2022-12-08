@@ -3,7 +3,6 @@ package com.ldtteam.blockui.views;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.controls.Scrollbar;
-import com.ldtteam.blockui.util.records.Pos2i.MutablePos2i;
 
 /**
  * Basic scrolling view.

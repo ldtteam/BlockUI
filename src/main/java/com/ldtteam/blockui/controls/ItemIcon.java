@@ -10,10 +10,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.client.gui.Font;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.client.RenderProperties;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Collections;
@@ -25,7 +26,7 @@ import java.util.List;
 public class ItemIcon extends Pane
 {
     private static final float DEFAULT_ITEMSTACK_SIZE = 16f;
-    private static final SpacerTextComponent FIX_VANILLA_TOOLTIP = new SpacerTextComponent(1);
+    private static final MutableComponent FIX_VANILLA_TOOLTIP = SpacerTextComponent.of(1);
 
     /**
      * ItemStack represented in the itemIcon.
@@ -68,9 +69,9 @@ public class ItemIcon extends Pane
     public void setItem(final ItemStack itemStackIn)
     {
         this.itemStack = itemStackIn;
-        if (onHover instanceof Tooltip)
+        if (onHover instanceof final Tooltip tooltip)
         {
-            ((Tooltip) onHover).setTextOld(getModifiedItemStackTooltip());
+            tooltip.setTextOld(getModifiedItemStackTooltip());
         }
     }
 
@@ -94,7 +95,7 @@ public class ItemIcon extends Pane
             ms.scale(this.getWidth() / DEFAULT_ITEMSTACK_SIZE, this.getHeight() / DEFAULT_ITEMSTACK_SIZE, 1.0f);
             MatrixUtils.pushShaderMVstack(ms);
 
-            Font font = RenderProperties.get(itemStack).getFont(itemStack);
+            Font font = IClientItemExtensions.DEFAULT.getFont(itemStack, IClientItemExtensions.FontContext.ITEM_COUNT);
             if (font == null)
             {
                 font = mc.font;

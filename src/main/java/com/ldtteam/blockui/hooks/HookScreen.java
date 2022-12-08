@@ -1,7 +1,7 @@
 package com.ldtteam.blockui.hooks;
 
 import com.ldtteam.blockui.BOScreen;
-import com.ldtteam.blockui.hooks.TriggerMechanism.Type;
+import com.ldtteam.blockui.hooks.TriggerMechanism.RayTraceTriggerMechanism;
 import com.ldtteam.blockui.views.ScrollingList;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -22,7 +22,7 @@ public class HookScreen extends BOScreen
     {
         super(window);
         this.windowTyped = window;
-        captureScroll = window.windowHolder.hook.trigger.getType() == Type.RAY_TRACE;
+        captureScroll = window.windowHolder.hook.trigger instanceof RayTraceTriggerMechanism;
     }
 
     @Override
@@ -54,7 +54,7 @@ public class HookScreen extends BOScreen
             final CrashReport crashReport = CrashReport.forThrowable(e, "Rendering Hook BO screen");
             final CrashReportCategory category = crashReport.addCategory("Hook BO screen rendering details");
             category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
-            category.setDetail("Hook thing type", () -> windowTyped.getHookThingType().getRegistryName().toString());
+            category.setDetail("Hook thing type", () -> windowTyped.getHookThingRegistryKey().toString());
             category.setDetail("Hook thing", () -> windowTyped.getHookThing().toString());
             throw new ReportedException(crashReport);
         }
@@ -81,7 +81,7 @@ public class HookScreen extends BOScreen
                 final CrashReportCategory category = crashReport.addCategory("Hook BO screen scroll event details");
                 category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
                 category.setDetail("Scroll value", () -> Double.toString(scrollDiff));
-                category.setDetail("Hook thing type", () -> windowTyped.getHookThingType().getRegistryName().toString());
+                category.setDetail("Hook thing type", () -> windowTyped.getHookThingRegistryKey().toString());
                 category.setDetail("Hook thing", () -> windowTyped.getHookThing().toString());
                 throw new ReportedException(crashReport);
             }
@@ -127,7 +127,7 @@ public class HookScreen extends BOScreen
             final CrashReportCategory category = crashReport.addCategory("Hook BO screen update details");
             category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
             category.setDetail("Is opened", () -> Boolean.toString(isOpen));
-            category.setDetail("Hook thing type", () -> windowTyped.getHookThingType().getRegistryName().toString());
+            category.setDetail("Hook thing type", () -> windowTyped.getHookThingRegistryKey().toString());
             category.setDetail("Hook thing", () -> windowTyped.getHookThing().toString());
             throw new ReportedException(crashReport);
         }

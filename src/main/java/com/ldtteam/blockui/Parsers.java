@@ -2,8 +2,8 @@ package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.mod.Log;
 import net.minecraft.client.resources.language.I18n;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import java.util.ArrayList;
@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public final class Parsers
 {
@@ -56,20 +55,21 @@ public final class Parsers
     /** Parses a potentially translatable portion of text as a component */
     public static Function<String, MutableComponent> TEXT = v -> {
         final String result = RAW_TEXT.apply(v);
-        return result == null ? null : new TextComponent(result);
+        return result == null ? null : Component.literal(result);
     };
 
     /** Applies the TEXT parser across multiple lines */
     public static Function<String, List<MutableComponent>> MULTILINE = v -> Arrays.stream(Parsers.RAW_TEXT.apply(v).split("(\\\\n|\\n)"))
-        .map(TextComponent::new)
-        .collect(Collectors.toList());
+        .map(Component::literal)
+        .map(MutableComponent.class::cast)
+        .toList();
 
     /** Parses a color from hex, rgba, name, or pure value */
     public static Function<String, Integer> COLOR = v -> {
         Matcher m = HEXADECIMAL_PATTERN.matcher(v);
         if (m.find())
         {
-            return Integer.parseInt(m.group(), 16);
+            return Integer.parseInt(m.group(1), 16);
         }
 
         m = RGBA_PATTERN.matcher(v);

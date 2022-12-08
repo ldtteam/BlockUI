@@ -1,7 +1,8 @@
 package com.ldtteam.blockui.hooks;
 
 import com.google.common.base.Predicates;
-import com.ldtteam.blockui.hooks.TriggerMechanism.Type;
+import com.ldtteam.blockui.hooks.TriggerMechanism.RangeTriggerMechanism;
+import com.ldtteam.blockui.hooks.TriggerMechanism.RayTraceTriggerMechanism;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
@@ -15,9 +16,8 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,10 +37,10 @@ public final class HookRegistries
     /**
      * TileEntityType registry
      */
-    public static final TileEntityReg TILE_ENTITY_HOOKS = new TileEntityReg();
+    public static final BlockEntityReg BLOCK_ENTITY_HOOKS = new BlockEntityReg();
 
     // should be in the same order as world render
-    private static final HookManager<?, ?, ?>[] REGISTRIES = {TILE_ENTITY_HOOKS, ENTITY_HOOKS};
+    private static final HookManager<?, ?, ?>[] REGISTRIES = {BLOCK_ENTITY_HOOKS, ENTITY_HOOKS};
 
     public static void tick(final long ticks)
     {
@@ -62,6 +62,7 @@ public final class HookRegistries
     {
         private EntityReg()
         {
+            super(ForgeRegistries.ENTITY_TYPES);
         }
 
         /**
@@ -76,7 +77,7 @@ public final class HookRegistries
          */
         public <T extends Entity & IGuiHookable> void register(final EntityType<T> targetThing,
             final ResourceLocation guiLoc,
-            final TriggerMechanism<?> trigger)
+            final TriggerMechanism trigger)
         {
             register(targetThing, guiLoc, 0, trigger);
         }
@@ -95,7 +96,7 @@ public final class HookRegistries
         public <T extends Entity & IGuiHookable> void register(final EntityType<T> targetThing,
             final ResourceLocation guiLoc,
             final long expirationTime,
-            final TriggerMechanism<?> trigger)
+            final TriggerMechanism trigger)
         {
             register(targetThing, guiLoc, expirationTime, trigger, IGuiHookable::shouldOpen, IGuiHookable::onOpen, IGuiHookable::onClose);
         }
@@ -104,7 +105,8 @@ public final class HookRegistries
          * <p>
          * Register a gui (located at guiLoc) to targetThing. This gui will be opened everytime trigger condition is satisfied and
          * will get closed once the condition is no longer satisfied.
-         * </p><p>
+         * </p>
+         * <p>
          * {@link IGuiHookable Gui callbacks} are managed by their respective parameters.
          * </p>
          *
@@ -118,8 +120,8 @@ public final class HookRegistries
          */
         public <T extends Entity> void register(final EntityType<T> targetThing,
             final ResourceLocation guiLoc,
-            final TriggerMechanism<?> trigger,
-            @Nullable final BiPredicate<T, Type> shouldOpen,
+            final TriggerMechanism trigger,
+            @Nullable final BiPredicate<T, TriggerMechanism> shouldOpen,
             @Nullable final IGuiActionCallback<T> onOpen,
             @Nullable final IGuiActionCallback<T> onClose)
         {
@@ -130,7 +132,8 @@ public final class HookRegistries
          * <p>
          * Register a gui (located at guiLoc) to targetThing. This gui will be opened everytime trigger condition is satisfied and
          * will get closed once the condition is no longer satisfied + expirationTime.
-         * </p><p>
+         * </p>
+         * <p>
          * {@link IGuiHookable Gui callbacks} are managed by their respective parameters.
          * </p>
          *
@@ -138,7 +141,7 @@ public final class HookRegistries
          * @param guiLoc         location of gui xml
          * @param expirationTime how long should gui remain opened after the condition stops being satisfied [in millis]
          * @param trigger        trigger condition
-         * @param shouldOpen  gets fired when gui is about to be opened, can deny opening
+         * @param shouldOpen     gets fired when gui is about to be opened, can deny opening
          * @param onOpen         gets fired when gui is opened
          * @param onClose        gets fired when gui is closed
          * @see IGuiHookable for gui callbacks
@@ -146,8 +149,8 @@ public final class HookRegistries
         public <T extends Entity> void register(final EntityType<T> targetThing,
             final ResourceLocation guiLoc,
             final long expirationTime,
-            final TriggerMechanism<?> trigger,
-            @Nullable final BiPredicate<T, Type> shouldOpen,
+            final TriggerMechanism trigger,
+            @Nullable final BiPredicate<T, TriggerMechanism> shouldOpen,
             @Nullable final IGuiActionCallback<T> onOpen,
             @Nullable final IGuiActionCallback<T> onClose)
         {
@@ -155,36 +158,33 @@ public final class HookRegistries
         }
 
         @Override
-        protected List<Entity> findTriggered(final EntityType<?> entityType, final TriggerMechanism<?> trigger)
+        protected List<Entity> findTriggered(final EntityType<?> entityType, final TriggerMechanism trigger)
         {
             final Minecraft mc = Minecraft.getInstance();
-            final List<Entity> targets;
 
-            switch (trigger.getType())
+            // TODO: sealed switch
+            if (trigger instanceof RangeTriggerMechanism rangeTrigger)
             {
-                case DISTANCE:
-                    targets = mc.level.getEntities((EntityType<Entity>) entityType,
-                        mc.player.getBoundingBox().inflate(((TriggerMechanism<Double>) trigger).getConfig()),
-                        Predicates.alwaysTrue());
-                    break;
-
-                case RAY_TRACE:
-                    if (mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.ENTITY)
-                    {
-                        final Entity entity = ((EntityHitResult) mc.hitResult).getEntity();
-                        targets = entity.getType() == entityType ? Arrays.asList(entity) : Collections.emptyList();
-                    }
-                    else
-                    {
-                        targets = Collections.emptyList();
-                    }
-                    break;
-
-                default:
-                    throw new IllegalArgumentException("No trigger mechanism for Entity and " + trigger.getName() + " trigger.");
+                return mc.level.getEntities((EntityType<Entity>) entityType,
+                    mc.player.getBoundingBox().inflate(rangeTrigger.getSearchRange()),
+                    Predicates.alwaysTrue());
             }
-
-            return targets;
+            else if (trigger instanceof RayTraceTriggerMechanism)
+            {
+                if (mc.hitResult != null && mc.hitResult instanceof EntityHitResult entityHitResult)
+                {
+                    final Entity entity = entityHitResult.getEntity();
+                    if (entity.getType() == entityType)
+                    {
+                        return Arrays.asList(entity);
+                    }
+                }
+                return Collections.emptyList();
+            }
+            else
+            {
+                throw new IllegalArgumentException("No trigger mechanism for Entity and " + trigger.getName() + " trigger.");
+            }
         }
 
         @Override
@@ -203,10 +203,11 @@ public final class HookRegistries
         }
     }
 
-    public static class TileEntityReg extends HookManager<BlockEntity, BlockEntityType<?>, BlockPos>
+    public static class BlockEntityReg extends HookManager<BlockEntity, BlockEntityType<?>, BlockPos>
     {
-        private TileEntityReg()
+        private BlockEntityReg()
         {
+            super(ForgeRegistries.BLOCK_ENTITY_TYPES);
         }
 
         /**
@@ -221,7 +222,7 @@ public final class HookRegistries
          */
         public <T extends BlockEntity & IGuiHookable> void register(final BlockEntityType<T> targetThing,
             final ResourceLocation guiLoc,
-            final TriggerMechanism<?> trigger)
+            final TriggerMechanism trigger)
         {
             register(targetThing, guiLoc, 0, trigger);
         }
@@ -240,7 +241,7 @@ public final class HookRegistries
         public <T extends BlockEntity & IGuiHookable> void register(final BlockEntityType<T> targetThing,
             final ResourceLocation guiLoc,
             final long expirationTime,
-            final TriggerMechanism<?> trigger)
+            final TriggerMechanism trigger)
         {
             register(targetThing, guiLoc, expirationTime, trigger, IGuiHookable::shouldOpen, IGuiHookable::onOpen, IGuiHookable::onClose);
         }
@@ -249,7 +250,8 @@ public final class HookRegistries
          * <p>
          * Register a gui (located at guiLoc) to targetThing. This gui will be opened everytime trigger condition is satisfied and
          * will get closed once the condition is no longer satisfied.
-         * </p><p>
+         * </p>
+         * <p>
          * {@link IGuiHookable Gui callbacks} are managed by their respective parameters.
          * </p>
          *
@@ -263,8 +265,8 @@ public final class HookRegistries
          */
         public <T extends BlockEntity> void register(final BlockEntityType<T> targetThing,
             final ResourceLocation guiLoc,
-            final TriggerMechanism<?> trigger,
-            @Nullable final BiPredicate<T, Type> shouldOpen,
+            final TriggerMechanism trigger,
+            @Nullable final BiPredicate<T, TriggerMechanism> shouldOpen,
             @Nullable final IGuiActionCallback<T> onOpen,
             @Nullable final IGuiActionCallback<T> onClose)
         {
@@ -275,7 +277,8 @@ public final class HookRegistries
          * <p>
          * Register a gui (located at guiLoc) to targetThing. This gui will be opened everytime trigger condition is satisfied and
          * will get closed once the condition is no longer satisfied + expirationTime.
-         * </p><p>
+         * </p>
+         * <p>
          * {@link IGuiHookable Gui callbacks} are managed by their respective parameters.
          * </p>
          *
@@ -283,7 +286,7 @@ public final class HookRegistries
          * @param guiLoc         location of gui xml
          * @param expirationTime how long should gui remain opened after the condition stops being satisfied [in millis]
          * @param trigger        trigger condition
-         * @param shouldOpen  gets fired when gui is about to be opened, can deny opening
+         * @param shouldOpen     gets fired when gui is about to be opened, can deny opening
          * @param onOpen         gets fired when gui is opened
          * @param onClose        gets fired when gui is closed
          * @see IGuiHookable for gui callbacks
@@ -291,8 +294,8 @@ public final class HookRegistries
         public <T extends BlockEntity> void register(final BlockEntityType<T> targetThing,
             final ResourceLocation guiLoc,
             final long expirationTime,
-            final TriggerMechanism<?> trigger,
-            @Nullable final BiPredicate<T, Type> shouldOpen,
+            final TriggerMechanism trigger,
+            @Nullable final BiPredicate<T, TriggerMechanism> shouldOpen,
             @Nullable final IGuiActionCallback<T> onOpen,
             @Nullable final IGuiActionCallback<T> onClose)
         {
@@ -300,60 +303,58 @@ public final class HookRegistries
         }
 
         @Override
-        protected List<BlockEntity> findTriggered(final BlockEntityType<?> teType, final TriggerMechanism<?> trigger)
+        protected List<BlockEntity> findTriggered(final BlockEntityType<?> teType, final TriggerMechanism trigger)
         {
             final Minecraft mc = Minecraft.getInstance();
-            final List<BlockEntity> targets;
 
-            switch (trigger.getType())
+            // TODO: sealed switch
+            if (trigger instanceof RangeTriggerMechanism rangeTrigger)
             {
-                case DISTANCE:
-                    final AABB aabb = mc.player.getBoundingBox().inflate(((TriggerMechanism<Double>) trigger).getConfig());
-                    final int xStart = Mth.floor(aabb.minX / 16.0D);
-                    final int xEnd = Mth.ceil(aabb.maxX / 16.0D);
-                    final int zStart = Mth.floor(aabb.minZ / 16.0D);
-                    final int zEnd = Mth.ceil(aabb.maxZ / 16.0D);
+                final AABB aabb = mc.player.getBoundingBox().inflate(rangeTrigger.getSearchRange());
+                final int xStart = Mth.floor(aabb.minX / 16.0D);
+                final int xEnd = Mth.ceil(aabb.maxX / 16.0D);
+                final int zStart = Mth.floor(aabb.minZ / 16.0D);
+                final int zEnd = Mth.ceil(aabb.maxZ / 16.0D);
 
-                    targets = new ArrayList<>();
-                    for (int chunkX = xStart; chunkX < xEnd; ++chunkX)
+                final List<BlockEntity> targets = new ArrayList<>();
+                for (int chunkX = xStart; chunkX < xEnd; ++chunkX)
+                {
+                    for (int chunkZ = zStart; chunkZ < zEnd; ++chunkZ)
                     {
-                        for (int chunkZ = zStart; chunkZ < zEnd; ++chunkZ)
+                        final LevelChunk chunk = mc.level.getChunkSource().getChunk(chunkX, chunkZ, false);
+                        if (chunk != null)
                         {
-                            final LevelChunk chunk = mc.level.getChunkSource().getChunk(chunkX, chunkZ, false);
-                            if (chunk != null)
+                            for (final Entry<BlockPos, BlockEntity> entry : chunk.getBlockEntities().entrySet())
                             {
-                                for (final Entry<BlockPos, BlockEntity> entry : chunk.getBlockEntities().entrySet())
+                                final BlockPos bp = entry.getKey();
+                                final BlockEntity te = entry.getValue();
+                                if (te.getType() == teType && bp.getX() > aabb.minX && bp.getX() < aabb.maxX && bp.getY() > aabb.minY
+                                    && bp.getY() < aabb.maxY && bp.getZ() > aabb.minZ && bp.getZ() < aabb.maxZ)
                                 {
-                                    final BlockPos bp = entry.getKey();
-                                    final BlockEntity te = entry.getValue();
-                                    if (te.getType() == teType && bp.getX() > aabb.minX && bp.getX() < aabb.maxX
-                                        && bp.getY() > aabb.minY && bp.getY() < aabb.maxY && bp.getZ() > aabb.minZ && bp.getZ() < aabb.maxZ)
-                                    {
-                                        targets.add(te);
-                                    }
+                                    targets.add(te);
                                 }
                             }
                         }
                     }
-                    break;
-
-                case RAY_TRACE:
-                    if (mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.BLOCK)
-                    {
-                        final BlockEntity te = mc.level.getBlockEntity(((BlockHitResult) mc.hitResult).getBlockPos());
-                        targets = te == null || te.getType() != teType ? Collections.emptyList() : Arrays.asList(te);
-                    }
-                    else
-                    {
-                        targets = Collections.emptyList();
-                    }
-                    break;
-
-                default:
-                    throw new IllegalArgumentException("No trigger mechanism for TileEntity and " + trigger.getName() + " trigger.");
+                }
+                return targets;
             }
-
-            return targets;
+            else if (trigger instanceof RayTraceTriggerMechanism)
+            {
+                if (mc.hitResult != null && mc.hitResult instanceof BlockHitResult blockHitResult)
+                {
+                    final BlockEntity te = mc.level.getBlockEntity(blockHitResult.getBlockPos());
+                    if (te != null && te.getType() == teType)
+                    {
+                        return Arrays.asList(te);
+                    }
+                }
+                return Collections.emptyList();
+            }
+            else
+            {
+                throw new IllegalArgumentException("No trigger mechanism for BlockEntity and " + trigger.getName() + " trigger.");
+            }
         }
 
         @Override

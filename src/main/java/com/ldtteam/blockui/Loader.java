@@ -4,13 +4,13 @@ import com.ldtteam.blockui.controls.*;
 import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.views.*;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -45,6 +45,7 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
         register("imagerepeat", ImageRepeatable::new);
         register("box", Box::new);
         register("itemicon", ItemIcon::new);
+        register("entityicon", EntityIcon::new);
         register("switch", SwitchView::new);
         register("dropdown", DropDownList::new);
         register("overlay", OverlayView::new);
@@ -182,12 +183,11 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
             throw new RuntimeException(e);
         }
 
-        rm.listResources("gui", pathStr -> pathStr.endsWith(".xml")).forEach(rl -> {
+        rm.listResources("gui", rl -> rl.getPath().endsWith(".xml")).forEach((rl, res) -> {
             final Document doc;
-            try
+            try (final InputStream is = res.open())
             {
-                final Resource res = rm.getResource(rl);
-                doc = documentBuilder.parse(res.getInputStream());
+                doc = documentBuilder.parse(is);
             }
             catch (final IOException | SAXException e)
             {
