@@ -74,7 +74,7 @@ public class BOScreen extends Screen
         // replace vanilla projection
         final PoseStack shaderPs = RenderSystem.getModelViewStack();
         final Matrix4f oldProjection = RenderSystem.getProjectionMatrix();
-        RenderSystem.setProjectionMatrix((new Matrix4f()).setOrtho(0.0F, (float) fbWidth, 0.0F, (float) fbHeight, -10000.0F, 50000.0F));
+        RenderSystem.setProjectionMatrix(new Matrix4f().setOrtho(0.0F, (float) fbWidth, (float) fbHeight, 0.0F, -10000.0F, 50000.0F));
         shaderPs.pushPose();
         shaderPs.setIdentity();
 
