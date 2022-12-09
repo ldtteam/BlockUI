@@ -24,7 +24,6 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import org.joml.Quaternionf;
-import org.joml.Vector3f;
 
 import java.io.IOException;
 
