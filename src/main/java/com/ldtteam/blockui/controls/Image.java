@@ -152,13 +152,16 @@ public class Image extends Pane
      */
     public void setImage(final ResourceLocation rl, final int u, final int v, final int uWidth, final int vHeight)
     {
+        if (!Objects.equals(rl, resourceLocation))
+        {
+            loadMapDimensions(rl);
+        }
+
         resourceLocation = rl;
         this.u = u;
         this.v = v;
         this.uWidth = uWidth;
         this.vHeight = vHeight;
-
-        loadMapDimensions(rl);
     }
 
     /**
@@ -169,6 +172,11 @@ public class Image extends Pane
      */
     public void setImage(final ResourceLocation rl, final boolean keepUv)
     {
+        if (!Objects.equals(rl, resourceLocation))
+        {
+            loadMapDimensions(rl);
+        }
+
         resourceLocation = rl;
 
         if (!keepUv)
@@ -178,8 +186,6 @@ public class Image extends Pane
             uWidth = 0;
             vHeight = 0;
         }
-
-        loadMapDimensions(rl);
     }
 
     /**
