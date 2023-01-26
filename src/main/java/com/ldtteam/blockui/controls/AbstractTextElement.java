@@ -8,8 +8,8 @@ import com.ldtteam.blockui.util.SpacerTextComponent.FormattedSpacerComponent;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
-import org.joml.Matrix4f;
-import org.joml.Vector4f;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Vector4f;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -270,7 +270,7 @@ public abstract class AbstractTextElement extends Pane
         final Matrix4f matrix4f = ms.last().pose();
 
         final Vector4f temp = new Vector4f(1, 1, 0, 0);
-        matrix4f.transform(temp);
+        temp.transform(matrix4f);
         final float oldScaleX = temp.x();
         final float oldScaleY = temp.y();
         final float newScaleX = (float) Math.round(oldScaleX * textScale * FILTERING_ROUNDING) / FILTERING_ROUNDING;

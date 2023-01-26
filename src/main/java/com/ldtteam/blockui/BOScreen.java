@@ -3,12 +3,14 @@ package com.ldtteam.blockui;
 import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import org.joml.Matrix4f;
+import com.mojang.math.Matrix4f;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.BitStorage;
+import net.minecraft.util.SimpleBitStorage;
 import net.minecraftforge.client.ForgeRenderTypes;
 import org.lwjgl.glfw.GLFW;
 
@@ -74,7 +76,7 @@ public class BOScreen extends Screen
         // replace vanilla projection
         final PoseStack shaderPs = RenderSystem.getModelViewStack();
         final Matrix4f oldProjection = RenderSystem.getProjectionMatrix();
-        RenderSystem.setProjectionMatrix(new Matrix4f().setOrtho(0.0F, (float) fbWidth, (float) fbHeight, 0.0F, -10000.0F, 50000.0F));
+        RenderSystem.setProjectionMatrix(Matrix4f.orthographic(0.0F, (float) fbWidth, 0.0F, (float) fbHeight, -10000.0F, 50000.0F));
         shaderPs.pushPose();
         shaderPs.setIdentity();
 
@@ -242,6 +244,12 @@ public class BOScreen extends Screen
         return false;
     }
 
+    @Override
+    public void init()
+    {
+        minecraft.keyboardHandler.setSendRepeatsToGui(true);
+    }
+
     /**
      * Get the open window here.
      * @return the window.
@@ -302,6 +310,7 @@ public class BOScreen extends Screen
         finally
         {
             BOWindow.clearFocus();
+            minecraft.keyboardHandler.setSendRepeatsToGui(false);
         }
     }
 

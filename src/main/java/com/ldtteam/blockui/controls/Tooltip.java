@@ -5,7 +5,7 @@ import com.ldtteam.blockui.Alignment;
 import com.ldtteam.blockui.PaneParams;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.systems.RenderSystem;
-import org.joml.Matrix4f;
+import com.mojang.math.Matrix4f;
 
 import net.minecraft.client.renderer.GameRenderer;
 
@@ -19,9 +19,9 @@ public class Tooltip extends AbstractTextElement
 
     private static final int CURSOR_BOX_SIZE = 12;
     private static final int Z_OFFSET = 200;
-    private static final int BACKGROUND_COLOR = 0xf0100010; // TooltipRenderUtil.BACKGROUND_COLOR;
-    private static final int BORDER_COLOR_A = 0x505000ff; // TooltipRenderUtil.BORDER_COLOR_TOP
-    private static final int BORDER_COLOR_B = 0x5028007f; // TooltipRenderUtil.BORDER_COLOR_BOTTOM
+    private static final int BACKGROUND_COLOR = 0xf0100010;
+    private static final int BORDER_COLOR_A = 0x505000ff;
+    private static final int BORDER_COLOR_B = 0x5028007f;
 
     public static final int DEFAULT_TEXT_COLOR = 0xffffff; // white
 
@@ -138,7 +138,6 @@ public class Tooltip extends AbstractTextElement
             }
 
             // modified INLINE: vanilla Screen#renderTooltip(MatrixStack, List<? extends IReorderingProcessor>, int, int, FontRenderer)
-            // TODO: update from net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil
             ms.pushPose();
             ms.translate(x, y, Z_OFFSET);
 

@@ -3,7 +3,7 @@ package com.ldtteam.blockui;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.util.Mth;
-import org.joml.Matrix4f;
+import com.mojang.math.Matrix4f;
 
 /**
  * Helpful util methods when using Matrixes
@@ -70,7 +70,7 @@ public class MatrixUtils
      */
     public static float getMatrixTranslateX(final Matrix4f matrix)
     {
-        return matrix.m03();
+        return matrix.m03;
     }
 
     /**
@@ -78,7 +78,7 @@ public class MatrixUtils
      */
     public static float getMatrixTranslateY(final Matrix4f matrix)
     {
-        return matrix.m13();
+        return matrix.m13;
     }
 
     /**
@@ -86,14 +86,14 @@ public class MatrixUtils
      */
     public static float getMatrixTranslateZ(final Matrix4f matrix)
     {
-        return matrix.m23();
+        return matrix.m23;
     }
 
     public static void pushShaderMVstack(final PoseStack pushWith)
     {
         final PoseStack ps = RenderSystem.getModelViewStack();
         ps.pushPose();
-        ps.last().pose().mul(pushWith.last().pose());
+        ps.last().pose().multiply(pushWith.last().pose());
         ps.last().normal().mul(pushWith.last().normal());
         RenderSystem.applyModelViewMatrix();
     }

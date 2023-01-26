@@ -15,7 +15,7 @@ public class OutOfJarResourceLocation extends ResourceLocation
 
     protected OutOfJarResourceLocation(final String namespace, final Path path, final String pathString)
     {
-        super(namespace, pathString);
+        super(new String[] {namespace, pathString});
         this.nioPath = path;
     }
 
@@ -66,7 +66,7 @@ public class OutOfJarResourceLocation extends ResourceLocation
     {
         if (o instanceof OutOfJarResourceLocation nioResLoc)
         {
-            int ret = this.getNamespace().compareTo(nioResLoc.getNamespace());
+            int ret = this.namespace.compareTo(nioResLoc.namespace);
             return ret != 0 ? ret : this.nioPath.compareTo(nioResLoc.nioPath);
         }
         return super.compareNamespaced(o);
@@ -78,7 +78,7 @@ public class OutOfJarResourceLocation extends ResourceLocation
         if (o instanceof OutOfJarResourceLocation nioResLoc)
         {
             int ret = this.nioPath.compareTo(nioResLoc.nioPath);
-            return ret != 0 ? ret : this.getNamespace().compareTo(nioResLoc.getNamespace());
+            return ret != 0 ? ret : this.namespace.compareTo(nioResLoc.namespace);
         }
         return super.compareTo(o);
     }
@@ -86,7 +86,7 @@ public class OutOfJarResourceLocation extends ResourceLocation
     @Override
     public int hashCode()
     {
-        return 31 * this.getNamespace().hashCode() + this.nioPath.hashCode();
+        return 31 * this.namespace.hashCode() + this.nioPath.hashCode();
     }
 
     @Override
@@ -98,7 +98,7 @@ public class OutOfJarResourceLocation extends ResourceLocation
         }
         if (obj instanceof OutOfJarResourceLocation nioResLoc)
         {
-            return this.getNamespace().equals(nioResLoc.getNamespace()) && this.nioPath.equals(nioResLoc.nioPath);
+            return this.namespace.equals(nioResLoc.namespace) && this.nioPath.equals(nioResLoc.nioPath);
         }
         return false;
     }
