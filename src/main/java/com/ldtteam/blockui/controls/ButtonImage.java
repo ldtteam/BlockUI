@@ -198,14 +198,15 @@ public class ButtonImage extends Button
      */
     public void setImage(final ResourceLocation loc, final int offsetX, final int offsetY, final int w, final int h)
     {
-        if (loc == image && imageOffsetX == offsetX && imageOffsetY == offsetY && imageHeight == w && imageWidt == h)
+        imageOffsetX = offsetX;
+        imageOffsetY = offsetY;
+        
+        if (loc == image && imageHeight == w && imageWidt == h)
         {
             return;
         }
         
         image = loc;
-        imageOffsetX = offsetX;
-        imageOffsetY = offsetY;
         imageHeight = w;
         imageWidth = h;
 
