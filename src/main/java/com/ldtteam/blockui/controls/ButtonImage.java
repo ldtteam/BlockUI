@@ -231,8 +231,6 @@ public class ButtonImage extends Button
             imageHeight = 0;
             imageWidth = 0;
         }
-
-        loadImageDimensions(loc);
     }
 
     /**
