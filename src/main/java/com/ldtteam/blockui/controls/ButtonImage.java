@@ -198,19 +198,16 @@ public class ButtonImage extends Button
      */
     public void setImage(final ResourceLocation loc, final int offsetX, final int offsetY, final int w, final int h)
     {
-        imageOffsetX = offsetX;
-        imageOffsetY = offsetY;
-
-        if (Objects.equals(loc, image) && imageHeight == w && imageWidth == h)
+        if (!Objects.equals(loc, image))
         {
-            return;
+            loadImageDimensions(loc);
         }
 
         image = loc;
+        imageOffsetX = offsetX;
+        imageOffsetY = offsetY;
         imageHeight = w;
         imageWidth = h;
-
-        loadImageDimensions(loc);
     }
 
     /**
@@ -220,9 +217,9 @@ public class ButtonImage extends Button
      */
     public void setImage(final ResourceLocation loc, final boolean keepUv)
     {
-        if (Objects.equals(loc, image) && !keepUv)
+        if (!Objects.equals(loc, image))
         {
-            return;
+            loadImageDimensions(loc);
         }
 
         image = loc;
@@ -234,8 +231,6 @@ public class ButtonImage extends Button
             imageHeight = 0;
             imageWidth = 0;
         }
-
-        loadImageDimensions(loc);
     }
 
     /**
