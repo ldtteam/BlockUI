@@ -10,9 +10,8 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat.Mode;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Quaternion;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
+import org.joml.Matrix4f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -24,6 +23,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import org.joml.Quaternionf;
+
 import java.io.IOException;
 
 /**
@@ -671,8 +672,8 @@ public class UiRenderMacros
         poseStack.scale(1.0F, 1.0F, -1.0F);
         poseStack.translate(0.0D, 0.0D, 1000.0D);
         poseStack.scale((float) scale, (float) scale, (float) scale);
-        final Quaternion pitchRotation = Vector3f.XP.rotationDegrees(pitch);
-        poseStack.mulPose(Vector3f.ZP.rotationDegrees(180.0F));
+        final Quaternionf pitchRotation = Axis.XP.rotationDegrees(pitch);
+        poseStack.mulPose(Axis.ZP.rotationDegrees(180.0F));
         poseStack.mulPose(pitchRotation);
         final float oldYaw = entity.getYRot();
         final float oldPitch = entity.getXRot();
@@ -688,7 +689,7 @@ public class UiRenderMacros
             livingEntity.yHeadRotO = entity.getYRot();
         }
         final EntityRenderDispatcher dispatcher = mc.getEntityRenderDispatcher();
-        pitchRotation.conj();
+        pitchRotation.conjugate();
         dispatcher.overrideCameraOrientation(pitchRotation);
         dispatcher.setRenderShadow(false);
         final MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
