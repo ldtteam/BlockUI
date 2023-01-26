@@ -244,13 +244,16 @@ public class ButtonImage extends Button
      */
     public void setImageHighlight(final ResourceLocation loc, final int offsetX, final int offsetY, final int w, final int h)
     {
+        if (!Objects.equals(loc, imageHighlight))
+        {
+            loadImageHighlightDimensions(loc);
+        }
+
         imageHighlight = loc;
         highlightOffsetX = offsetX;
         highlightOffsetY = offsetY;
         highlightHeight = w;
         highlightWidth = h;
-
-        loadImageHighlightDimensions(loc);
     }
 
     /**
@@ -260,6 +263,11 @@ public class ButtonImage extends Button
      */
     public void setImageHighlight(final ResourceLocation loc, final boolean keepUv)
     {
+        if (!Objects.equals(loc, imageHighlight))
+        {
+            loadImageHighlightDimensions(loc);
+        }
+
         imageHighlight = loc;
 
         if (!keepUv)
@@ -269,8 +277,6 @@ public class ButtonImage extends Button
             highlightHeight = 0;
             highlightWidth = 0;
         }
-
-        loadImageHighlightDimensions(loc);
     }
 
     /**
@@ -280,6 +286,11 @@ public class ButtonImage extends Button
      */
     public void setImageDisabled(final ResourceLocation loc, final boolean keepUv)
     {
+        if (!Objects.equals(loc, imageDisabled))
+        {
+            loadImageDisabledDimensions(loc);
+        }
+
         imageDisabled = loc;
 
         if (!keepUv)
@@ -289,8 +300,6 @@ public class ButtonImage extends Button
             disabledHeight = 0;
             disabledWidth = 0;
         }
-
-        loadImageDisabledDimensions(loc);
     }
 
     /**
@@ -304,13 +313,16 @@ public class ButtonImage extends Button
      */
     public void setImageDisabled(final ResourceLocation loc, final int offsetX, final int offsetY, final int w, final int h)
     {
+        if (!Objects.equals(loc, imageDisabled))
+        {
+            loadImageDisabledDimensions(loc);
+        }
+
         imageDisabled = loc;
         disabledOffsetX = offsetX;
         disabledOffsetY = offsetY;
         disabledHeight = w;
         disabledWidth = h;
-
-        loadImageDisabledDimensions(loc);
     }
 
     /**

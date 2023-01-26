@@ -152,7 +152,7 @@ public class Image extends Pane
      */
     public void setImage(final ResourceLocation rl, final int u, final int v, final int uWidth, final int vHeight)
     {
-        if (!Objects.equals(resourceLocation, rl))
+        if (!Objects.equals(rl, resourceLocation))
         {
             loadMapDimensions(rl);
         }
@@ -172,7 +172,7 @@ public class Image extends Pane
      */
     public void setImage(final ResourceLocation rl, final boolean keepUv)
     {
-        if (!Objects.equals(resourceLocation, rl))
+        if (!Objects.equals(rl, resourceLocation))
         {
             loadMapDimensions(rl);
         }
