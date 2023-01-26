@@ -200,12 +200,12 @@ public class ButtonImage extends Button
     {
         imageOffsetX = offsetX;
         imageOffsetY = offsetY;
-        
+
         if (Objects.equals(loc, image) && imageHeight == w && imageWidth == h)
         {
             return;
         }
-        
+
         image = loc;
         imageHeight = w;
         imageWidth = h;
@@ -224,7 +224,7 @@ public class ButtonImage extends Button
         {
             return;
         }
-        
+
         image = loc;
 
         if (!keepUv)
