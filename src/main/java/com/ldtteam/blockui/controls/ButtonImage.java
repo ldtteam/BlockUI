@@ -201,7 +201,7 @@ public class ButtonImage extends Button
         imageOffsetX = offsetX;
         imageOffsetY = offsetY;
         
-        if (loc == image && imageHeight == w && imageWidt == h)
+        if (Objects.equals(loc, image) && imageHeight == w && imageWidt == h)
         {
             return;
         }
@@ -220,7 +220,7 @@ public class ButtonImage extends Button
      */
     public void setImage(final ResourceLocation loc, final boolean keepUv)
     {
-        if (loc == image && !keepUv)
+        if (Objects.equals(loc, image) && !keepUv)
         {
             return;
         }
