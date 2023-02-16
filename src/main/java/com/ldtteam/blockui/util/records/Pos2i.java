@@ -6,6 +6,10 @@ public interface Pos2i
 
     int y();
 
+    MutablePos2i toMutable();
+
+    ImmutablePos2i toImmutable();
+
     public static class MutablePos2i implements Pos2i
     {
         public int x;
@@ -32,6 +36,11 @@ public interface Pos2i
             return y;
         }
 
+        public MutablePos2i toMutable()
+        {
+            return this;
+        }
+
         public ImmutablePos2i toImmutable()
         {
             return new ImmutablePos2i(x, y);
@@ -40,6 +49,11 @@ public interface Pos2i
 
     public static record ImmutablePos2i(int x, int y) implements Pos2i
     {
+        public ImmutablePos2i toImmutable()
+        {
+            return this;
+        }
+
         public MutablePos2i toMutable()
         {
             return new MutablePos2i(x, y);
