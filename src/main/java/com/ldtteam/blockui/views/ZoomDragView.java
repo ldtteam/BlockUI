@@ -11,20 +11,20 @@ import net.minecraft.util.Mth;
  */
 public class ZoomDragView extends View
 {
-    private double scrollX = 0d;
-    private double scrollY = 0d;
-    private double scale = 1d;
+    protected double scrollX = 0d;
+    protected double scrollY = 0d;
+    protected double scale = 1d;
 
     protected int contentHeight = 0;
     protected int contentWidth = 0;
 
-    private double dragFactor = 1d;
-    private boolean dragEnabled = true;
+    protected double dragFactor = 1d;
+    protected boolean dragEnabled = true;
 
-    private double zoomFactor = 1.1d;
-    private boolean zoomEnabled = true;
-    private double minScale = 0.2d;
-    private double maxScale = 2d;
+    protected double zoomFactor = 1.1d;
+    protected boolean zoomEnabled = true;
+    protected double minScale = 0.2d;
+    protected double maxScale = 2d;
 
     /**
      * Required default constructor.
@@ -60,7 +60,7 @@ public class ZoomDragView extends View
     /**
      * Converts X of child to scaled and scrolled X in absolute coordinates.
      */
-    private double calcInverseAbsoluteX(final double xIn)
+    public double calcInverseAbsoluteX(final double xIn)
     {
         return xIn * scale - scrollX;
     }
@@ -68,7 +68,7 @@ public class ZoomDragView extends View
     /**
      * Converts Y of child to scaled and scrolled Y in absolute coordinates.
      */
-    private double calcInverseAbsoluteY(final double yIn)
+    public double calcInverseAbsoluteY(final double yIn)
     {
         return yIn * scale - scrollY;
     }
@@ -76,7 +76,7 @@ public class ZoomDragView extends View
     /**
      * Converts X from event to unscaled and unscrolled X for child in relative (top-left) coordinates.
      */
-    private double calcRelativeX(final double xIn)
+    public double calcRelativeX(final double xIn)
     {
         return (xIn - x + scrollX) / scale + x;
     }
@@ -84,7 +84,7 @@ public class ZoomDragView extends View
     /**
      * Converts Y from event to unscaled and unscrolled Y for child in relative (top-left) coordinates.
      */
-    private double calcRelativeY(final double yIn)
+    public double calcRelativeY(final double yIn)
     {
         return (yIn - y + scrollY) / scale + y;
     }
@@ -106,12 +106,12 @@ public class ZoomDragView extends View
     /**
      * Compute the height in pixels of the container.
      */
-    protected void computeContentSize()
+    public void computeContentSize()
     {
         contentHeight = 0;
         contentWidth = 0;
 
-        for (        final Pane child : children)
+        for (final Pane child : children)
         {
             if (child != null)
             {
@@ -125,12 +125,18 @@ public class ZoomDragView extends View
         setScrollX(scrollX);
     }
 
-    private double getMaxScrollY()
+    /**
+     * @return based on current contentHeight and scale
+     */
+    public double getMaxScrollY()
     {
         return Math.max(0, (double) contentHeight * scale - getHeight());
     }
 
-    private double getMaxScrollX()
+    /**
+     * @return based on current contentWidth and scale
+     */
+    public double getMaxScrollX()
     {
         return Math.max(0, (double) contentWidth * scale - getWidth());
     }
@@ -175,12 +181,12 @@ public class ZoomDragView extends View
         scissorsEnd(ms);
     }
 
-    private void setScrollY(final double offset)
+    public void setScrollY(final double offset)
     {
         scrollY = Mth.clamp(offset, 0, getMaxScrollY());
     }
 
-    private void setScrollX(final double offset)
+    public void setScrollX(final double offset)
     {
         scrollX = Mth.clamp(offset, 0, getMaxScrollX());
     }
@@ -227,8 +233,145 @@ public class ZoomDragView extends View
         return super.mouseEventProcessor(calcRelativeX(mx), calcRelativeY(my), panePredicate, eventCallbackPositive, eventCallbackNegative);
     }
 
-    public void treeViewHelperAddChild(final Pane child)
+    /**
+     * Add child without recomputing content box. You always should recomputed box when done with adding children.
+     *
+     * @param child child element
+     * @see #addChild(Pane)
+     * @see #computeContentSize()
+     */
+    public void addChildPlain(final Pane child)
     {
         super.addChild(child);
+    }
+
+    public double getDragFactor()
+    {
+        return dragFactor;
+    }
+
+    public void setDragFactor(final double dragFactor)
+    {
+        if (dragFactor < 1.0d)
+        {
+            throw new IllegalArgumentException("dragFactor can't be less than one");
+        }
+        this.dragFactor = dragFactor;
+    }
+
+    public boolean isDragEnabled()
+    {
+        return dragEnabled;
+    }
+
+    public void enableDrag()
+    {
+        setDragEnabled(true);
+    }
+
+    public void disableDrag()
+    {
+        setDragEnabled(false);
+    }
+
+    public void setDragEnabled(final boolean dragEnabled)
+    {
+        this.dragEnabled = dragEnabled;
+    }
+
+    public double getZoomFactor()
+    {
+        return zoomFactor;
+    }
+
+    public void setZoomFactor(final double zoomFactor)
+    {
+        if (zoomFactor < 1.0d)
+        {
+            throw new IllegalArgumentException("zoomFactor can't be less than one");
+        }
+        this.zoomFactor = zoomFactor;
+    }
+
+    public boolean isZoomEnabled()
+    {
+        return zoomEnabled;
+    }
+
+    public void enableZoom()
+    {
+        setZoomEnabled(true);
+    }
+
+    public void disableZoom()
+    {
+        setZoomEnabled(false);
+    }
+
+    public void setZoomEnabled(final boolean zoomEnabled)
+    {
+        this.zoomEnabled = zoomEnabled;
+    }
+
+    public double getMinScale()
+    {
+        return minScale;
+    }
+
+    public void setMinScale(final double minScale)
+    {
+        if (minScale > maxScale)
+        {
+            throw new IllegalArgumentException("minScale can't be greater than maxScale");
+        }
+        this.minScale = minScale;
+    }
+
+    public double getMaxScale()
+    {
+        return maxScale;
+    }
+
+    public void setMaxScale(final double maxScale)
+    {
+        if (maxScale < minScale)
+        {
+            throw new IllegalArgumentException("maxScale can't be less than minScale");
+        }
+        this.maxScale = maxScale;
+    }
+
+    public double getScrollX()
+    {
+        return scrollX;
+    }
+
+    public double getScrollY()
+    {
+        return scrollY;
+    }
+
+    /**
+     * Automatically clamped between minScale and maxScale.
+     * @see #scrollInput(double, double, double) for zooming at position
+     */
+    public void setScaleRaw(final double scale)
+    {
+        this.scale = Mth.clamp(scale, minScale, maxScale);
+    }
+
+    public double getScale()
+    {
+        return scale;
+    }
+
+    public int getContentHeight()
+    {
+        return contentHeight;
+    }
+
+    public int getContentWidth()
+    {
+        return contentWidth;
     }
 }
