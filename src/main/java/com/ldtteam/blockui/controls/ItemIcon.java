@@ -17,6 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -71,7 +72,7 @@ public class ItemIcon extends Pane
         this.itemStack = itemStackIn;
         if (onHover instanceof final Tooltip tooltip)
         {
-            tooltip.setTextOld(getModifiedItemStackTooltip());
+            tooltip.setText(getModifiedItemStackTooltip());
         }
     }
 
@@ -116,18 +117,22 @@ public class ItemIcon extends Pane
     {
         if (onHover == null && itemStack != null && !itemStack.isEmpty())
         {
-            PaneBuilders.tooltipBuilder().hoverPane(this).build().setTextOld(getModifiedItemStackTooltip());
+            PaneBuilders.tooltipBuilder().hoverPane(this).build().setText(getModifiedItemStackTooltip());
         }
     }
 
-    public List<Component> getModifiedItemStackTooltip()
+    public List<MutableComponent> getModifiedItemStackTooltip()
     {
         if (itemStack == null)
         {
             return Collections.emptyList();
         }
+        final List<MutableComponent> result = new ArrayList<>();
+        for (final Component component : window.getScreen().getTooltipFromItem(itemStack))
+        {
+            result.add(component.plainCopy());
+        }
 
-        final List<Component> result = window.getScreen().getTooltipFromItem(itemStack);
         result.add(1, FIX_VANILLA_TOOLTIP);
         return result;
     }
