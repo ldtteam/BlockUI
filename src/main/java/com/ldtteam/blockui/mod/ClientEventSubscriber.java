@@ -6,21 +6,17 @@ import com.ldtteam.blockui.hooks.HookRegistries;
 import com.ldtteam.blockui.mod.container.ContainerHook;
 import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.InputEvent.MouseScrollingEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.client.event.RenderLevelLastEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TagsUpdatedEvent;
 import net.minecraftforge.event.TickEvent.ClientTickEvent;
 import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 
 public class ClientEventSubscriber
@@ -30,7 +26,7 @@ public class ClientEventSubscriber
      *
      * @param event the catched event.
      */
-    @SubscribeEvent
+    /* TODO: fixme
     public static void renderWorldLastEvent(@NotNull final RenderLevelLastEvent event)
     {
         final PoseStack ps = event.getPoseStack();
@@ -40,7 +36,7 @@ public class ClientEventSubscriber
         ps.translate(-viewPosition.x(), -viewPosition.y(), -viewPosition.z());
         HookRegistries.render(ps, event.getPartialTick());
         ps.popPose();
-    }
+    }*/
 
     /**
      * Used to catch the clientTickEvent.
@@ -51,10 +47,16 @@ public class ClientEventSubscriber
     @SubscribeEvent
     public static void onClientTickEvent(final ClientTickEvent event)
     {
-        if (event.phase == Phase.START && Screen.hasAltDown() && Screen.hasControlDown() && Screen.hasShiftDown()
-            && InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_X))
+        if (event.phase == Phase.START && Screen.hasAltDown() && Screen.hasControlDown() && Screen.hasShiftDown())
         {
-            new BOWindow(new ResourceLocation(BlockUI.MOD_ID, "gui/test.xml")).open();
+            if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_X))
+            {
+                new BOWindow(new ResourceLocation(BlockUI.MOD_ID, "gui/test.xml")).open();
+            }
+            else if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_C))
+            {
+                new BOWindow(new ResourceLocation(BlockUI.MOD_ID, "gui/test2.xml")).open();
+            }
         }
 
         if (event.phase == Phase.END && Minecraft.getInstance().level != null)

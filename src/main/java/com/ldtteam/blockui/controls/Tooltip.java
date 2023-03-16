@@ -79,7 +79,7 @@ public class Tooltip extends AbstractTextElement
         if (autoWidth)
         {
             // +1 for shadow
-            textWidth = Math.min(text.stream().mapToInt(mc.font::width).max().orElse(Integer.MAX_VALUE), maxWidth - 8) + 1;
+            textWidth = maxWidth - 8 + 1;
         }
         if (autoHeight)
         {
@@ -87,15 +87,6 @@ public class Tooltip extends AbstractTextElement
         }
 
         super.recalcTextRendering();
-
-        if (autoWidth)
-        {
-            width = renderedTextWidth + 8;
-        }
-        if (autoHeight)
-        {
-            height = renderedTextHeight + 8;
-        }
     }
 
     /**
@@ -124,6 +115,16 @@ public class Tooltip extends AbstractTextElement
     {
         if (!preparedText.isEmpty() && enabled)
         {
+            recalcPreparedTextBox();
+            if (autoWidth)
+            {
+                width = renderedTextWidth + 8;
+            }
+            if (autoHeight)
+            {
+                height = renderedTextHeight + 8;
+            }
+
             x = (int) mx + CURSOR_BOX_SIZE - 4;
             y = (int) my - CURSOR_BOX_SIZE - 4;
 
@@ -165,7 +166,6 @@ public class Tooltip extends AbstractTextElement
             buffer.vertex(mat, width - 1, 0, 0).color(bg_r, bg_g, bg_b, bg_a).endVertex();
             buffer.vertex(mat, 1, 0, 0).color(bg_r, bg_g, bg_b, bg_a).endVertex();
 
-            RenderSystem.disableTexture();
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
 
@@ -174,10 +174,9 @@ public class Tooltip extends AbstractTextElement
             drawLineRectGradient(ms, 1, 1, width - 2, height - 2, BORDER_COLOR_A, BORDER_COLOR_B, 1);
 
             RenderSystem.disableBlend();
-            RenderSystem.enableTexture();
 
             ms.translate(-x, -y, 0.0d);
-            super.drawSelf(ms, mx, my);
+            super.innerDrawSelf(ms, mx, my);
             ms.popPose();
         }
     }

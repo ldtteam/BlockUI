@@ -5,6 +5,7 @@ import com.ldtteam.blockui.PaneBuilders;
 import com.ldtteam.blockui.PaneParams;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -135,7 +136,7 @@ public class EntityIcon extends Pane
                         true,
                         ms.last().pose(),
                         buffer,
-                        false,
+                        Font.DisplayMode.NORMAL,
                         0,
                         15728880);
                 buffer.endBatch();

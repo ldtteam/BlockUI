@@ -193,7 +193,7 @@ public abstract class AbstractTextBuilder<P extends AbstractTextElement, R exten
             return resetStyle();
         }
 
-        color = style.getColor().getValue();
+        color = style.getColor() == null ? defaultColor : style.getColor().getValue();
         bold = style.isBold();
         italic = style.isItalic();
         underlined = style.isUnderlined();
@@ -239,7 +239,7 @@ public abstract class AbstractTextBuilder<P extends AbstractTextElement, R exten
                 {
                     throw new IllegalArgumentException("Unknown non-color textformatting.");
                 }
-                return color(textFormatting.getColor());
+                return color(textFormatting.getColor() == null ? defaultColor : textFormatting.getColor());
         }
     }
 
@@ -264,7 +264,7 @@ public abstract class AbstractTextBuilder<P extends AbstractTextElement, R exten
     public R colorName(final String name)
     {
         final ChatFormatting tf = ChatFormatting.getByName(name);
-        return color(Color.getByName(name, tf.isColor() ? tf.getColor() : color));
+        return color(Color.getByName(name, tf == null || tf.getColor() == null ? color : tf.getColor()));
     }
 
     /**

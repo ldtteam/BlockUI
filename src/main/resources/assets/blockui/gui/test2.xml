@@ -1,0 +1,3 @@
+<window xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="block_ui.xsd" size="320 240">
+    <itemicon id="ii2" item="minecraft:diamond_pickaxe" pos="0 0" size="64 64"/>
+</window>

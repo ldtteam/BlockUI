@@ -404,7 +404,6 @@ public class TextField extends Pane
             final Matrix4f m = ms.last().pose();
             final Tesselator tessellator = Tesselator.getInstance();
             RenderSystem.setShaderColor(0.0F, 0.0F, 1.0F, 1.0F);
-            RenderSystem.disableTexture();
             RenderSystem.enableColorLogicOp();
             RenderSystem.logicOp(LogicOp.OR_REVERSE);
             RenderSystem.setShader(GameRenderer::getPositionShader);
@@ -418,7 +417,6 @@ public class TextField extends Pane
             tessellator.end();
 
             RenderSystem.disableColorLogicOp();
-            RenderSystem.enableTexture();
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
         }
     }

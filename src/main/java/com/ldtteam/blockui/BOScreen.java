@@ -49,10 +49,6 @@ public class BOScreen extends Screen
         final double guiWidth = Math.max(fbWidth, 320.0d);
         final double guiHeight = Math.max(fbHeight, 240.0d);
 
-        final float renderZlevel = MatrixUtils.getLastMatrixTranslateZ(ms);
-        final float oldZ = minecraft.getItemRenderer().blitOffset;
-        minecraft.getItemRenderer().blitOffset = renderZlevel;
-
         final boolean oldFilteringValue = ForgeRenderTypes.enableTextTextureLinearFiltering;
         ForgeRenderTypes.enableTextTextureLinearFiltering = false;
 
@@ -79,7 +75,7 @@ public class BOScreen extends Screen
         shaderPs.setIdentity();
 
         final PoseStack newMs = new PoseStack();
-        newMs.translate(x, y, renderZlevel);
+        newMs.translate(x, y, 0);
         newMs.scale((float) renderScale, (float) renderScale, 1.0f);
 
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -109,7 +105,6 @@ public class BOScreen extends Screen
             RenderSystem.setProjectionMatrix(oldProjection);
             RenderSystem.applyModelViewMatrix();
 
-            minecraft.getItemRenderer().blitOffset = oldZ;
             ForgeRenderTypes.enableTextTextureLinearFiltering = oldFilteringValue;
         }
     }

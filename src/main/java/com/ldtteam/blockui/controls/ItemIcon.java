@@ -1,20 +1,25 @@
 package com.ldtteam.blockui.controls;
 
-import com.ldtteam.blockui.MatrixUtils;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneBuilders;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.util.SpacerTextComponent;
+import com.ldtteam.blockui.util.ToggleableTextComponent;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.minecraftforge.common.CreativeModeTabRegistry;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import java.util.Collections;
@@ -93,7 +98,6 @@ public class ItemIcon extends Pane
             ms.pushPose();
             ms.translate(x, y, 0.0f);
             ms.scale(this.getWidth() / DEFAULT_ITEMSTACK_SIZE, this.getHeight() / DEFAULT_ITEMSTACK_SIZE, 1.0f);
-            MatrixUtils.pushShaderMVstack(ms);
 
             Font font = IClientItemExtensions.DEFAULT.getFont(itemStack, IClientItemExtensions.FontContext.ITEM_COUNT);
             if (font == null)
@@ -101,12 +105,11 @@ public class ItemIcon extends Pane
                 font = mc.font;
             }
 
-            mc.getItemRenderer().renderAndDecorateItem(itemStack, 0, 0);
-            mc.getItemRenderer().renderGuiItemDecorations(font, itemStack, 0, 0);
+            mc.getItemRenderer().renderAndDecorateItem(ms, itemStack, 0, 0);
+            mc.getItemRenderer().renderGuiItemDecorations(ms, font, itemStack, 0, 0);
 
             RenderSystem.defaultBlendFunc();
             RenderSystem.disableBlend();
-            MatrixUtils.popShaderMVstack();
             ms.popPose();
         }
     }
@@ -127,8 +130,38 @@ public class ItemIcon extends Pane
             return Collections.emptyList();
         }
 
-        final List<Component> result = window.getScreen().getTooltipFromItem(itemStack);
+        TooltipFlag.Default tooltipFlags = mc.options.advancedItemTooltips ? TooltipFlag.Default.ADVANCED : TooltipFlag.Default.NORMAL;
+        if (mc.player.isCreative())
+        {
+            tooltipFlags = tooltipFlags.asCreative();
+        }
+
+        final List<Component> result = itemStack.getTooltipLines(mc.player, tooltipFlags);
+        final ItemStack defaultStack = itemStack.getItem().getDefaultInstance();
+
+        if (tooltipFlags.advanced() && tooltipFlags.creative())
+        {
+            ForgeRegistries.ITEMS.getHolder(itemStack.getItem())
+                .map(Holder::getTagKeys)
+                .ifPresent(tags -> tags
+                    .forEach(tag -> result.add(1, wrapShift(Component.literal("#" + tag.location()).withStyle(ChatFormatting.DARK_PURPLE)))));
+
+            int i = 1;
+            for (final CreativeModeTab tab : CreativeModeTabRegistry.getSortedCreativeModeTabs())
+            {
+                if (!tab.hasSearchBar() && tab.contains(defaultStack))
+                {
+                    result.add(i++, wrapShift(tab.getDisplayName().copy().withStyle(ChatFormatting.BLUE)));
+                }
+            }
+        }
+
         result.add(1, FIX_VANILLA_TOOLTIP);
         return result;
+    }
+
+    private static MutableComponent wrapShift(final MutableComponent wrapped)
+    {
+        return ToggleableTextComponent.of(Screen::hasShiftDown, wrapped);
     }
 }

@@ -92,7 +92,6 @@ public class UiRenderMacros
         }
 
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        RenderSystem.disableTexture();
         if (alphaStart != 255 || alphaEnd != 255)
         {
             RenderSystem.enableBlend();
@@ -122,7 +121,6 @@ public class UiRenderMacros
         buffer.vertex(m, x, y + h, 0).color(redEnd, greenEnd, blueEnd, alphaEnd).endVertex();
         Tesselator.getInstance().end();
 
-        RenderSystem.enableTexture();
         RenderSystem.disableBlend();
     }
 
@@ -168,7 +166,6 @@ public class UiRenderMacros
         }
 
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        RenderSystem.disableTexture();
         if (alpha != 255)
         {
             RenderSystem.enableBlend();
@@ -198,7 +195,6 @@ public class UiRenderMacros
         buffer.vertex(m, x, y + h, 0).color(red, green, blue, alpha).endVertex();
         Tesselator.getInstance().end();
 
-        RenderSystem.enableTexture();
         RenderSystem.disableBlend();
     }
 
@@ -223,7 +219,6 @@ public class UiRenderMacros
         }
 
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        RenderSystem.disableTexture();
         if (alpha != 255)
         {
             RenderSystem.enableBlend();
@@ -242,7 +237,6 @@ public class UiRenderMacros
         buffer.vertex(m, x + w, y, 0).color(red, green, blue, alpha).endVertex();
         Tesselator.getInstance().end();
 
-        RenderSystem.enableTexture();
         RenderSystem.disableBlend();
     }
 
@@ -290,7 +284,6 @@ public class UiRenderMacros
         }
 
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        RenderSystem.disableTexture();
         if (alphaStart != 255 || alphaEnd != 255)
         {
             RenderSystem.enableBlend();
@@ -309,7 +302,6 @@ public class UiRenderMacros
         buffer.vertex(m, x + w, y, 0).color(redStart, greenStart, blueStart, alphaStart).endVertex();
         Tesselator.getInstance().end();
 
-        RenderSystem.enableTexture();
         RenderSystem.disableBlend();
     }
 
@@ -368,7 +360,6 @@ public class UiRenderMacros
         }
 
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        RenderSystem.disableTexture();
         if (alpha != 255)
         {
             RenderSystem.enableBlend();
@@ -385,7 +376,6 @@ public class UiRenderMacros
         buffer.vertex(m, xEnd, yEnd, 0).color(red, green, blue, alpha).endVertex();
         Tesselator.getInstance().end();
 
-        RenderSystem.enableTexture();
         RenderSystem.disableBlend();
     }
 
