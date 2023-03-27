@@ -221,7 +221,7 @@ public abstract class AbstractTextElement extends Pane
         }).collect(Collectors.toList());
     }
 
-    protected void recalcPreparedTextBox()
+    public void recalcPreparedTextBox()
     {
         if (textWrap)
         {
