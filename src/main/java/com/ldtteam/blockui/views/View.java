@@ -1,6 +1,7 @@
 package com.ldtteam.blockui.views;
 
 import com.ldtteam.blockui.*;
+import com.ldtteam.blockui.controls.Tooltip;
 import com.ldtteam.blockui.util.records.Pos2i.ImmutablePos2i;
 import com.ldtteam.blockui.util.records.Pos2i.MutablePos2i;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -244,6 +245,10 @@ public class View extends Pane
 
     protected boolean childIsVisible(final Pane child)
     {
+        if (child instanceof Tooltip)
+        {
+            return true;
+        }
         return child.getX() < getInteriorWidth() && child.getY() < getInteriorHeight() && (child.getX() + child.getWidth()) >= 0 &&
             (child.getY() + child.getHeight()) >= 0;
     }

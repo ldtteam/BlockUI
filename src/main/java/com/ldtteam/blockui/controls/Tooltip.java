@@ -1,13 +1,18 @@
 package com.ldtteam.blockui.controls;
 
-import java.util.Collections;
 import com.ldtteam.blockui.Alignment;
+import com.ldtteam.blockui.BOScreen;
 import com.ldtteam.blockui.PaneParams;
-import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.client.renderer.GameRenderer;
 import org.joml.Matrix4f;
 
-import net.minecraft.client.renderer.GameRenderer;
+import java.util.Collections;
 
 /**
  * Element used for rendering tooltips.
@@ -125,17 +130,29 @@ public class Tooltip extends AbstractTextElement
                 height = renderedTextHeight + 8;
             }
 
-            x = (int) mx + CURSOR_BOX_SIZE - 4;
-            y = (int) my - CURSOR_BOX_SIZE - 4;
+            final BOScreen scr = window.getScreen();
+            final double renderScale = scr.getRenderScale();
+            final int marginOffset = 4;
 
-            if (x + width + 3 > window.getScreen().width)
+            x = (int) mx + CURSOR_BOX_SIZE;
+            y = Math.max(marginOffset, (int) my - CURSOR_BOX_SIZE);
+
+            // really black box math here: scaled absolute cursor > width - scaled tooltip size
+            if ((scr.getAbsoluteMouseX() + CURSOR_BOX_SIZE) * scr.getVanillaGuiScale() >
+                scr.getFramebufferWidth() - renderScale * (width + marginOffset))
             {
-                x = window.getScreen().width - width - 4;
+                // if overflow then flip tooltip to left
+                final int guiToWindowOffset = (int) (scr.getFramebufferWidth() - scr.width * renderScale) / 2;
+                x = Math.max(marginOffset - guiToWindowOffset, x - 2 * CURSOR_BOX_SIZE - width);
             }
 
-            if (y + height + 3 > window.getScreen().height)
+            // same condition (just sign change for CURSOR_BOX_SIZE)
+            final int absoluteY = (int) ((scr.getAbsoluteMouseY() - CURSOR_BOX_SIZE) * scr.getVanillaGuiScale());
+            final int maxAbsoluteMy = scr.getFramebufferHeight() - (int) (renderScale * (height + marginOffset));
+            if (absoluteY > maxAbsoluteMy)
             {
-                y = window.getScreen().height - height - 4;
+                // but we don't flip here but just move upwards
+                y -= (absoluteY - maxAbsoluteMy) / 2;
             }
 
             // modified INLINE: vanilla Screen#renderTooltip(MatrixStack, List<? extends IReorderingProcessor>, int, int, FontRenderer)
