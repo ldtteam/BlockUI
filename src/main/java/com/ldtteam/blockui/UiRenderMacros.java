@@ -2,6 +2,7 @@ package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
+import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -654,9 +655,10 @@ public class UiRenderMacros
     public static void drawEntity(final PoseStack poseStack, final int x, final int y, final double scale,
                                   final float headYaw, final float yaw, final float pitch, final Entity entity)
     {
+        // INLINE: vanilla from InventoryScreen
         final LivingEntity livingEntity = (entity instanceof LivingEntity) ? (LivingEntity) entity : null;
         final Minecraft mc = Minecraft.getInstance();
-        if (entity.level == null) entity.level = mc.level;
+        if (entity.level() == null) return; // this was entity.setLevel, not sure why cuz sus, dont care if entity has no level
         poseStack.pushPose();
         poseStack.translate((float) x, (float) y, 1050.0F);
         poseStack.scale(1.0F, 1.0F, -1.0F);
@@ -678,6 +680,7 @@ public class UiRenderMacros
             livingEntity.yHeadRot = entity.getYRot();
             livingEntity.yHeadRotO = entity.getYRot();
         }
+        Lighting.setupForEntityInInventory();
         final EntityRenderDispatcher dispatcher = mc.getEntityRenderDispatcher();
         pitchRotation.conjugate();
         dispatcher.overrideCameraOrientation(pitchRotation);
@@ -695,5 +698,6 @@ public class UiRenderMacros
             livingEntity.yHeadRot = oldYawHead;
         }
         poseStack.popPose();
+        Lighting.setupFor3DItems();
     }
 }

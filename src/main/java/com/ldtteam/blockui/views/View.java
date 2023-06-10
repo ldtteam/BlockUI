@@ -67,8 +67,10 @@ public class View extends Pane
     }
 
     @Override
-    public void drawSelf(final PoseStack ms, final double mx, final double my)
+    public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
+        final PoseStack ms = target.pose();
+
         // Translate the drawing origin to our x,y.
         ms.pushPose();
 
@@ -85,7 +87,7 @@ public class View extends Pane
         {
             if (childIsVisible(child))
             {
-                child.draw(ms, drawX, drawY);
+                child.draw(target, drawX, drawY);
             }
         }
 
@@ -93,8 +95,10 @@ public class View extends Pane
     }
 
     @Override
-    public void drawSelfLast(final PoseStack ms, final double mx, final double my)
+    public void drawSelfLast(final BOGuiGraphics target, final double mx, final double my)
     {
+        final PoseStack ms = target.pose();
+
         // Translate the drawing origin to our x,y.
         ms.pushPose();
 
@@ -111,7 +115,7 @@ public class View extends Pane
         {
             if (childIsVisible(child))
             {
-                child.drawLast(ms, drawX, drawY);
+                child.drawLast(target, drawX, drawY);
             }
         }
 

@@ -1,8 +1,8 @@
 package com.ldtteam.blockui.views;
 
+import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.Color;
 import com.ldtteam.blockui.PaneParams;
-import com.mojang.blaze3d.vertex.PoseStack;
 
 /**
  * Simple box element.
@@ -52,15 +52,15 @@ public class Box extends View
     }
 
     @Override
-    public void drawSelf(final PoseStack ms, final double mx, final double my)
+    public void drawSelf(final BOGuiGraphics ms, final double mx, final double my)
     {
-        drawLineRect(ms, x, y, width, height, color, lineWidth);
+        drawLineRect(ms.pose(), x, y, width, height, color, lineWidth);
 
         super.drawSelf(ms, mx, my);
     }
 
     @Override
-    public void drawSelfLast(final PoseStack ms, final double mx, final double my)
+    public void drawSelfLast(final BOGuiGraphics ms, final double mx, final double my)
     {
         super.drawSelfLast(ms, mx, my);
     }

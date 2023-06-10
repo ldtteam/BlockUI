@@ -1,6 +1,7 @@
 package com.ldtteam.blockui.controls;
 
 import com.ldtteam.blockui.Alignment;
+import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.PaneParams;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -71,8 +72,10 @@ public class ButtonVanilla extends Button
      * @param my Mouse y (relative to parent)
      */
     @Override
-    public void drawSelf(final PoseStack ms, final double mx, final double my)
+    public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
+        final PoseStack ms = target.pose();
+
         mc.getTextureManager().bindForSetup(TEXTURE);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
@@ -101,7 +104,7 @@ public class ButtonVanilla extends Button
 
         RenderSystem.disableBlend();
 
-        super.drawSelf(ms, mx, my);
+        super.drawSelf(target, mx, my);
     }
 
     private void recalcTextBox()

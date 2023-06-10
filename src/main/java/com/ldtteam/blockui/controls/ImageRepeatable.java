@@ -1,10 +1,10 @@
 package com.ldtteam.blockui.controls;
 
+import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.Parsers;
 import com.ldtteam.blockui.util.records.SizeI;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.resources.ResourceLocation;
 
@@ -127,12 +127,12 @@ public class ImageRepeatable extends Pane
      * @param my Mouse y (relative to parent)
      */
     @Override
-    public void drawSelf(final PoseStack ms, final double mx, final double my)
+    public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
-        blitRepeatable(ms,
+        blitRepeatable(target.pose(),
             resourceLocation,
             x,
             y,

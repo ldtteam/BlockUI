@@ -1,5 +1,6 @@
 package com.ldtteam.blockui.views;
 
+import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.MouseEventCallback;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
@@ -66,26 +67,29 @@ public class ScrollingContainer extends View
     }
 
     @Override
-    public void drawSelf(final PoseStack ms, final double mx, final double my)
+    public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
+        final PoseStack ms = target.pose();
         scissorsStart(ms, width, contentHeight);
 
         // Translate the scroll
         ms.pushPose();
         ms.translate(0.0d, -scrollY, 0.0d);
-        super.drawSelf(ms, mx, my + scrollY);
+        super.drawSelf(target, mx, my + scrollY);
         ms.popPose();
 
-        scissorsEnd(ms);
+        scissorsEnd(target);
     }
 
     @Override
-    public void drawSelfLast(final PoseStack ms, final double mx, final double my)
+    public void drawSelfLast(final BOGuiGraphics target, final double mx, final double my)
     {
+        final PoseStack ms = target.pose();
+
         // Translate the scroll
         ms.pushPose();
         ms.translate(0.0d, -scrollY, 0.0d);
-        super.drawSelfLast(ms, mx, my + scrollY);
+        super.drawSelfLast(target, mx, my + scrollY);
         ms.popPose();
     }
 

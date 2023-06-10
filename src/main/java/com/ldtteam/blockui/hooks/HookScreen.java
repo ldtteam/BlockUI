@@ -8,6 +8,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
+import net.minecraft.client.gui.GuiGraphics;
 
 /**
  * Screen wrapper.
@@ -27,9 +28,9 @@ public class HookScreen extends BOScreen
 
     @Override
     @Deprecated
-    public void render(final PoseStack ms, final int mx, final int my, final float f)
+    public void render(final GuiGraphics target, final int mx, final int my, final float f)
     {
-        render(ms);
+        render(target.pose());
     }
 
     public void render(final PoseStack ms)
@@ -46,8 +47,10 @@ public class HookScreen extends BOScreen
         ms.translate(-width / 2, -height, 0.0d);
         try
         {
-            window.draw(ms, -1, -1);
-            window.drawLast(ms, -1, -1);
+            throw new UnsupportedOperationException("need port fix");
+            // TODO: rework in-game gui rendering
+            //window.draw(ms, -1, -1);
+            //window.drawLast(ms, -1, -1);
         }
         catch (final Exception e)
         {

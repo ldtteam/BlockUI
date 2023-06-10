@@ -1,5 +1,6 @@
 package com.ldtteam.blockui.controls;
 
+import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.views.View;
@@ -324,7 +325,7 @@ public class TextField extends Pane
      * Draw itself at positions mx and my.
      */
     @Override
-    public void drawSelf(final PoseStack ms, final double mx, final double my)
+    public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
         final int color = enabled ? textColor : textColorDisabled;
         final int drawWidth = getInternalWidth();
@@ -350,7 +351,7 @@ public class TextField extends Pane
         if (visibleString.length() > 0)
         {
             final String s1 = cursorVisible ? visibleString.substring(0, relativeCursorPosition) : visibleString;
-            textX = drawString(ms, s1, textX, drawY, color, shadow);
+            textX = target.drawString(s1, textX, drawY, color, shadow);
         }
 
         int cursorX = textX;
@@ -367,7 +368,7 @@ public class TextField extends Pane
         // Draw string after cursor
         if (visibleString.length() > 0 && cursorVisible && relativeCursorPosition < visibleString.length())
         {
-            drawString(ms, visibleString.substring(relativeCursorPosition), textX, drawY, color, shadow);
+            target.drawString(visibleString.substring(relativeCursorPosition), textX, drawY, color, shadow);
         }
 
         // Should we draw the cursor this frame?
@@ -375,11 +376,11 @@ public class TextField extends Pane
         {
             if (cursorBeforeEnd)
             {
-                fill(ms, cursorX, drawY - 1, 1, 1 + mc.font.lineHeight, RECT_COLOR);
+                fill(target.pose(), cursorX, drawY - 1, 1, 1 + mc.font.lineHeight, RECT_COLOR);
             }
             else
             {
-                drawString(ms, "_", cursorX, drawY, color, shadow);
+                target.drawString("_", cursorX, drawY, color, shadow);
             }
         }
 
@@ -401,7 +402,7 @@ public class TextField extends Pane
                 selectionEndX = x + width;
             }
 
-            final Matrix4f m = ms.last().pose();
+            final Matrix4f m = target.pose().last().pose();
             final Tesselator tessellator = Tesselator.getInstance();
             RenderSystem.setShaderColor(0.0F, 0.0F, 1.0F, 1.0F);
             RenderSystem.enableColorLogicOp();
@@ -700,17 +701,5 @@ public class TextField extends Pane
          * @return true if so.
          */
         boolean isAllowedCharacter(char c);
-    }
-
-    protected int drawString(final PoseStack ms, final String text, final float x, final float y, final int color, final boolean shadow)
-    {
-        if (shadow)
-        {
-            return mc.font.drawShadow(ms, text, x, y, color);
-        }
-        else
-        {
-            return mc.font.draw(ms, text, x, y, color);
-        }
     }
 }

@@ -3,11 +3,14 @@ package com.ldtteam.blockui;
 import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexSorting;
 import org.joml.Matrix4f;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.client.ForgeRenderTypes;
 import org.lwjgl.glfw.GLFW;
@@ -41,7 +44,7 @@ public class BOScreen extends Screen
     }
 
     @Override
-    public void render(final PoseStack ms, final int mx, final int my, final float f)
+    public void render(final GuiGraphics ms, final int mx, final int my, final float f)
     {
         if (minecraft == null || !isOpen) // should never happen though
         {
@@ -50,16 +53,16 @@ public class BOScreen extends Screen
 
         absoluteMouseX = mx;
         absoluteMouseY = my;
-        framebufferWidth = minecraft.getWindow().getWidth();
-        framebufferHeight = minecraft.getWindow().getHeight();
+        framebufferWidth = ms.minecraft.getWindow().getWidth();
+        framebufferHeight = ms.minecraft.getWindow().getHeight();
         final int guiWidth = Math.max(framebufferWidth, 320);
         final int guiHeight = Math.max(framebufferHeight, 240);
 
         final boolean oldFilteringValue = ForgeRenderTypes.enableTextTextureLinearFiltering;
         ForgeRenderTypes.enableTextTextureLinearFiltering = false;
 
-        mcScale = minecraft.getWindow().getGuiScale();
-        renderScale = window.getRenderType().calcRenderScale(minecraft.getWindow(), window);
+        mcScale = ms.minecraft.getWindow().getGuiScale();
+        renderScale = window.getRenderType().calcRenderScale(ms.minecraft.getWindow(), window);
 
         if (window.hasLightbox())
         {
@@ -76,7 +79,8 @@ public class BOScreen extends Screen
         // replace vanilla projection
         final PoseStack shaderPs = RenderSystem.getModelViewStack();
         final Matrix4f oldProjection = RenderSystem.getProjectionMatrix();
-        RenderSystem.setProjectionMatrix(new Matrix4f().setOrtho(0.0F, framebufferWidth, framebufferHeight, 0.0F, -10000.0F, 50000.0F));
+        RenderSystem.setProjectionMatrix(new Matrix4f().setOrtho(0.0F, framebufferWidth, framebufferHeight, 0.0F, -10000.0F, 50000.0F),
+            VertexSorting.ORTHOGRAPHIC_Z);
         shaderPs.pushPose();
         shaderPs.setIdentity();
 
@@ -91,8 +95,9 @@ public class BOScreen extends Screen
 
         try
         {
-            window.draw(newMs, calcRelativeX(mx), calcRelativeY(my));
-            window.drawLast(newMs, calcRelativeX(mx), calcRelativeY(my));
+            final BOGuiGraphics target = new BOGuiGraphics(ms.minecraft, newMs, ms.bufferSource());
+            window.draw(target, calcRelativeX(mx), calcRelativeY(my));
+            window.drawLast(target, calcRelativeX(mx), calcRelativeY(my));
         }
         catch (final Exception e)
         {
@@ -108,7 +113,7 @@ public class BOScreen extends Screen
         {
             // restore vanilla state
             shaderPs.popPose();
-            RenderSystem.setProjectionMatrix(oldProjection);
+            RenderSystem.setProjectionMatrix(oldProjection, VertexSorting.ORTHOGRAPHIC_Z);
             RenderSystem.applyModelViewMatrix();
 
             ForgeRenderTypes.enableTextTextureLinearFiltering = oldFilteringValue;
@@ -268,9 +273,10 @@ public class BOScreen extends Screen
                 {
                     window.onUpdate();
 
-                    if (!minecraft.player.isAlive() || minecraft.player.dead)
+                    final LocalPlayer player = minecraft == null ? null : minecraft.player;
+                    if (player != null && (!player.isAlive() || player.dead))
                     {
-                        minecraft.player.closeContainer();
+                        player.closeContainer();
                     }
                 }
             }

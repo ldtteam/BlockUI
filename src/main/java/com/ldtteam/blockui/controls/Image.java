@@ -1,5 +1,6 @@
 package com.ldtteam.blockui.controls;
 
+import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.Parsers;
@@ -7,7 +8,6 @@ import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.util.records.SizeI;
 import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
@@ -195,7 +195,7 @@ public class Image extends Pane
      * @param my Mouse y (relative to parent)
      */
     @Override
-    public void drawSelf(final PoseStack ms, final double mx, final double my)
+    public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
         Objects.requireNonNull(resourceLocation, () -> id + " | " + window.getXmlResourceLocation());
         RenderSystem.enableBlend();
@@ -203,7 +203,7 @@ public class Image extends Pane
 
         if (u != 0 || v != 0 || uWidth != 0 || vHeight != 0)
         {
-            blit(ms,
+            blit(target.pose(),
                 resourceLocation,
                 x,
                 y,
@@ -218,7 +218,7 @@ public class Image extends Pane
         }
         else
         {
-            blit(ms, resourceLocation, x, y, width, height);
+            blit(target.pose(), resourceLocation, x, y, width, height);
         }
 
         RenderSystem.disableBlend();

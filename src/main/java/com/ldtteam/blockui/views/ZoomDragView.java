@@ -1,5 +1,6 @@
 package com.ldtteam.blockui.views;
 
+import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.MouseEventCallback;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
@@ -150,8 +151,10 @@ public class ZoomDragView extends View
     }
 
     @Override
-    public void drawSelf(final PoseStack ms, final double mx, final double my)
+    public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
+        final PoseStack ms = target.pose();
+
         scissorsStart(ms, contentWidth, contentHeight);
 
         ms.pushPose();
@@ -159,26 +162,28 @@ public class ZoomDragView extends View
         ms.translate((1 - scale) * x, (1 - scale) * y, 0.0d);
         ms.scale((float) scale, (float) scale, 1.0f);
         abstractDrawSelfPre(ms, mx, my);
-        super.drawSelf(ms, calcRelativeX(mx), calcRelativeY(my));
+        super.drawSelf(target, calcRelativeX(mx), calcRelativeY(my));
         abstractDrawSelfPost(ms, mx, my);
         ms.popPose();
 
-        scissorsEnd(ms);
+        scissorsEnd(target);
     }
 
     @Override
-    public void drawSelfLast(final PoseStack ms, final double mx, final double my)
+    public void drawSelfLast(final BOGuiGraphics target, final double mx, final double my)
     {
+        final PoseStack ms = target.pose();
+
         scissorsStart(ms, contentWidth, contentHeight);
 
         ms.pushPose();
         ms.translate(-scrollX, -scrollY, 0.0d);
         ms.translate((1 - scale) * x, (1 - scale) * y, 0.0d);
         ms.scale((float) scale, (float) scale, 1.0f);
-        super.drawSelfLast(ms, calcRelativeX(mx), calcRelativeY(my));
+        super.drawSelfLast(target, calcRelativeX(mx), calcRelativeY(my));
         ms.popPose();
 
-        scissorsEnd(ms);
+        scissorsEnd(target);
     }
 
     public void setScrollY(final double offset)

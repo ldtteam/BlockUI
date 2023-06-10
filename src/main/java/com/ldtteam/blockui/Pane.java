@@ -303,7 +303,7 @@ public class Pane extends UiRenderMacros
      * @param mx mouse x.
      * @param my mouse y.
      */
-    public void draw(final PoseStack ms, final double mx, final double my)
+    public void draw(final BOGuiGraphics target, final double mx, final double my)
     {
         final boolean oldCursorInPane = wasCursorInPane;
         wasCursorInPane = isPointInPane(mx, my);
@@ -311,17 +311,17 @@ public class Pane extends UiRenderMacros
 
         if (visible)
         {
-            drawSelf(ms, mx, my);
+            drawSelf(target, mx, my);
             if (debugging)
             {
                 final int color = wasCursorInPane ? 0xFF00FF00 : 0xFF0000FF;
 
-                drawLineRect(ms, x, y, width, height, color);
+                drawLineRect(target.pose(), x, y, width, height, color);
 
                 if (wasCursorInPane && !id.isEmpty())
                 {
                     final int stringWidth = mc.font.width(id) + 1;
-                    mc.font.draw(ms, id, x + getWidth() - stringWidth, y + getHeight() - mc.font.lineHeight, color);
+                    target.drawString(id, x + getWidth() - stringWidth, y + getHeight() - mc.font.lineHeight, color);
                 }
             }
         }
@@ -333,11 +333,11 @@ public class Pane extends UiRenderMacros
      * @param mx mouse x.
      * @param my mouse y.
      */
-    public void drawLast(final PoseStack ms, final double mx, final double my)
+    public void drawLast(final BOGuiGraphics target, final double mx, final double my)
     {
         if (visible)
         {
-            drawSelfLast(ms, mx, my);
+            drawSelfLast(target, mx, my);
         }
     }
 
@@ -349,7 +349,7 @@ public class Pane extends UiRenderMacros
      * @param mx Mouse x (relative to parent).
      * @param my Mouse y (relative to parent).
      */
-    public void drawSelf(final PoseStack ms, final double mx, final double my)
+    public void drawSelf(final BOGuiGraphics ms, final double mx, final double my)
     {
         // Can be overloaded
     }
@@ -362,7 +362,7 @@ public class Pane extends UiRenderMacros
      * @param mx Mouse x (relative to parent).
      * @param my Mouse y (relative to parent).
      */
-    public void drawSelfLast(final PoseStack ms, final double mx, final double my)
+    public void drawSelfLast(final BOGuiGraphics ms, final double mx, final double my)
     {
         // Can be overloaded
     }
@@ -692,8 +692,9 @@ public class Pane extends UiRenderMacros
         return y;
     }
 
-    protected synchronized void scissorsEnd(final PoseStack ms)
+    protected synchronized void scissorsEnd(final BOGuiGraphics target)
     {
+        final PoseStack ms = target.pose();
         final ScissorsInfo popped = scissorsInfoStack.pop();
         if (debugging)
         {
@@ -709,8 +710,7 @@ public class Pane extends UiRenderMacros
 
             final String scId = "scissor_" + (id.isEmpty() ? this.toString() : id);
             final int stringWidth = mc.font.width(scId) + 1;
-            mc.font.draw(ms,
-                scId,
+            target.drawString(scId,
                 popped.xStart + w - stringWidth,
                 yStart + h - 2 * mc.font.lineHeight,
                 color);

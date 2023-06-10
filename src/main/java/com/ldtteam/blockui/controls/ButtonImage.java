@@ -1,6 +1,7 @@
 package com.ldtteam.blockui.controls;
 
 import com.ldtteam.blockui.Alignment;
+import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.Parsers;
 import com.ldtteam.blockui.util.records.SizeI;
@@ -333,8 +334,10 @@ public class ButtonImage extends Button
      * @param my Mouse y (relative to parent)
      */
     @Override
-    public void drawSelf(final PoseStack ms, final double mx, final double my)
+    public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
+        final PoseStack ms = target.pose();
+
         Objects.requireNonNull(image, () -> id + " | " + window.getXmlResourceLocation());
         ResourceLocation bind = image;
         int u = imageOffsetX;
@@ -381,7 +384,7 @@ public class ButtonImage extends Button
         RenderSystem.disableBlend();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-        super.drawSelf(ms, mx, my);
+        super.drawSelf(target, mx, my);
     }
 
     @Override

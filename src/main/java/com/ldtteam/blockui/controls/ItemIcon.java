@@ -1,5 +1,6 @@
 package com.ldtteam.blockui.controls;
 
+import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneBuilders;
 import com.ldtteam.blockui.PaneParams;
@@ -8,7 +9,6 @@ import com.ldtteam.blockui.util.ToggleableTextComponent;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
@@ -18,7 +18,6 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.common.CreativeModeTabRegistry;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -91,22 +90,18 @@ public class ItemIcon extends Pane
     }
 
     @Override
-    public void drawSelf(final PoseStack ms, final double mx, final double my)
+    public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
+        final PoseStack ms = target.pose();
+
         if (itemStack != null && !itemStack.isEmpty())
         {
             ms.pushPose();
             ms.translate(x, y, 0.0f);
             ms.scale(this.getWidth() / DEFAULT_ITEMSTACK_SIZE, this.getHeight() / DEFAULT_ITEMSTACK_SIZE, 1.0f);
 
-            Font font = IClientItemExtensions.DEFAULT.getFont(itemStack, IClientItemExtensions.FontContext.ITEM_COUNT);
-            if (font == null)
-            {
-                font = mc.font;
-            }
-
-            mc.getItemRenderer().renderAndDecorateItem(ms, itemStack, 0, 0);
-            mc.getItemRenderer().renderGuiItemDecorations(ms, font, itemStack, 0, 0);
+            target.renderItem(itemStack, 0, 0);
+            target.renderItemDecorations(itemStack, 0, 0);
 
             RenderSystem.defaultBlendFunc();
             RenderSystem.disableBlend();

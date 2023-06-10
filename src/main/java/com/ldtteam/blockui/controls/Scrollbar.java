@@ -1,11 +1,11 @@
 package com.ldtteam.blockui.controls;
 
+import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.BOScreen;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.Parsers;
 import com.ldtteam.blockui.views.ScrollingContainer;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.util.Mth;
 
 /**
@@ -112,7 +112,7 @@ public class Scrollbar extends Pane
     }
 
     @Override
-    public void drawSelf(final PoseStack ms, final double mx, final double my)
+    public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
         barClicked = barClicked && (mc.mouseHandler.isLeftPressed() || BOScreen.isMouseLeftDown);
         // TODO: catch from screen
@@ -128,16 +128,16 @@ public class Scrollbar extends Pane
         }
 
         // Scroll Area Back
-        fill(ms, x + offsetX, y + offsetY, width - 2, height, scrollbarBackground);
+        fill(target.pose(), x + offsetX, y + offsetY, width - 2, height, scrollbarBackground);
 
         final int renderY = y + (int) getScrollBarYPos();
         final int renderHeight = getBarHeight();
 
         // Scroll Bar (Bottom/Right Edge line) - Fill whole Scroll area
-        fill(ms, x + offsetX, renderY, width - 2, renderHeight, scrollbarColorHighlight);
+        fill(target.pose(), x + offsetX, renderY, width - 2, renderHeight, scrollbarColorHighlight);
 
         // Scroll Bar (Inset color)
-        fill(ms, x + offsetX, renderY, width - 3, renderHeight - 1, scrollbarColor);
+        fill(target.pose(), x + offsetX, renderY, width - 3, renderHeight - 1, scrollbarColor);
     }
 
     @Override

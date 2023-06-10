@@ -1,6 +1,7 @@
 package com.ldtteam.blockui.controls;
 
 import com.ldtteam.blockui.Alignment;
+import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.util.SpacerTextComponent;
@@ -272,7 +273,7 @@ public abstract class AbstractTextElement extends Pane
     }
 
     @Override
-    public void drawSelf(final PoseStack ms, final double mx, final double my)
+    public void drawSelf(final BOGuiGraphics ms, final double mx, final double my)
     {
         if (!preparedText.isEmpty())
         {
@@ -281,8 +282,10 @@ public abstract class AbstractTextElement extends Pane
         }
     }
 
-    protected void innerDrawSelf(final PoseStack ms, final double mx, final double my)
+    protected void innerDrawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
+        final PoseStack ms = target.pose();
+
         final int color = enabled ? (wasCursorInPane ? textHoverColor : textColor) : textDisabledColor;
 
         int offsetX = textOffsetX;

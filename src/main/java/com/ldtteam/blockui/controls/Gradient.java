@@ -1,8 +1,8 @@
 package com.ldtteam.blockui.controls;
 
+import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.Color;
 import com.ldtteam.blockui.PaneParams;
-import com.mojang.blaze3d.vertex.PoseStack;
 
 /**
  * BlockOut gradient pane. Used to render a gradient.
@@ -62,9 +62,9 @@ public class Gradient extends AbstractTextElement
     }
 
     @Override
-    public void drawSelf(final PoseStack ms, final double mx, final double my)
+    public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
-        fillGradient(ms, x, y, width, height, gradientStart, gradientEnd);
-        super.drawSelf(ms, mx, my);
+        fillGradient(target.pose(), x, y, width, height, gradientStart, gradientEnd);
+        super.drawSelf(target, mx, my);
     }
 }

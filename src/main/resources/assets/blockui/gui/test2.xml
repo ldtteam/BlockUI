@@ -8,4 +8,5 @@
     <itemicon item="minecraft:diamond_pickaxe" pos="192 0" size="64 64"/>
     <itemicon item="minecraft:diamond_pickaxe" pos="256 0" size="64 64"/>
     <itemicon item="minecraft:diamond_pickaxe" pos="256 192" size="64 64"/>
+    <itemicon item="minecraft:brush" pos="128 128" size="64 64"/>
 </window>

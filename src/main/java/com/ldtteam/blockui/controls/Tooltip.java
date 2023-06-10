@@ -1,6 +1,7 @@
 package com.ldtteam.blockui.controls;
 
 import com.ldtteam.blockui.Alignment;
+import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.BOScreen;
 import com.ldtteam.blockui.PaneParams;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -110,14 +111,16 @@ public class Tooltip extends AbstractTextElement
     }
 
     @Override
-    public void drawSelf(final PoseStack ms, final double mx, final double my)
+    public void drawSelf(final BOGuiGraphics ms, final double mx, final double my)
     {
         // draw in last pass, not in main pass
     }
 
     @Override
-    public void drawSelfLast(final PoseStack ms, final double mx, final double my)
+    public void drawSelfLast(final BOGuiGraphics target, final double mx, final double my)
     {
+        final PoseStack ms = target.pose();
+
         if (!preparedText.isEmpty() && enabled)
         {
             recalcPreparedTextBox();
@@ -193,7 +196,7 @@ public class Tooltip extends AbstractTextElement
             RenderSystem.disableBlend();
 
             ms.translate(-x, -y, 0.0d);
-            super.innerDrawSelf(ms, mx, my);
+            super.innerDrawSelf(target, mx, my);
             ms.popPose();
         }
     }

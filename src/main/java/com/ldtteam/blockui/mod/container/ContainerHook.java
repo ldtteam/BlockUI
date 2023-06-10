@@ -113,7 +113,7 @@ public class ContainerHook
                     ItemInfo info = null;
                     for (final ItemInfo itemInfo : allItems)
                     {
-                        if (isContainer.sameItem(itemInfo.is))
+                        if (ItemStack.isSameItemSameTags(isContainer, itemInfo.is))
                         {
                             info = itemInfo;
                             break;

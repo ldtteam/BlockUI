@@ -1,5 +1,6 @@
 package com.ldtteam.blockui.controls;
 
+import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.PaneParams;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.SharedConstants;
@@ -77,8 +78,10 @@ public class TextFieldVanilla extends TextField
     }
 
     @Override
-    public void drawSelf(final PoseStack ms, final double mx, final double my)
+    public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
+        final PoseStack ms = target.pose();
+
         if (backgroundEnabled)
         {
             // Draw box
@@ -89,7 +92,7 @@ public class TextFieldVanilla extends TextField
             ms.translate(BACKGROUND_X_TRANSLATE, (height - BACKGROUND_Y_TRANSLATE_OFFSET) / 2, 0);
         }
 
-        super.drawSelf(ms, mx, my);
+        super.drawSelf(target, mx, my);
 
         if (backgroundEnabled)
         {
