@@ -221,7 +221,7 @@ public abstract class AbstractTextElement extends Pane
         }).collect(Collectors.toList());
     }
 
-    protected void recalcPreparedTextBox()
+    public void recalcPreparedTextBox()
     {
         if (textWrap)
         {
@@ -229,6 +229,8 @@ public abstract class AbstractTextElement extends Pane
             final int maxHeight = (int) (textHeight / textScale) + 1;
             final int lineHeight = this.mc.font.lineHeight + textLinespace;
 
+            // TODO: fix me, surely not like this
+            // TODO: add ellipsis if cut
             preparedText = preparedText.subList(0, Math.min(preparedText.size(), maxHeight / lineHeight));
 
             int heightSum = 0;

@@ -1,3 +1,11 @@
 <window xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="block_ui.xsd" size="320 240">
-    <itemicon id="ii2" item="minecraft:diamond_pickaxe" pos="0 0" size="64 64"/>
+    <itemicon item="minecraft:diamond_pickaxe" pos="0 192" size="64 64"/>
+    <itemicon item="minecraft:diamond_pickaxe" pos="0 128" size="64 64"/>
+    <itemicon item="minecraft:diamond_pickaxe" pos="0 64" size="64 64"/>
+    <itemicon item="minecraft:diamond_pickaxe" pos="0 0" size="64 64"/>
+    <itemicon item="minecraft:diamond_pickaxe" pos="64 0" size="64 64"/>
+    <itemicon item="minecraft:diamond_pickaxe" pos="128 0" size="64 64"/>
+    <itemicon item="minecraft:diamond_pickaxe" pos="192 0" size="64 64"/>
+    <itemicon item="minecraft:diamond_pickaxe" pos="256 0" size="64 64"/>
+    <itemicon item="minecraft:diamond_pickaxe" pos="256 192" size="64 64"/>
 </window>
