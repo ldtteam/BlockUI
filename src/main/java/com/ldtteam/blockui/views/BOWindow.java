@@ -156,7 +156,7 @@ public class BOWindow extends View
         mc.submit(() -> {
             if (mc.screen instanceof final BOScreen ourUI)
             {
-                ourUI.onClose();
+                ourUI.removed();
             }
             mc.setScreen(screen);
         });
