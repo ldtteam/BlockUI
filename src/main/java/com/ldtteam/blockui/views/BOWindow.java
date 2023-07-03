@@ -8,9 +8,6 @@ import com.ldtteam.blockui.Parsers;
 import com.mojang.blaze3d.platform.Window;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.DistExecutor;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.function.ToDoubleBiFunction;
@@ -18,7 +15,6 @@ import java.util.function.ToDoubleBiFunction;
 /**
  * Blockout window, high level root pane.
  */
-@OnlyIn(Dist.CLIENT)
 public class BOWindow extends View
 {
     /**
@@ -157,7 +153,13 @@ public class BOWindow extends View
      */
     public void open()
     {
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> mc.submit(() -> mc.setScreen(screen)));
+        mc.submit(() -> {
+            if (mc.screen instanceof final BOScreen ourUI)
+            {
+                ourUI.onClose();
+            }
+            mc.setScreen(screen);
+        });
     }
 
     /**
