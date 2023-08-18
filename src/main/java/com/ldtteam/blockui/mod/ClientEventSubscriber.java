@@ -12,6 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.event.InputEvent.MouseScrollingEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
+import net.minecraftforge.event.ModMismatchEvent;
 import net.minecraftforge.event.TagsUpdatedEvent;
 import net.minecraftforge.event.TickEvent.ClientTickEvent;
 import net.minecraftforge.event.TickEvent.Phase;
@@ -95,5 +96,12 @@ public class ClientEventSubscriber
         {
             event.setCanceled(true);
         }
+    }
+
+    @SubscribeEvent
+    public static void onModMismatch(final ModMismatchEvent event)
+    {
+        // there are no world data and rest is mod compat anyway
+        event.markResolved(BlockUI.MOD_ID);
     }
 }
