@@ -191,4 +191,20 @@ public class SwitchView extends View
     {
         return children.size();
     }
+
+    /**
+     * @return true if {@link #setView(boolean, int)} connects first and last view
+     */
+    public boolean isEndlessScrollingEnabled()
+    {
+        return endlessScrolling;
+    }
+
+    /**
+     * @param endlessScrolling true if {@link #setView(boolean, int)} should connect first and last view
+     */
+    public void setEndlessScrolling(final boolean endlessScrolling)
+    {
+        this.endlessScrolling = endlessScrolling;
+    }
 }
