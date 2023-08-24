@@ -140,8 +140,8 @@ public class ItemIcon extends Pane
             final Item item = itemStack.getItem();
             ForgeRegistries.ITEMS.getHolder(item)
                 .map(Holder::getTagKeys)
-                .ifPresent(tags -> tags.forEach(
-                    tag -> result.add(1, wrapShift(Component.literal("#" + tag.location()).withStyle(ChatFormatting.DARK_PURPLE)))));
+                .ifPresent(tags -> tags
+                    .forEach(tag -> result.add(1, wrapShift(Component.literal("#" + tag.location()).withStyle(ChatFormatting.DARK_PURPLE)))));
 
             if (item.getItemCategory() != null)
             {

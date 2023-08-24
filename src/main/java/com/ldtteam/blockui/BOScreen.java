@@ -53,8 +53,8 @@ public class BOScreen extends Screen
         absoluteMouseY = my;
         framebufferWidth = minecraft.getWindow().getWidth();
         framebufferHeight = minecraft.getWindow().getHeight();
-        final double guiWidth = Math.max(framebufferWidth, 320.0d);
-        final double guiHeight = Math.max(framebufferHeight, 240.0d);
+        final int guiWidth = Math.max(framebufferWidth, 320);
+        final int guiHeight = Math.max(framebufferHeight, 240);
 
         final float renderZlevel = MatrixUtils.getLastMatrixTranslateZ(ms);
         final float oldZ = minecraft.getItemRenderer().blitOffset;
@@ -279,7 +279,7 @@ public class BOScreen extends Screen
                 else
                 {
                     window.onUpdate();
-
+                    
                     final LocalPlayer player = minecraft == null ? null : minecraft.player;
                     if (player != null && (!player.isAlive() || player.dead))
                     {

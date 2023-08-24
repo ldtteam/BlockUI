@@ -115,7 +115,8 @@ public class Tooltip extends AbstractTextElement
     public void drawSelfLast(final PoseStack ms, final double mx, final double my)
     {
         if (!preparedText.isEmpty() && enabled)
-        {            recalcPreparedTextBox();
+        {
+            recalcPreparedTextBox();
             if (autoWidth)
             {
                 width = renderedTextWidth + 8;
