@@ -112,9 +112,9 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
             return null;
         }
 
-        if (parent instanceof BOWindow && params.getType().equals("window"))
+        if (parent instanceof final BOWindow window && params.getType().equals("window"))
         {
-            ((BOWindow) parent).loadParams(params);
+            window.loadParams(params);
             parent.parseChildren(params);
             return parent;
         }
