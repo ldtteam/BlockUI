@@ -62,13 +62,9 @@ public class OutOfJarResourceLocation extends ResourceLocation
     {
         if (resLoc instanceof OutOfJarResourceLocation nioResLoc)
         {
-            if (fileExists(resLoc.withSuffix(".mcmeta"), fallbackManager))
-            {
-                return new OutOfJarResource(resLoc,
-                    () -> Files.newInputStream(nioResLoc.getNioPath()),
-                    FallbackResourceManager.convertToMetadata(() -> Files.newInputStream(nioResLoc.getNioPath())));
-            }
-            return new OutOfJarResource(resLoc, () -> Files.newInputStream(nioResLoc.getNioPath()));
+            return fileExists(resLoc.withSuffix(".mcmeta"), fallbackManager) ?
+                new OutOfJarResource(nioResLoc, FallbackResourceManager.convertToMetadata(() -> Files.newInputStream(nioResLoc.getNioPath()))) :
+                new OutOfJarResource(nioResLoc);
         }
         return fallbackManager.getResource(resLoc).orElseThrow(() -> new RuntimeException("File not found: " + resLoc));
     }
@@ -135,17 +131,17 @@ public class OutOfJarResourceLocation extends ResourceLocation
 
     public static class OutOfJarResource extends Resource
     {
-        private final ResourceLocation resLoc;
+        private final OutOfJarResourceLocation resLoc;
 
-        public OutOfJarResource(final ResourceLocation resLoc, final IoSupplier<InputStream> streamSupplier, final IoSupplier<ResourceMetadata> metadataSupplier)
+        public OutOfJarResource(final OutOfJarResourceLocation resLoc, final IoSupplier<ResourceMetadata> metadataSupplier)
         {
-            super(null, streamSupplier, metadataSupplier);
+            super(null, () -> Files.newInputStream(resLoc.getNioPath()), metadataSupplier);
             this.resLoc = resLoc;
         }
         
-        public OutOfJarResource(final ResourceLocation resLoc, final IoSupplier<InputStream> streamSupplier)
+        public OutOfJarResource(final OutOfJarResourceLocation resLoc)
         {
-            super(null, streamSupplier);
+            super(null, () -> Files.newInputStream(resLoc.getNioPath()));
             this.resLoc = resLoc;
         }
 
