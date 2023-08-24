@@ -8,6 +8,7 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.client.ForgeRenderTypes;
 import org.lwjgl.glfw.GLFW;
@@ -267,10 +268,11 @@ public class BOScreen extends Screen
                 else
                 {
                     window.onUpdate();
-
-                    if (!minecraft.player.isAlive() || minecraft.player.dead)
+                    
+                    final LocalPlayer player = minecraft == null ? null : minecraft.player;
+                    if (player != null && (!player.isAlive() || player.dead))
                     {
-                        minecraft.player.closeContainer();
+                        player.closeContainer();
                     }
                 }
             }
