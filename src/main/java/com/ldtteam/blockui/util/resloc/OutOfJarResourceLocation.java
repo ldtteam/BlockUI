@@ -2,7 +2,13 @@ package com.ldtteam.blockui.util.resloc;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.resources.FallbackResourceManager;
+import net.minecraft.server.packs.resources.IoSupplier;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceMetadata;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,9 +49,29 @@ public class OutOfJarResourceLocation extends ResourceLocation
         return nioPath;
     }
 
-    public static InputStream openStream(final ResourceLocation resLoc, final ResourceManager fallbackManager) throws IOException
+    public static boolean fileExists(final ResourceLocation resLoc, final ResourceManager fallbackManager)
+    {
+        if (resLoc instanceof final OutOfJarResourceLocation nioResLoc)
+        {
+            return Files.exists(nioResLoc.nioPath);
+        }
+        return fallbackManager.getResource(resLoc).isPresent();
+    }
+
+    public static Resource getResourceHandle(final ResourceLocation resLoc, final ResourceManager fallbackManager)
     {
         if (resLoc instanceof OutOfJarResourceLocation nioResLoc)
+        {
+            return fileExists(resLoc.withSuffix(".mcmeta"), fallbackManager) ?
+                new OutOfJarResource(nioResLoc, FallbackResourceManager.convertToMetadata(() -> Files.newInputStream(nioResLoc.getNioPath()))) :
+                new OutOfJarResource(nioResLoc);
+        }
+        return fallbackManager.getResource(resLoc).orElseThrow(() -> new RuntimeException("File not found: " + resLoc));
+    }
+
+    public static InputStream openStream(final ResourceLocation resLoc, final ResourceManager fallbackManager) throws IOException
+    {
+        if (resLoc instanceof final OutOfJarResourceLocation nioResLoc)
         {
             return Files.newInputStream(nioResLoc.nioPath);
         }
@@ -54,7 +80,7 @@ public class OutOfJarResourceLocation extends ResourceLocation
 
     public static BufferedReader openReader(final ResourceLocation resLoc, final ResourceManager fallbackManager) throws IOException
     {
-        if (resLoc instanceof OutOfJarResourceLocation nioResLoc)
+        if (resLoc instanceof final OutOfJarResourceLocation nioResLoc)
         {
             return Files.newBufferedReader(nioResLoc.nioPath);
         }
@@ -62,22 +88,22 @@ public class OutOfJarResourceLocation extends ResourceLocation
     }
 
     @Override
-    public int compareNamespaced(ResourceLocation o)
+    public int compareNamespaced(final ResourceLocation o)
     {
-        if (o instanceof OutOfJarResourceLocation nioResLoc)
+        if (o instanceof final OutOfJarResourceLocation nioResLoc)
         {
-            int ret = this.getNamespace().compareTo(nioResLoc.getNamespace());
+            final int ret = this.getNamespace().compareTo(nioResLoc.getNamespace());
             return ret != 0 ? ret : this.nioPath.compareTo(nioResLoc.nioPath);
         }
         return super.compareNamespaced(o);
     }
 
     @Override
-    public int compareTo(ResourceLocation o)
+    public int compareTo(final ResourceLocation o)
     {
-        if (o instanceof OutOfJarResourceLocation nioResLoc)
+        if (o instanceof final OutOfJarResourceLocation nioResLoc)
         {
-            int ret = this.nioPath.compareTo(nioResLoc.nioPath);
+            final int ret = this.nioPath.compareTo(nioResLoc.nioPath);
             return ret != 0 ? ret : this.getNamespace().compareTo(nioResLoc.getNamespace());
         }
         return super.compareTo(o);
@@ -90,16 +116,52 @@ public class OutOfJarResourceLocation extends ResourceLocation
     }
 
     @Override
-    public boolean equals(Object obj)
+    public boolean equals(final Object obj)
     {
         if (obj == this)
         {
             return true;
         }
-        if (obj instanceof OutOfJarResourceLocation nioResLoc)
+        if (obj instanceof final OutOfJarResourceLocation nioResLoc)
         {
             return this.getNamespace().equals(nioResLoc.getNamespace()) && this.nioPath.equals(nioResLoc.nioPath);
         }
         return false;
+    }
+
+    public static class OutOfJarResource extends Resource
+    {
+        private final OutOfJarResourceLocation resLoc;
+
+        public OutOfJarResource(final OutOfJarResourceLocation resLoc, final IoSupplier<ResourceMetadata> metadataSupplier)
+        {
+            super(null, () -> Files.newInputStream(resLoc.getNioPath()), metadataSupplier);
+            this.resLoc = resLoc;
+        }
+        
+        public OutOfJarResource(final OutOfJarResourceLocation resLoc)
+        {
+            super(null, () -> Files.newInputStream(resLoc.getNioPath()));
+            this.resLoc = resLoc;
+        }
+
+        @Override
+        public PackResources source()
+        {
+            // currently only used at one place, so no-op should not crash
+            return null; 
+        }
+
+        @Override
+        public String sourcePackId()
+        {
+            return "blockui out-of-jar resource: " + resLoc;
+        }
+
+        @Override
+        public boolean isBuiltin()
+        {
+            return false;
+        }
     }
 }
