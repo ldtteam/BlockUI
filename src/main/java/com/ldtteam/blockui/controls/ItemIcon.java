@@ -145,7 +145,7 @@ public class ItemIcon extends Pane
 
             if (item.getItemCategory() != null)
             {
-                result.add(1, item.getItemCategory().getDisplayName().copy().withStyle(ChatFormatting.BLUE));
+                result.add(1, wrapShift(item.getItemCategory().getDisplayName().copy().withStyle(ChatFormatting.BLUE)));
             }
         }
 
