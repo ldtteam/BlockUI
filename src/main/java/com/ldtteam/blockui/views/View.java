@@ -1,6 +1,7 @@
 package com.ldtteam.blockui.views;
 
 import com.ldtteam.blockui.*;
+import com.ldtteam.blockui.controls.Tooltip;
 import com.ldtteam.blockui.util.records.Pos2i.ImmutablePos2i;
 import com.ldtteam.blockui.util.records.Pos2i.MutablePos2i;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -239,11 +240,21 @@ public class View extends Pane
     public void onUpdate()
     {
         // copy to prevent CME during scrolling list updates, ctor uses fast array copy so it's cheap
-        new ArrayList<>(children).forEach(Pane::onUpdate);
+        for (final Pane child : new ArrayList<>(children))
+        {
+            if (child.isVisible())
+            {
+                child.onUpdate();
+            }
+        }
     }
 
     protected boolean childIsVisible(final Pane child)
     {
+        if (child instanceof Tooltip)
+        {
+            return true;
+        }
         return child.getX() < getInteriorWidth() && child.getY() < getInteriorHeight() && (child.getX() + child.getWidth()) >= 0 &&
             (child.getY() + child.getHeight()) >= 0;
     }

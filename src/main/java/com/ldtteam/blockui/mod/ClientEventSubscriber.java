@@ -51,10 +51,16 @@ public class ClientEventSubscriber
     @SubscribeEvent
     public static void onClientTickEvent(final ClientTickEvent event)
     {
-        if (event.phase == Phase.START && Screen.hasAltDown() && Screen.hasControlDown() && Screen.hasShiftDown()
-            && InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_X))
+        if (event.phase == Phase.START && Screen.hasAltDown() && Screen.hasControlDown() && Screen.hasShiftDown())
         {
-            new BOWindow(new ResourceLocation(BlockUI.MOD_ID, "gui/test.xml")).open();
+            if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_X))
+            {
+                new BOWindow(new ResourceLocation(BlockUI.MOD_ID, "gui/test.xml")).open();
+            }
+            else if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_C))
+            {
+                new BOWindow(new ResourceLocation(BlockUI.MOD_ID, "gui/test2.xml")).open();
+            }
         }
 
         if (event.phase == Phase.END && Minecraft.getInstance().level != null)

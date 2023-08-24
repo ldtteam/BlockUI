@@ -2,6 +2,7 @@ package com.ldtteam.blockui.controls;
 
 import java.util.Collections;
 import com.ldtteam.blockui.Alignment;
+import com.ldtteam.blockui.BOScreen;
 import com.ldtteam.blockui.PaneParams;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -19,9 +20,9 @@ public class Tooltip extends AbstractTextElement
 
     private static final int CURSOR_BOX_SIZE = 12;
     private static final int Z_OFFSET = 200;
-    private static final int BACKGROUND_COLOR = 0xf0100010;
-    private static final int BORDER_COLOR_A = 0x505000ff;
-    private static final int BORDER_COLOR_B = 0x5028007f;
+    private static final int BACKGROUND_COLOR = 0xf0100010; // TooltipRenderUtil.BACKGROUND_COLOR;
+    private static final int BORDER_COLOR_A = 0x505000ff; // TooltipRenderUtil.BORDER_COLOR_TOP
+    private static final int BORDER_COLOR_B = 0x5028007f; // TooltipRenderUtil.BORDER_COLOR_BOTTOM
 
     public static final int DEFAULT_TEXT_COLOR = 0xffffff; // white
 
@@ -79,7 +80,7 @@ public class Tooltip extends AbstractTextElement
         if (autoWidth)
         {
             // +1 for shadow
-            textWidth = Math.min(text.stream().mapToInt(mc.font::width).max().orElse(Integer.MAX_VALUE), maxWidth - 8) + 1;
+            textWidth = maxWidth - 8 + 1;
         }
         if (autoHeight)
         {
@@ -87,15 +88,6 @@ public class Tooltip extends AbstractTextElement
         }
 
         super.recalcTextRendering();
-
-        if (autoWidth)
-        {
-            width = renderedTextWidth + 8;
-        }
-        if (autoHeight)
-        {
-            height = renderedTextHeight + 8;
-        }
     }
 
     /**
@@ -123,21 +115,43 @@ public class Tooltip extends AbstractTextElement
     public void drawSelfLast(final PoseStack ms, final double mx, final double my)
     {
         if (!preparedText.isEmpty() && enabled)
-        {
-            x = (int) mx + CURSOR_BOX_SIZE - 4;
-            y = (int) my - CURSOR_BOX_SIZE - 4;
-
-            if (x + width + 3 > window.getScreen().width)
+        {            recalcPreparedTextBox();
+            if (autoWidth)
             {
-                x = window.getScreen().width - width - 4;
+                width = renderedTextWidth + 8;
+            }
+            if (autoHeight)
+            {
+                height = renderedTextHeight + 8;
             }
 
-            if (y + height + 3 > window.getScreen().height)
+            final BOScreen scr = window.getScreen();
+            final double renderScale = scr.getRenderScale();
+            final int marginOffset = 4;
+
+            x = (int) mx + CURSOR_BOX_SIZE;
+            y = Math.max(marginOffset, (int) my - CURSOR_BOX_SIZE);
+
+            // really black box math here: scaled absolute cursor > width - scaled tooltip size
+            if ((scr.getAbsoluteMouseX() + CURSOR_BOX_SIZE) * scr.getVanillaGuiScale() >
+                scr.getFramebufferWidth() - renderScale * (width + marginOffset))
             {
-                y = window.getScreen().height - height - 4;
+                // if overflow then flip tooltip to left
+                final int guiToWindowOffset = (int) (scr.getFramebufferWidth() - scr.width * renderScale) / 2;
+                x = Math.max(marginOffset - guiToWindowOffset, x - 2 * CURSOR_BOX_SIZE - width);
+            }
+
+            // same condition (just sign change for CURSOR_BOX_SIZE)
+            final int absoluteY = (int) ((scr.getAbsoluteMouseY() - CURSOR_BOX_SIZE) * scr.getVanillaGuiScale());
+            final int maxAbsoluteMy = scr.getFramebufferHeight() - (int) (renderScale * (height + marginOffset));
+            if (absoluteY > maxAbsoluteMy)
+            {
+                // but we don't flip here but just move upwards
+                y -= (absoluteY - maxAbsoluteMy) / 2;
             }
 
             // modified INLINE: vanilla Screen#renderTooltip(MatrixStack, List<? extends IReorderingProcessor>, int, int, FontRenderer)
+            // TODO: update from net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil
             ms.pushPose();
             ms.translate(x, y, Z_OFFSET);
 
@@ -176,7 +190,7 @@ public class Tooltip extends AbstractTextElement
             RenderSystem.enableTexture();
 
             ms.translate(-x, -y, 0.0d);
-            super.drawSelf(ms, mx, my);
+            super.innerDrawSelf(ms, mx, my);
             ms.popPose();
         }
     }
