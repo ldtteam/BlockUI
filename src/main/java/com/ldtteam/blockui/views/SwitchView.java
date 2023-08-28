@@ -13,6 +13,7 @@ public class SwitchView extends View
 {
     @Nullable
     private Pane currentView;
+    protected boolean endlessScrolling = false;
 
     /**
      * Required default constructor.
@@ -42,6 +43,7 @@ public class SwitchView extends View
         {
             setView(defaultView);
         }
+        this.endlessScrolling = params.getBoolean("endless", endlessScrolling);
     }
 
     /**
@@ -53,7 +55,7 @@ public class SwitchView extends View
     public boolean setView(final String name)
     {
         // Immediate children only
-        for (        final Pane child : children)
+        for (final Pane child : children)
         {
             if (child.getID().equals(name))
             {
@@ -174,6 +176,7 @@ public class SwitchView extends View
         }
 
         int newIndex = relative ? children.indexOf(currentView) + shift : shift;
+        newIndex = endlessScrolling ? Math.floorMod(newIndex, getChildrenSize()) : newIndex;
         newIndex = Mth.clamp(newIndex, 0, getChildrenSize() - 1);
 
         setCurrentView(children.get(newIndex));
@@ -187,5 +190,21 @@ public class SwitchView extends View
     public int getChildrenSize()
     {
         return children.size();
+    }
+
+    /**
+     * @return true if {@link #setView(boolean, int)} connects first and last view
+     */
+    public boolean isEndlessScrollingEnabled()
+    {
+        return endlessScrolling;
+    }
+
+    /**
+     * @param endlessScrolling true if {@link #setView(boolean, int)} should connect first and last view
+     */
+    public void setEndlessScrolling(final boolean endlessScrolling)
+    {
+        this.endlessScrolling = endlessScrolling;
     }
 }
