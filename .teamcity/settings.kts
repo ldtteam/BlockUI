@@ -172,8 +172,8 @@ object PullRequests2 : Project({
     name = "Pull Requests"
     description = "All open pull requests"
 
-    buildType(PullRequests2_BuildAndTest)
-    buildType(PullRequests2_CommonBuildCounter)
+    buildType(PullRequests2BuildAndTest)
+    buildType(PullRequests2CommonBuildCounter)
 
     params {
         text("Default.Branch", "CI/Default", label = "Default branch", description = "The default branch for pull requests.", readOnly = true, allowEmpty = false)
@@ -192,28 +192,42 @@ object PullRequests2 : Project({
     }
 })
 
-object PullRequests2_BuildAndTest : BuildType({
+object PullRequests2BuildAndTest : BuildType({
     templates(AbsoluteId("LetSDevTogether_BuildWithTesting"))
     name = "Build and Test"
     description = "Builds and Tests the pull request."
 
+    artifactRules = """
+        +:build\libs\*.jar => build\libs
+        +:build\distributions\mods-*.zip => build\distributions
+    """.trimIndent()
+
     params {
-        param("Project.Type", "mods")
-        param("env.Version.Patch", "${PullRequests2_CommonBuildCounter.depParamRefs.buildNumber}")
+        param("env.Version.Patch", "${PullRequests2CommonBuildCounter.depParamRefs.buildNumber}")
         param("env.Version.Suffix", "-PR")
     }
 
+    features {
+        feature {
+            id = "com.ldtteam.teamcity.github.commenting.GithubCommentingBuildFeature"
+            type = "com.ldtteam.teamcity.github.commenting.GithubCommentingBuildFeature"
+            param("privateKey", "-----")
+            param("appId", "154983")
+            param("branch", "%teamcity.build.branch%")
+        }
+    }
+
     dependencies {
-        snapshot(PullRequests2_CommonBuildCounter) {
-            reuseBuilds = ReuseBuilds.NO
+        snapshot(PullRequests2CommonBuildCounter) {
             onDependencyFailure = FailureAction.FAIL_TO_START
         }
     }
-    
+
     disableSettings("BUILD_EXT_15")
 })
 
-object PullRequests2_CommonBuildCounter : BuildType({
+
+object PullRequests2CommonBuildCounter : BuildType({
     templates(AbsoluteId("LetSDevTogether_CommonBuildCounter"))
     name = "Common Build Counter"
     description = "Defines version numbers uniquely over all Pull Request builds"
