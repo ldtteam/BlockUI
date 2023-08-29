@@ -266,11 +266,6 @@ public abstract class AbstractTextElement extends Pane
         }
     }
 
-    protected int getTextRenderingColor(final double mx, final double my)
-    {
-        return enabled ? (isPointInPane(mx, my) ? textHoverColor : textColor) : textDisabledColor;
-    }
-
     @Override
     public void drawSelf(final PoseStack ms, final double mx, final double my)
     {
