@@ -1,10 +1,17 @@
 package com.ldtteam.blockui.util.records;
 
+import com.mojang.datafixers.util.Pair;
+
 public record SizeI(int width, int height)
 {
     public MutableSizeI toMutable()
     {
         return new MutableSizeI(width, height);
+    }
+
+    public static SizeI of(Pair<Integer, Integer> pair)
+    {
+        return new SizeI(pair.getFirst(), pair.getSecond());
     }
 
     public static class MutableSizeI

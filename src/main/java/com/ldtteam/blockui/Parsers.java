@@ -61,7 +61,6 @@ public final class Parsers
     /** Applies the TEXT parser across multiple lines */
     public static Function<String, List<MutableComponent>> MULTILINE = v -> Arrays.stream(Parsers.RAW_TEXT.apply(v).split("(\\\\n|\\n)"))
         .map(Component::literal)
-        .map(MutableComponent.class::cast)
         .toList();
 
     /** Parses a color from hex, rgba, name, or pure value */

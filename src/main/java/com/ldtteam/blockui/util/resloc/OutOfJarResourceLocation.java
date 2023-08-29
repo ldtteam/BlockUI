@@ -2,7 +2,11 @@ package com.ldtteam.blockui.util.resloc;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.server.packs.resources.Resource.IoSupplier;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceMetadata;
+import org.jetbrains.annotations.Nullable;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,18 +17,16 @@ public class OutOfJarResourceLocation extends ResourceLocation
 {
     private final Path nioPath;
 
-    protected OutOfJarResourceLocation(final String namespace, final Path path, final String pathString)
+    protected OutOfJarResourceLocation(final String namespace, final Path path, @Nullable final String pathString)
     {
-        super(namespace, pathString);
+        super(namespace,
+            pathString != null ? pathString : path.toString().toLowerCase().replace('\\', '/').replaceAll("[^a-z0-9/._-]", "_"));
         this.nioPath = path;
     }
 
     public static OutOfJarResourceLocation of(final String namespace, final Path path)
     {
-        final Path fullPath = path.toAbsolutePath().normalize();
-        return new OutOfJarResourceLocation(namespace,
-            fullPath,
-            fullPath.toString().toLowerCase().replace('\\', '/').replaceAll("[^a-z0-9/._-]", "_"));
+        return new OutOfJarResourceLocation(namespace, path, null);
     }
 
     @SuppressWarnings("resource")
@@ -43,9 +45,36 @@ public class OutOfJarResourceLocation extends ResourceLocation
         return nioPath;
     }
 
+    public static boolean fileExists(final ResourceLocation resLoc, final ResourceManager fallbackManager)
+    {
+        if (resLoc instanceof final OutOfJarResourceLocation nioResLoc)
+        {
+            return Files.exists(nioResLoc.nioPath);
+        }
+        return fallbackManager.getResource(resLoc).isPresent();
+    }
+
+    public static Resource getResourceHandle(final ResourceLocation resLoc, final ResourceManager fallbackManager)
+    {
+        if (resLoc instanceof final OutOfJarResourceLocation nioResLoc)
+        {
+            return fileExists(nioResLoc.withFileSuffix(".mcmeta"), fallbackManager) ?
+                new OutOfJarResource(nioResLoc, parseMetadata(nioResLoc)) :
+                new OutOfJarResource(nioResLoc);
+        }
+        return fallbackManager.getResource(resLoc).orElseThrow(() -> new RuntimeException("File not found: " + resLoc));
+    }
+
+    private static IoSupplier<ResourceMetadata> parseMetadata(final OutOfJarResourceLocation path)
+    {
+        return () -> {
+            return ResourceMetadata.EMPTY;
+        };
+    }
+
     public static InputStream openStream(final ResourceLocation resLoc, final ResourceManager fallbackManager) throws IOException
     {
-        if (resLoc instanceof OutOfJarResourceLocation nioResLoc)
+        if (resLoc instanceof final OutOfJarResourceLocation nioResLoc)
         {
             return Files.newInputStream(nioResLoc.nioPath);
         }
@@ -54,7 +83,7 @@ public class OutOfJarResourceLocation extends ResourceLocation
 
     public static BufferedReader openReader(final ResourceLocation resLoc, final ResourceManager fallbackManager) throws IOException
     {
-        if (resLoc instanceof OutOfJarResourceLocation nioResLoc)
+        if (resLoc instanceof final OutOfJarResourceLocation nioResLoc)
         {
             return Files.newBufferedReader(nioResLoc.nioPath);
         }
@@ -62,22 +91,22 @@ public class OutOfJarResourceLocation extends ResourceLocation
     }
 
     @Override
-    public int compareNamespaced(ResourceLocation o)
+    public int compareNamespaced(final ResourceLocation o)
     {
-        if (o instanceof OutOfJarResourceLocation nioResLoc)
+        if (o instanceof final OutOfJarResourceLocation nioResLoc)
         {
-            int ret = this.getNamespace().compareTo(nioResLoc.getNamespace());
+            final int ret = this.getNamespace().compareTo(nioResLoc.getNamespace());
             return ret != 0 ? ret : this.nioPath.compareTo(nioResLoc.nioPath);
         }
         return super.compareNamespaced(o);
     }
 
     @Override
-    public int compareTo(ResourceLocation o)
+    public int compareTo(final ResourceLocation o)
     {
-        if (o instanceof OutOfJarResourceLocation nioResLoc)
+        if (o instanceof final OutOfJarResourceLocation nioResLoc)
         {
-            int ret = this.nioPath.compareTo(nioResLoc.nioPath);
+            final int ret = this.nioPath.compareTo(nioResLoc.nioPath);
             return ret != 0 ? ret : this.getNamespace().compareTo(nioResLoc.getNamespace());
         }
         return super.compareTo(o);
@@ -90,16 +119,80 @@ public class OutOfJarResourceLocation extends ResourceLocation
     }
 
     @Override
-    public boolean equals(Object obj)
+    public boolean equals(final Object obj)
     {
         if (obj == this)
         {
             return true;
         }
-        if (obj instanceof OutOfJarResourceLocation nioResLoc)
+        if (obj instanceof final OutOfJarResourceLocation nioResLoc)
         {
             return this.getNamespace().equals(nioResLoc.getNamespace()) && this.nioPath.equals(nioResLoc.nioPath);
         }
         return false;
+    }
+
+    /**
+     * @param prefix this will get prepended to filename
+     */
+    public OutOfJarResourceLocation withFilePrefix(final String prefix)
+    {
+        return of(getNamespace(), nioPath.resolveSibling(prefix + nioPath.getFileName().toString()));
+    }
+
+    /**
+     * @param prefix this will get prepended to path using {@link Path#resolve(String)}
+     */
+    public OutOfJarResourceLocation withPathPrefix(final String prefix)
+    {
+        return of(getNamespace(), Path.of(prefix).resolve(nioPath));
+    }
+
+    /**
+     * @param suffix this will get appended to filename
+     */
+    public OutOfJarResourceLocation withFileSuffix(final String suffix)
+    {
+        return of(getNamespace(), nioPath.resolveSibling(nioPath.getFileName().toString() + suffix));
+    }
+
+    /**
+     * @param suffix this will get appended to path using {@link Path#resolve(String)}
+     */
+    public OutOfJarResourceLocation withPathSuffix(final String suffix)
+    {
+        return of(getNamespace(), nioPath.resolve(suffix));
+    }
+
+    public static ResourceLocation withSuffix(final ResourceLocation resLoc, final String suffix)
+    {
+        if (resLoc instanceof final OutOfJarResourceLocation nioResLoc)
+        {
+            return nioResLoc.withFileSuffix(suffix);
+        }
+        return new ResourceLocation(resLoc.getNamespace(), resLoc.getPath() + suffix);
+    }
+
+    public static class OutOfJarResource extends Resource
+    {
+        private final OutOfJarResourceLocation resLoc;
+
+        public OutOfJarResource(final OutOfJarResourceLocation resLoc, final IoSupplier<ResourceMetadata> metadataSupplier)
+        {
+            super(null, () -> Files.newInputStream(resLoc.getNioPath()), metadataSupplier);
+            this.resLoc = resLoc;
+        }
+
+        public OutOfJarResource(final OutOfJarResourceLocation resLoc)
+        {
+            super(null, () -> Files.newInputStream(resLoc.getNioPath()));
+            this.resLoc = resLoc;
+        }
+
+        @Override
+        public String sourcePackId()
+        {
+            return "blockui out-of-jar resource: " + resLoc;
+        }
     }
 }

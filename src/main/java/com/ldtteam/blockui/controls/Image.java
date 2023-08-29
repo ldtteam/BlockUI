@@ -6,22 +6,30 @@ import com.ldtteam.blockui.Parsers;
 import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.util.records.SizeI;
 import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
+import com.ldtteam.blockui.util.sprite.Sprite;
+import com.ldtteam.blockui.util.sprite.Sprite.SpriteTicker;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Tuple;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.Tickable;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.Tuple;
+
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.concurrent.Executor;
 
 /**
  * Simple image element.
  */
-public class Image extends Pane
+public class Image extends Pane 
 {
     protected ResourceLocation resourceLocation;
     protected int u = 0;
@@ -63,6 +71,29 @@ public class Image extends Pane
 
     private void loadMapDimensions(final ResourceLocation rl)
     {
+        if (OutOfJarResourceLocation.fileExists(OutOfJarResourceLocation.withSuffix(rl, ".mcmeta"), Minecraft.getInstance().getResourceManager()))
+        {
+            final Sprite sprite = Sprite.loadSprite(rl,
+                OutOfJarResourceLocation.getResourceHandle(rl, Minecraft.getInstance().getResourceManager()));
+            if (sprite != null)
+            {
+                mapWidth = sprite.width();
+                mapHeight = sprite.height();
+                checkBlitSize();
+
+                // hack texture manager, this automatically closes old texture if present
+                final var tm = Minecraft.getInstance().getTextureManager();
+                if (!(tm.getTexture(rl) instanceof final SpriteTexture dynTex) || dynTex.getPixels() == null ||
+                    dynTex.getPixels().getWidth() != mapWidth ||
+                    dynTex.getPixels().getHeight() != mapHeight)
+                {
+                    tm.register(rl, new SpriteTexture(mapWidth, mapHeight, sprite));
+                }
+
+                return;
+            }
+        }
+
         final SizeI dimensions = getImageDimensions(rl);
         mapWidth = dimensions.width();
         mapHeight = dimensions.height();
@@ -222,5 +253,52 @@ public class Image extends Pane
         }
 
         RenderSystem.disableBlend();
+    }
+
+    /**
+     * Dynamic texture based on given sprite info
+     */
+    public class SpriteTexture extends DynamicTexture implements Tickable
+    {
+        private final Sprite sprite;
+        private final SpriteTicker ticker;
+
+        public SpriteTexture(final int width, final int height, final Sprite sprite)
+        {
+            super(width, height, false);
+            this.sprite = sprite;
+            this.ticker = sprite.createTicker();
+
+            // we need the native image to be there, but it can be dealocated (sprite contents has its own native image)
+            getPixels().close();
+        }
+
+        @Override
+        public void tick()
+        {
+            if (ticker != null)
+            {
+                bind();
+                ticker.tickAndUpload(0, 0);
+            }
+        }
+
+        @Override
+        public void close()
+        {
+            sprite.close();
+            if (ticker != null)
+            {
+                ticker.close();
+            }
+        }
+
+        @Override
+        public void reset(final TextureManager texManager, final ResourceManager resManager, final ResourceLocation resLoc, final Executor executor)
+        {
+            // we will populate it later (once needed)
+            // don't release directly -> CME!
+            Minecraft.getInstance().tell(() -> texManager.release(resLoc));
+        }
     }
 }
