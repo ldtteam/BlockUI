@@ -8,9 +8,8 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.BitStorage;
-import net.minecraft.util.SimpleBitStorage;
 import net.minecraftforge.client.ForgeRenderTypes;
 import org.lwjgl.glfw.GLFW;
 
@@ -26,6 +25,10 @@ public class BOScreen extends Screen
     protected double y = 0;
     public static boolean isMouseLeftDown = false;
     protected boolean isOpen = false;
+    protected int framebufferWidth;
+    protected int framebufferHeight;
+    protected int absoluteMouseX;
+    protected int absoluteMouseY;
 
     /**
      * Create a GuiScreen from a BlockOut window.
@@ -46,10 +49,12 @@ public class BOScreen extends Screen
             return;
         }
 
-        final double fbWidth = minecraft.getWindow().getWidth();
-        final double fbHeight = minecraft.getWindow().getHeight();
-        final double guiWidth = Math.max(fbWidth, 320.0d);
-        final double guiHeight = Math.max(fbHeight, 240.0d);
+        absoluteMouseX = mx;
+        absoluteMouseY = my;
+        framebufferWidth = minecraft.getWindow().getWidth();
+        framebufferHeight = minecraft.getWindow().getHeight();
+        final int guiWidth = Math.max(framebufferWidth, 320);
+        final int guiHeight = Math.max(framebufferHeight, 240);
 
         final float renderZlevel = MatrixUtils.getLastMatrixTranslateZ(ms);
         final float oldZ = minecraft.getItemRenderer().blitOffset;
@@ -63,8 +68,8 @@ public class BOScreen extends Screen
 
         if (window.hasLightbox())
         {
-            width = (int) fbWidth;
-            height = (int) fbHeight;
+            width = framebufferWidth;
+            height = framebufferHeight;
             super.renderBackground(ms);
         }
 
@@ -76,7 +81,7 @@ public class BOScreen extends Screen
         // replace vanilla projection
         final PoseStack shaderPs = RenderSystem.getModelViewStack();
         final Matrix4f oldProjection = RenderSystem.getProjectionMatrix();
-        RenderSystem.setProjectionMatrix(Matrix4f.orthographic(0.0F, (float) fbWidth, 0.0F, (float) fbHeight, -10000.0F, 50000.0F));
+        RenderSystem.setProjectionMatrix(Matrix4f.orthographic(0.0F, framebufferWidth, 0.0F, framebufferHeight, -10000.0F, 50000.0F));
         shaderPs.pushPose();
         shaderPs.setIdentity();
 
@@ -274,10 +279,11 @@ public class BOScreen extends Screen
                 else
                 {
                     window.onUpdate();
-
-                    if (!minecraft.player.isAlive() || minecraft.player.dead)
+                    
+                    final LocalPlayer player = minecraft == null ? null : minecraft.player;
+                    if (player != null && (!player.isAlive() || player.dead))
                     {
-                        minecraft.player.closeContainer();
+                        player.closeContainer();
                     }
                 }
             }
@@ -344,5 +350,25 @@ public class BOScreen extends Screen
     public double getVanillaGuiScale()
     {
         return mcScale;
+    }
+
+    public int getFramebufferWidth()
+    {
+        return framebufferWidth;
+    }
+
+    public int getFramebufferHeight()
+    {
+        return framebufferHeight;
+    }
+
+    public int getAbsoluteMouseX()
+    {
+        return absoluteMouseX;
+    }
+
+    public int getAbsoluteMouseY()
+    {
+        return absoluteMouseY;
     }
 }

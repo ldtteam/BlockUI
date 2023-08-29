@@ -5,15 +5,19 @@ import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneBuilders;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.util.SpacerTextComponent;
+import com.ldtteam.blockui.util.ToggleableTextComponent;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -127,8 +131,30 @@ public class ItemIcon extends Pane
             return Collections.emptyList();
         }
 
-        final List<Component> result = window.getScreen().getTooltipFromItem(itemStack);
+        TooltipFlag.Default tooltipFlags = mc.options.advancedItemTooltips ? TooltipFlag.Default.ADVANCED : TooltipFlag.Default.NORMAL;
+
+        final List<Component> result = itemStack.getTooltipLines(mc.player, tooltipFlags);
+
+        if (tooltipFlags.isAdvanced() && mc.player.isCreative())
+        {
+            final Item item = itemStack.getItem();
+            ForgeRegistries.ITEMS.getHolder(item)
+                .map(Holder::getTagKeys)
+                .ifPresent(tags -> tags
+                    .forEach(tag -> result.add(1, wrapShift(Component.literal("#" + tag.location()).withStyle(ChatFormatting.DARK_PURPLE)))));
+
+            if (item.getItemCategory() != null)
+            {
+                result.add(1, wrapShift(item.getItemCategory().getDisplayName().copy().withStyle(ChatFormatting.BLUE)));
+            }
+        }
+
         result.add(1, FIX_VANILLA_TOOLTIP);
         return result;
+    }
+
+    private static MutableComponent wrapShift(final MutableComponent wrapped)
+    {
+        return ToggleableTextComponent.of(Screen::hasShiftDown, wrapped);
     }
 }

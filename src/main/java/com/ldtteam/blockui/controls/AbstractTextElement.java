@@ -5,6 +5,8 @@ import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.util.SpacerTextComponent;
 import com.ldtteam.blockui.util.SpacerTextComponent.FormattedSpacerComponent;
+import com.ldtteam.blockui.util.ToggleableTextComponent;
+import com.ldtteam.blockui.util.ToggleableTextComponent.FormattedToggleableCharSequence;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
@@ -12,6 +14,7 @@ import com.mojang.math.Matrix4f;
 import com.mojang.math.Vector4f;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraftforge.client.ForgeRenderTypes;
@@ -196,28 +199,62 @@ public abstract class AbstractTextElement extends Pane
 
         final int maxWidth = (int) (textWidth / textScale) - (textShadow ? 1 : 0);
         preparedText = text.stream().flatMap(textBlock -> {
-            if (textBlock.getContents() instanceof SpacerTextComponent spacer)
+            if (textBlock.getContents() instanceof final SpacerTextComponent spacer)
             {
                 return Stream.of(spacer.getVisualOrderText());
+            }
+            else if (textBlock.getContents() instanceof final ToggleableTextComponent toggleable)
+            {
+                return mc.font.split(toggleable.data(), maxWidth)
+                    .stream()
+                    .map(formatted -> new FormattedToggleableCharSequence(toggleable.condition(), formatted));
+            }
+            else if (textBlock.getContents() == ComponentContents.EMPTY && textBlock.getSiblings().isEmpty())
+            {
+                return Stream.of(textBlock.getVisualOrderText());
             }
             else
             {
                 return mc.font.split(textBlock, maxWidth).stream();
             }
         }).collect(Collectors.toList());
+    }
 
+    public void recalcPreparedTextBox()
+    {
         if (textWrap)
         {
             // + Math.ceil(textScale) / textScale is to negate last pixel of vanilla font rendering
             final int maxHeight = (int) (textHeight / textScale) + 1;
             final int lineHeight = this.mc.font.lineHeight + textLinespace;
 
+            // TODO: fix me, surely not like this
+            // TODO: add ellipsis if cut
             preparedText = preparedText.subList(0, Math.min(preparedText.size(), maxHeight / lineHeight));
 
-            final int heightSum = preparedText.stream()
-                .mapToInt(textBlock -> textBlock instanceof FormattedSpacerComponent spacer ? spacer.pixelHeight() + textLinespace : lineHeight)
-                .sum();
-            renderedTextWidth = (int) (preparedText.stream().mapToInt(mc.font::width).max().orElse(maxWidth) * textScale);
+            int heightSum = 0;
+            int widthMax = 0;
+            for (final FormattedCharSequence textBlock : preparedText)
+            {
+                if (textBlock instanceof final FormattedSpacerComponent spacer)
+                {
+                    heightSum += spacer.pixelHeight() + textLinespace;
+                }
+                else if (textBlock instanceof final FormattedToggleableCharSequence toggleable)
+                {
+                    if (toggleable.condition().getAsBoolean())
+                    {
+                        heightSum += lineHeight;
+                        widthMax = Math.max(widthMax, mc.font.width(toggleable.data()));
+                    }
+                }
+                else
+                {
+                    heightSum += lineHeight;
+                    widthMax = Math.max(widthMax, mc.font.width(textBlock));
+                }
+            }
+            renderedTextWidth = (int) (widthMax * textScale);
             renderedTextHeight = (int) ((Math.min(heightSum, maxHeight) - 1 - textLinespace) * textScale);
         }
         else
@@ -236,11 +273,15 @@ public abstract class AbstractTextElement extends Pane
     @Override
     public void drawSelf(final PoseStack ms, final double mx, final double my)
     {
-        if (preparedText.isEmpty())
+        if (!preparedText.isEmpty())
         {
-            return;
+            recalcPreparedTextBox();
+            innerDrawSelf(ms, mx, my);
         }
+    }
 
+    protected void innerDrawSelf(final PoseStack ms, final double mx, final double my)
+    {
         final int color = enabled ? (wasCursorInPane ? textHoverColor : textColor) : textDisabledColor;
 
         int offsetX = textOffsetX;
@@ -293,12 +334,20 @@ public abstract class AbstractTextElement extends Pane
 
         final MultiBufferSource.BufferSource drawBuffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
         int lineShift = 0;
-        for (final FormattedCharSequence row : preparedText)
+        for (FormattedCharSequence row : preparedText)
         {
             if (row == FormattedCharSequence.EMPTY)
             {
                 lineShift += mc.font.lineHeight + textLinespace;
                 continue;
+            }
+            else if (row instanceof final FormattedToggleableCharSequence toggleable)
+            {
+                if (!toggleable.condition().getAsBoolean())
+                {
+                    continue;
+                }
+                row = toggleable.data();
             }
             else if (row instanceof FormattedSpacerComponent spacer)
             {
