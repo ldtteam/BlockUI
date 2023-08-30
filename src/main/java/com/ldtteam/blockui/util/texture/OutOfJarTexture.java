@@ -6,6 +6,7 @@ import com.mojang.blaze3d.platform.TextureUtil;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.SimpleTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import net.minecraft.client.resources.metadata.texture.TextureMetadataSection;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -17,6 +18,7 @@ import java.io.IOException;
 public class OutOfJarTexture extends AbstractTexture
 {
     protected final OutOfJarResourceLocation resourceLocation;
+    private boolean redirectToSprite = false;
 
     public OutOfJarTexture(final OutOfJarResourceLocation resourceLocation)
     {
@@ -27,6 +29,14 @@ public class OutOfJarTexture extends AbstractTexture
     public void load(final ResourceManager resourceManager) throws IOException
     {
         final Resource resource = OutOfJarResourceLocation.getResourceHandle(resourceLocation, resourceManager);
+
+        // redirect to sprite
+        if (resource.metadata().getSection(AnimationMetadataSection.SERIALIZER).isPresent())
+        {
+            redirectToSprite = true;
+            throw new IOException("Vanilla hack: redirecting loading to sprite texture, do NOT report this exception, it IS intended");
+            // ^ throwing anything else but IO crashes client, but we need to take missing texture path (so this object dies properly)
+        }
 
         final TextureMetadataSection textureMeta = resource.metadata().getSection(TextureMetadataSection.SERIALIZER).orElse(null);
         final NativeImage nativeImage;
@@ -59,9 +69,16 @@ public class OutOfJarTexture extends AbstractTexture
 
     public static void assertLoaded(final OutOfJarResourceLocation resourceLocation, final TextureManager textureManager)
     {
-        if (!(textureManager.getTexture(resourceLocation, null) instanceof OutOfJarTexture))
+        final AbstractTexture current = textureManager.getTexture(resourceLocation, null);
+        if (!IsOurTexture.isOur(current))
         {
-            textureManager.register(resourceLocation, new OutOfJarTexture(resourceLocation));
+            final OutOfJarTexture outOfJarTexture = new OutOfJarTexture(resourceLocation);
+            textureManager.register(resourceLocation, outOfJarTexture);
+
+            if (outOfJarTexture.redirectToSprite)
+            {
+                textureManager.register(resourceLocation, new SpriteTexture(resourceLocation));
+            }
         }
     }
 }
