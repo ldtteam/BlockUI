@@ -10,6 +10,8 @@ import net.minecraft.client.resources.metadata.animation.AnimationMetadataSectio
 import net.minecraft.client.resources.metadata.texture.TextureMetadataSection;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
@@ -28,6 +30,11 @@ public class OutOfJarTexture extends AbstractTexture
     @Override
     public void load(final ResourceManager resourceManager) throws IOException
     {
+        if (!OutOfJarResourceLocation.fileExists(resourceLocation, resourceManager))
+        {
+            throw new FileNotFoundException(resourceLocation.toString());
+        }
+
         final Resource resource = OutOfJarResourceLocation.getResourceHandle(resourceLocation, resourceManager);
 
         // redirect to sprite

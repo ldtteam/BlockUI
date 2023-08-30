@@ -14,6 +14,7 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceMetadata;
 import org.jetbrains.annotations.Nullable;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
@@ -36,6 +37,11 @@ public class SpriteTexture extends AbstractTexture implements Tickable
     {
         // cleanup old data
         close();
+        
+        if (!OutOfJarResourceLocation.fileExists(resourceLocation, resourceManager))
+        {
+            throw new FileNotFoundException(resourceLocation.toString());
+        }
 
         final Resource resource = OutOfJarResourceLocation.getResourceHandle(resourceLocation, resourceManager);
 
