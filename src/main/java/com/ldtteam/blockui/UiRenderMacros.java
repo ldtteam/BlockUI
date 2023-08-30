@@ -2,6 +2,7 @@ package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
+import com.ldtteam.blockui.util.texture.OutOfJarTexture;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.TextureUtil;
@@ -443,31 +444,9 @@ public class UiRenderMacros
 
     private static void checkOutOfJarResLoc(final ResourceLocation rl)
     {
-        final TextureManager tm = Minecraft.getInstance().getTextureManager();
-        if (tm.getTexture(rl, null) == null && rl instanceof OutOfJarResourceLocation nioResLoc)
+        if (rl instanceof final OutOfJarResourceLocation outOfJarResLoc)
         {
-            final AbstractTexture texture = new AbstractTexture()
-            {
-                @Override
-                public void load(ResourceManager p_117955_) throws IOException
-                {}
-            };
-
-            try (var is = OutOfJarResourceLocation.openStream(nioResLoc, Minecraft.getInstance().getResourceManager()))
-            {
-                final NativeImage nativeImage = NativeImage.read(is);
-                TextureUtil.prepareImage(texture.getId(), 0, nativeImage.getWidth(), nativeImage.getHeight());
-                nativeImage.upload(0, 0, 0, true);
-
-                tm.register(nioResLoc, texture);
-            }
-            catch (final IOException e)
-            {
-                Log.getLogger().error("Can't load image: " + nioResLoc.toString(), e);
-
-                texture.releaseId();
-                tm.register(nioResLoc, MissingTextureAtlasSprite.getTexture());
-            }
+            OutOfJarTexture.assertLoaded(outOfJarResLoc, Minecraft.getInstance().getTextureManager());
         }
     }
 
