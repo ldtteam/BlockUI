@@ -5,7 +5,7 @@
     <itemicon item="minecraft:birch_log" size="16 16" pos="0 570"/>
     <itemicon item="minecraft:cobblestone" size="16 16" pos="16 570"/>
     <itemicon item="minecraft:netherite_upgrade_smithing_template" size="16 16" pos="32 570"/>
-    <input id="txtin" size="100 100" pos="0 600"/>
+    <input id="txtin" size="400 100" pos="0 600"/>
     <image id="vanilla_uv_test" pos="0 750" size="728 20" imageoffset="0 89" imagesize="182 5" source="minecraft:textures/gui/icons.png"/>
     <image id="anim_test" pos="0 800" size="100 100" source="blockui:textures/gui/spritesheet_leaves.png"/>
     <button id="unicodeTest" size="50 50" label="↥" pos="600 270"  textscale="3.5"/>
