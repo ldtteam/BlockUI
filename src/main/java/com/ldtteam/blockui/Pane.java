@@ -1,6 +1,10 @@
 package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.controls.AbstractTextBuilder.TooltipBuilder;
+import com.ldtteam.blockui.mod.BlockUI;
+import com.ldtteam.blockui.util.cursor.Cursor;
+import com.ldtteam.blockui.util.cursor.CursorUtils;
+import com.ldtteam.blockui.util.cursor.CursorUtils.StandardCursor;
 import com.ldtteam.blockui.views.View;
 import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.vertex.*;
@@ -37,6 +41,7 @@ public class Pane extends UiRenderMacros
     protected boolean visible = true;
     protected boolean enabled = true;
     protected String onHoverId = "";
+    protected Cursor cursor = Cursor.DEFAULT;
     // Runtime
     protected BOWindow window;
     protected View parent;
@@ -81,6 +86,12 @@ public class Pane extends UiRenderMacros
         enabled = params.getBoolean("enabled", enabled);
         onHoverId = params.getString("onHoverId", onHoverId);
         toolTipLines = params.getMultilineText("tooltip", toolTipLines);
+
+        params.getResource("cursor", resLoc -> {
+            cursor = (BlockUI.MOD_ID + "_std").equalsIgnoreCase(resLoc.getNamespace()) ?
+                () -> CursorUtils.setStandardCursor(StandardCursor.valueOf(resLoc.getPath().toUpperCase())) :
+                Cursor.of(resLoc);
+        });
     }
 
     /**
@@ -297,6 +308,16 @@ public class Pane extends UiRenderMacros
         }
     }
 
+    public Cursor getCursor()
+    {
+        return cursor;
+    }
+
+    public void setCursor(Cursor cursor)
+    {
+        this.cursor = cursor;
+    }
+
     /**
      * Draw the current Pane if visible.
      *
@@ -311,7 +332,14 @@ public class Pane extends UiRenderMacros
 
         if (visible)
         {
+            if (wasCursorInPane)
+            {
+                // intentional getter cuz overrides
+                target.setCursor(getCursor());
+            }
+
             drawSelf(target, mx, my);
+
             if (debugging)
             {
                 final int color = wasCursorInPane ? 0xFF00FF00 : 0xFF0000FF;

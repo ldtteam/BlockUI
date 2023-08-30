@@ -97,6 +97,8 @@ public class BOScreen extends Screen
         {
             final BOGuiGraphics target = new BOGuiGraphics(ms.minecraft, newMs, ms.bufferSource());
             window.draw(target, calcRelativeX(mx), calcRelativeY(my));
+            target.applyCursor();
+
             window.drawLast(target, calcRelativeX(mx), calcRelativeY(my));
         }
         catch (final Exception e)
