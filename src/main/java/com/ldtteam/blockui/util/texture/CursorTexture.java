@@ -1,5 +1,7 @@
 package com.ldtteam.blockui.util.texture;
 
+import com.google.gson.JsonObject;
+import com.ldtteam.blockui.mod.BlockUI;
 import com.ldtteam.blockui.util.cursor.CursorUtils;
 import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
 import com.mojang.blaze3d.platform.NativeImage;
@@ -7,7 +9,10 @@ import com.mojang.blaze3d.platform.NativeImage.Format;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.GsonHelper;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWImage;
@@ -15,7 +20,6 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 
 /**
@@ -139,7 +143,8 @@ public class CursorTexture extends AbstractTexture
             close();
         }
 
-        try (var is = OutOfJarResourceLocation.getResourceHandle(resourceLocation, resourceManager).open())
+        final Resource resource = OutOfJarResourceLocation.getResourceHandle(resourceLocation, resourceManager);
+        try (var is = resource.open())
         {
             nativeImage = NativeImage.read(is);
         }
@@ -148,6 +153,13 @@ public class CursorTexture extends AbstractTexture
             LOGGER.error("Cannot load texture for cursor as it is not in RGBA format, resource location: " + resourceLocation);
             close();
         }
+
+        resource.metadata().getSection(CursorMetadataSection.SERIALIZER).ifPresent(metadata -> {
+            // manual set to avoid double onDataChange call
+            this.hotspotX = metadata.hotspotX;
+            this.hotspotY = metadata.hotspotY;
+        });
+
         onDataChange();
     }
 
@@ -159,6 +171,26 @@ public class CursorTexture extends AbstractTexture
         {
             nativeImage.close();
             nativeImage = null;
+        }
+    }
+
+    public static record CursorMetadataSection(int hotspotX, int hotspotY)
+    {
+        public static final CursorMetadataSectionSerializer SERIALIZER = new CursorMetadataSectionSerializer();
+    }
+
+    private static class CursorMetadataSectionSerializer implements MetadataSectionSerializer<CursorMetadataSection>
+    {
+        @Override
+        public String getMetadataSectionName()
+        {
+            return "ldtteam." + BlockUI.MOD_ID + ".cursor";
+        }
+
+        @Override
+        public CursorMetadataSection fromJson(final JsonObject jsonObject)
+        {
+            return new CursorMetadataSection(GsonHelper.getAsInt(jsonObject, "hotspot.x", 0), GsonHelper.getAsInt(jsonObject, "hotspot.y", 0));
         }
     }
 }
