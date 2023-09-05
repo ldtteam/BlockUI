@@ -74,6 +74,7 @@
         <xs:attribute name="onHoverId" type="xs:string"/>
 
         <xs:attribute name="style" type="xs:string"/>
+        <xs:attribute name="cursor" type="xs:string"/>
     </xs:complexType>
 
     <!-- Abstract text element -->

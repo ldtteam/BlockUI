@@ -10,6 +10,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -118,6 +119,12 @@ public class ItemIcon extends Pane
         }
     }
 
+    /**
+     * Adds spacer and optional data
+     *
+     * INLINE: 
+     * @see CreativeModeInventoryScreen#getTooltipFromContainerItem(ItemStack)
+     */
     public List<Component> getModifiedItemStackTooltip()
     {
         if (itemStack == null)
@@ -144,7 +151,7 @@ public class ItemIcon extends Pane
             int i = 1;
             for (final CreativeModeTab tab : CreativeModeTabRegistry.getSortedCreativeModeTabs())
             {
-                if (!tab.hasSearchBar() && tab.contains(defaultStack))
+                if (tab.contains(defaultStack))
                 {
                     result.add(i++, wrapShift(tab.getDisplayName().copy().withStyle(ChatFormatting.BLUE)));
                 }

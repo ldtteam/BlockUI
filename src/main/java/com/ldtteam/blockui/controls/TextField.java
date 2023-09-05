@@ -3,6 +3,7 @@ package com.ldtteam.blockui.controls;
 import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
+import com.ldtteam.blockui.util.cursor.Cursor;
 import com.ldtteam.blockui.views.View;
 import com.mojang.blaze3d.vertex.*;
 import org.joml.Matrix4f;
@@ -44,6 +45,7 @@ public class TextField extends Pane
     public TextField()
     {
         super();
+        this.cursor = Cursor.TEXT_CURSOR;
         // Required
     }
 
@@ -61,6 +63,7 @@ public class TextField extends Pane
         shadow = params.getBoolean("shadow", shadow);
         text = params.getString("textContent", text);
         tabNextPaneID = params.getString("tab");
+        this.cursor = this.cursor == Cursor.DEFAULT ? Cursor.TEXT_CURSOR : this.cursor;
     }
 
     public Filter getFilter()
