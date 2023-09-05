@@ -3,6 +3,9 @@ package com.ldtteam.blockui.util.cursor;
 import com.ldtteam.blockui.util.cursor.CursorUtils.StandardCursor;
 import net.minecraft.resources.ResourceLocation;
 
+/**
+ * Interface to wrap various cursors
+ */
 @FunctionalInterface
 public interface Cursor
 {
@@ -21,10 +24,8 @@ public interface Cursor
         return () -> CursorUtils.setCursorImage(resLoc);
     }
 
+    /**
+     * Apply cursor to main window
+     */
     void apply();
-
-    default void reset()
-    {
-        CursorUtils.resetCursor();
-    }
 }

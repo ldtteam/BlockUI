@@ -89,6 +89,7 @@ public class Pane extends UiRenderMacros
 
         params.getResource("cursor", resLoc -> {
             cursor = (BlockUI.MOD_ID + "_std").equalsIgnoreCase(resLoc.getNamespace()) ?
+                // do not use Cursor instances, there are instance equality checks
                 () -> CursorUtils.setStandardCursor(StandardCursor.valueOf(resLoc.getPath().toUpperCase())) :
                 Cursor.of(resLoc);
         });
@@ -308,12 +309,18 @@ public class Pane extends UiRenderMacros
         }
     }
 
+    /**
+     * Used mostly for overrides for default logics like {@link com.ldtteam.blockui.views.ZoomDragView#getCursor ZoomDragView}
+     */
     public Cursor getCursor()
     {
         return cursor;
     }
 
-    public void setCursor(Cursor cursor)
+    /**
+     * @param cursor use {@link Cursor} instances for default behaviour (or new instances to prevent it)
+     */
+    public void setCursor(final Cursor cursor)
     {
         this.cursor = cursor;
     }
