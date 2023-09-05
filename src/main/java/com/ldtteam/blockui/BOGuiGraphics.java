@@ -1,5 +1,6 @@
 package com.ldtteam.blockui;
 
+import com.ldtteam.blockui.util.cursor.Cursor;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -11,6 +12,9 @@ import org.jetbrains.annotations.Nullable;
 
 public class BOGuiGraphics extends GuiGraphics
 {
+    private int cursorMaxDepth = -1;
+    private Cursor selectedCursor = Cursor.DEFAULT;
+
     public BOGuiGraphics(final Minecraft mc, final PoseStack ps, final BufferSource buffers)
     {
         super(mc, ps, buffers);
@@ -47,5 +51,19 @@ public class BOGuiGraphics extends GuiGraphics
     public int drawString(final String text, final float x, final float y, final int color, final boolean shadow)
     {
         return super.drawString(minecraft.font, text, x, y, color, shadow);
+    }
+
+    public void setCursor(final Cursor cursor)
+    {
+        if (pose().poseStack.size() >= cursorMaxDepth)
+        {
+            cursorMaxDepth = pose().poseStack.size();
+            selectedCursor = cursor;
+        }
+    }
+
+    public void applyCursor()
+    {
+        selectedCursor.apply();
     }
 }

@@ -6,6 +6,6 @@ public final class IsOurTexture
 {
     public static final boolean isOur(final AbstractTexture texture)
     {
-        return texture instanceof OutOfJarTexture || texture instanceof SpriteTexture;
+        return texture instanceof OutOfJarTexture || texture instanceof SpriteTexture || texture instanceof CursorTexture;
     }
 }

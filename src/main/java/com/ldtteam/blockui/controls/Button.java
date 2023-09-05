@@ -3,6 +3,7 @@ package com.ldtteam.blockui.controls;
 import com.ldtteam.blockui.Alignment;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
+import com.ldtteam.blockui.util.cursor.Cursor;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
 
@@ -20,6 +21,7 @@ public abstract class Button extends AbstractTextElement
     public Button()
     {
         super();
+        this.cursor = Cursor.HAND;
     }
 
     /**
@@ -30,6 +32,7 @@ public abstract class Button extends AbstractTextElement
     public Button(final PaneParams params)
     {
         super(params);
+        this.cursor = this.cursor == Cursor.DEFAULT ? Cursor.HAND : this.cursor;
     }
 
     /**
@@ -45,6 +48,7 @@ public abstract class Button extends AbstractTextElement
       final boolean shouldWrap)
     {
         super(params, alignment, enabledColor, hoverColor, disabledColor, hasShadow, shouldWrap);
+        this.cursor = this.cursor == Cursor.DEFAULT ? Cursor.HAND : this.cursor;
     }
 
     /**
@@ -59,6 +63,7 @@ public abstract class Button extends AbstractTextElement
       final boolean shouldWrap)
     {
         super(alignment, enabledColor, hoverColor, disabledColor, hasShadow, shouldWrap);
+        this.cursor = Cursor.HAND;
     }
 
     /**
