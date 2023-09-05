@@ -332,7 +332,7 @@ public class Pane extends UiRenderMacros
 
         if (visible)
         {
-            if (wasCursorInPane)
+            if (wasCursorInPane && enabled)
             {
                 // intentional getter cuz overrides
                 target.setCursor(getCursor());
