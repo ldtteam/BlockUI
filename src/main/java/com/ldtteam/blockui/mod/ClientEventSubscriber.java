@@ -52,11 +52,11 @@ public class ClientEventSubscriber
         {
             if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_X))
             {
-                new BOWindow(new ResourceLocation(BlockUI.MOD_ID, "gui/test.xml")).open();
+                new TestWindow(new ResourceLocation(BlockUI.MOD_ID, "gui/test.xml")).open();
             }
             else if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_C))
             {
-                new BOWindow(new ResourceLocation(BlockUI.MOD_ID, "gui/test2.xml")).open();
+                new TestWindow(new ResourceLocation(BlockUI.MOD_ID, "gui/test2.xml")).open();
             }
         }
 

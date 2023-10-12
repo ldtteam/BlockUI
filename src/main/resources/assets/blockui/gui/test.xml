@@ -5,6 +5,14 @@
     <itemicon item="minecraft:birch_log" size="16 16" pos="0 570"/>
     <itemicon item="minecraft:cobblestone" size="16 16" pos="16 570"/>
     <itemicon item="minecraft:netherite_upgrade_smithing_template" size="16 16" pos="32 570"/>
+    <blockicon block="minecraft:oak_stairs" properties="facing=south" size="16 16" pos="48 570"/>
+    <dropdown id="blockstates" size="44 36" pos="64 550" maxContentHeight="150" dropDownSize="44 150">
+        <view size="100% 36">
+            <image source="minecraft:textures/gui/container/stats_icons.png" imageoffset="0 0" imagesize="18 18" size="36 36" pos="0 0"/>
+            <blockicon id="block" size="32 32" pos="2 2"/>
+            <button id="button" size="100% 100%" label="" pos="0 0" source=""/>
+        </view>
+    </dropdown>
     <input id="txtin" size="400 100" pos="0 600"/>
     <image id="vanilla_uv_test" pos="0 750" size="728 20" imageoffset="0 89" imagesize="182 5" source="minecraft:textures/gui/icons.png"/>
     <image id="anim_test" pos="0 800" size="100 100" source="blockui:textures/gui/spritesheet_leaves.png"/>
@@ -36,8 +44,15 @@
         <dropdown size="100 20" pos="150 0">
             <image size="100 100" source="blockui:textures/gui/button.png"/>
         </dropdown>
-        <itemicon id="ii" item="minecraft:barrier" onHoverId="ii2" size="16 16" pos="0 400"/>
-        <itemicon id="ii2" item="minecraft:diamond_pickaxe" pos="0 416" size="16 16"/>
+        <itemicon id="ii" item="minecraft:barrier" onHoverId="ii2" size="16 16" pos="150 400"/>
+        <itemicon id="ii2" item="minecraft:diamond_pickaxe" pos="150 416" size="16 16"/>
         <gradient pos="100 500" size="100 100" gradientstart="rgb(0,0,0)" gradientend="rgb(255,255,255)"/>
+        <blockicon block="minecraft:oak_stairs" size="32 32" pos="150 250"/>
+        <blockicon block="minecraft:oak_stairs" properties="facing=south" size="32 32" pos="180 250"/>
+        <blockicon block="minecraft:oak_stairs" properties="facing=south;waterlogged" size="32 32" pos="210 250"/>
+        <blockicon block="minecraft:oak_stairs" properties="facing=south;half=top;waterlogged" size="32 32" pos="240 250"/>
+        <blockicon block="minecraft:lava" size="32 32" pos="270 250"/>
+        <entityicon entity="minecraft:pig" size="48 48" pos="150 320"/>
+        <entityicon entity="minecraft:pig" size="48 48" pos="200 320" yaw="120" head="150"/>
     </zoomdragview>
 </window>
