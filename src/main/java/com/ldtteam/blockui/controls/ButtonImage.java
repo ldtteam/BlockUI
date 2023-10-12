@@ -336,9 +336,13 @@ public class ButtonImage extends Button
     @Override
     public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
+        if (image == null)
+        {
+            return;
+        }
+
         final PoseStack ms = target.pose();
 
-        Objects.requireNonNull(image, () -> id + " | " + window.getXmlResourceLocation());
         ResourceLocation bind = image;
         int u = imageOffsetX;
         int v = imageOffsetY;
