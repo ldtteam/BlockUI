@@ -22,6 +22,11 @@ public class DropDownList extends View implements ButtonHandler
     protected OverlayView overlay;
 
     /**
+     * current item
+     */
+    protected Pane current;
+
+    /**
      * button to access to the list.
      */
     protected Button button;
@@ -33,7 +38,7 @@ public class DropDownList extends View implements ButtonHandler
     /**
      * date required to fill the list.
      */
-    protected DataProvider dataProvider;
+    protected ScrollingList.DataProvider dataProvider;
 
     /**
      * handler for the accept method.
@@ -78,10 +83,6 @@ public class DropDownList extends View implements ButtonHandler
             dropDownHeight = a.get(1);
         });
 
-        button = Button.construct(params);
-        button.setPosition(0, 0);
-        button.putInside(this);
-
         overlay = new OverlayView();
         overlay.setVisible(false);
         overlay.setPosition(0, 0);
@@ -94,8 +95,6 @@ public class DropDownList extends View implements ButtonHandler
         list.setSize(dropDownWidth, dropDownHeight);
         list.putInside(overlay);
         list.parseChildren(params);
-
-        button.setHandler(this);
     }
 
     /**
@@ -191,7 +190,11 @@ public class DropDownList extends View implements ButtonHandler
         }
         selectedIndex = index;
 
-        button.setText(dataProvider.getLabelNew(selectedIndex));
+        if (current != null)
+        {
+            dataProvider.updateElement(selectedIndex, current);
+        }
+
         if (handler != null)
         {
             handler.accept(this);
@@ -231,27 +234,52 @@ public class DropDownList extends View implements ButtonHandler
     /**
      * Set the data provider to fill the list.
      *
-     * @param p is the data provider for the list.
+     * @param p is the data provider for the list (allowing complex display).
      */
-    public void setDataProvider(final DataProvider p)
+    public void setDataProvider(final ScrollingList.DataProvider p)
     {
-        dataProvider = p;
-        list.setDataProvider(new ScrollingList.DataProvider()
+        dataProvider = new ScrollingList.DataProvider()
         {
             @Override
             public int getElementCount()
             {
-                return dataProvider.getElementCount();
+                return p.getElementCount();
             }
 
             @Override
-            public void updateElement(final int index, final Pane rowPane)
+            public void updateElement(int index, Pane rowPane)
             {
-                updateDropDownItem(rowPane, index, dataProvider.getLabelNew(index));
+                updateDropDownItem(rowPane, index, Component.empty());
+                p.updateElement(index, rowPane);
             }
-        });
+        };
 
-        refreshElementPanes();
+        list.setDataProvider(dataProvider);
+    }
+
+    /**
+     * Set the data provider to fill the list.
+     *
+     * @param p is the data provider for the list (simple text only).
+     */
+    public void setDataProvider(final DataProvider p)
+    {
+        dataProvider = new ScrollingList.DataProvider()
+        {
+            @Override
+            public int getElementCount()
+            {
+                return p.getElementCount();
+            }
+
+            @Override
+            public void updateElement(int index, Pane rowPane)
+            {
+                updateDropDownItem(rowPane, index, p.getLabelNew(index));
+            }
+        };
+
+        list.setDataProvider(dataProvider);
     }
 
     /**
@@ -275,7 +303,10 @@ public class DropDownList extends View implements ButtonHandler
     public void setVisible(final boolean v)
     {
         super.setVisible(v);
-        button.setVisible(v);
+        if (button != null)
+        {
+            button.setVisible(v);
+        }
         list.setVisible(v);
     }
 
@@ -283,14 +314,23 @@ public class DropDownList extends View implements ButtonHandler
     public void setEnabled(final boolean e)
     {
         super.setEnabled(e);
-        button.setEnabled(e);
+        if (button != null)
+        {
+            button.setEnabled(e);
+        }
         list.setEnabled(e);
     }
     
     @Override
     public void parseChildren(PaneParams params)
     {
-        // noop cuz this element only has button (that was already set up in ctor)
+        super.parseChildren(params);
+
+        if (!children.isEmpty())
+        {
+            current = children.get(0);
+            button = current.findPaneOfTypeByID("button", Button.class);
+        }
     }
 
     /**
