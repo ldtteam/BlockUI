@@ -137,6 +137,7 @@
             <xs:element name="box" type="boxType"/>
             <xs:element name="itemicon" type="itemIconType"/>
             <xs:element name="entityicon" type="entityIconType"/>
+            <xs:element name="blockicon" type="blockIconType"/>
             <xs:element name="switch" type="switchType"/>
             <xs:element name="dropdown" type="dropdownType"/>
         </xs:choice>
@@ -229,6 +230,18 @@
                 <xs:attribute name="yaw" type="xs:float"/>
                 <xs:attribute name="pitch" type="xs:float"/>
                 <xs:attribute name="head" type="xs:float"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <!-- <blockicon> -->
+    <xs:complexType name="blockIconType">
+        <xs:complexContent>
+            <xs:extension base="paneType">
+                <xs:attribute name="block" type="xs:string"/>
+                <xs:attribute name="properties" type="xs:string"/>
+                <xs:attribute name="yaw" type="xs:float"/>
+                <xs:attribute name="pitch" type="xs:float"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
