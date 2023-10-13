@@ -250,6 +250,21 @@ public class View extends Pane
             {
                 child.onUpdate();
             }
+            else
+            {
+                child.onUpdateInvisible();
+            }
+        }
+    }
+
+    @Override
+    public void onUpdateInvisible()
+    {
+        super.onUpdateInvisible();
+
+        for (final Pane child : children)
+        {
+            child.onUpdateInvisible();
         }
     }
 
