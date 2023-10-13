@@ -30,7 +30,7 @@ public class ScrollingListContainer extends ScrollingContainer
             for (int i = 0; i < numElements; ++i)
             {
                 final Pane child;
-                final int childYpos = (childSpacing + listElementHeight) * i;
+                final int childYpos = listElementHeight * i;
                 if (childYpos + listElementHeight >= scrollY && childYpos <= scrollY + height)
                 {
                     if (i < children.size())
@@ -62,7 +62,7 @@ public class ScrollingListContainer extends ScrollingContainer
             removeChild(children.get(numElements));
         }
 
-        setContentHeight(numElements * (listElementHeight + childSpacing) - childSpacing);
+        setContentHeight(numElements * listElementHeight - childSpacing);
     }
 
     /**
