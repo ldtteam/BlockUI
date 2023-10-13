@@ -128,10 +128,7 @@ public class BOGuiGraphics extends GuiGraphics
             bufferSource().endBatch(renderType);
         }
 
-        if (lighting)
-        {
-            Lighting.setupFor3DItems();
-        }
+        Lighting.setupFor3DItems();
 
         popPvmFromShader();
         pose().popPose();
