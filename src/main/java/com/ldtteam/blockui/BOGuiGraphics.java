@@ -114,7 +114,7 @@ public class BOGuiGraphics extends GuiGraphics
             Lighting.setupLevel(new Matrix4f());
         }
 
-        minecraft.getBlockRenderer().renderSingleBlock(blockState, new PoseStack(), bufferSource(), LightTexture.FULL_BRIGHT, OverlayTexture.NO_OVERLAY, modelData, null);
+        minecraft.getBlockRenderer().renderSingleBlock(blockState, new PoseStack(), bufferSource(), LightTexture.pack(10, 10), OverlayTexture.NO_OVERLAY, modelData, null);
         flush();
 
         final FluidState fluidState = blockState.getFluidState();

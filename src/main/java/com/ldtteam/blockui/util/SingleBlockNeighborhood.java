@@ -15,7 +15,7 @@ import net.minecraftforge.client.extensions.common.IClientFluidTypeExtensions;
 import javax.annotation.Nullable;
 
 /**
- * Small single blockstate level wrapper. Full light, full shading
+ * Small single blockstate level wrapper. Lighting set to 10, full shading
  */
 public class SingleBlockNeighborhood implements BlockAndTintGetter
 {
@@ -73,12 +73,12 @@ public class SingleBlockNeighborhood implements BlockAndTintGetter
     @Override
     public int getBrightness(final LightLayer lightLayer, final BlockPos pos)
     {
-        return 15;
+        return 10;
     }
 
     @Override
     public int getRawBrightness(final BlockPos pos, final int amount)
     {
-        return 15;
+        return 10;
     }
 }
