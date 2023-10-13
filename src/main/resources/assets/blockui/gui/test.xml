@@ -39,5 +39,8 @@
         <itemicon id="ii" item="minecraft:barrier" onHoverId="ii2" size="16 16" pos="0 400"/>
         <itemicon id="ii2" item="minecraft:diamond_pickaxe" pos="0 416" size="16 16"/>
         <gradient pos="100 500" size="100 100" gradientstart="rgb(0,0,0)" gradientend="rgb(255,255,255)"/>
+        <itemicon item="minecraft:oak_fence" nbt="{BlockStateTag:{south:'true',waterlogged:'true'}}" size="64 64" pos="300 50"/>
+        <itemicon item="domum_ornamentum:plain" nbt="{BlockStateTag:{facing:'up'}, BlockEntityTag:{id:'domum_ornamentum:materially_retexturable',textureData:{'minecraft:block/oak_planks':'minecraft:polished_basalt','minecraft:block/dark_oak_planks':'minecraft:red_stained_glass'}}}" size="64 64" pos="370 50"/>
+        <itemicon item="minecraft:oak_stairs" nbt="{BlockStateTag:{waterlogged:'true',facing:'south'}}" size="64 64" pos="440 50"/>
     </zoomdragview>
 </window>
