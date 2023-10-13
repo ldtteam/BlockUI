@@ -1,5 +1,6 @@
 package com.ldtteam.blockui;
 
+import com.ldtteam.blockui.util.cursor.CursorUtils;
 import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -311,6 +312,7 @@ public class BOScreen extends Screen
         finally
         {
             BOWindow.clearFocus();
+            CursorUtils.resetCursor();
         }
     }
 
