@@ -113,7 +113,7 @@ public class BlockIcon extends Pane
         if (blockState != null)
         {
             final float scale = Math.min(this.getWidth(), this.getHeight()) / 2F;
-            drawBlock(ms.pose(), this.blockState, this.modelData, x + getWidth() / 2F, y + scale * 0.75F, 100F, this.pitch, this.yaw, scale);
+            drawBlock(ms.pose(), this.blockState, this.modelData, x + getWidth() / 2F, y + scale, 0F, this.pitch, this.yaw, scale);
         }
     }
 

@@ -632,22 +632,22 @@ public class UiRenderMacros
                                  final float pitch, final float yaw, final float scale)
     {
         matrixStack.pushPose();
+
+        Lighting.setupForFlatItems();
+
         matrixStack.translate(x, y, z);
         matrixStack.scale(-scale, -scale, -scale);
-        matrixStack.translate(-0.5F, -0.5F, 0);
+        matrixStack.translate(-0.5F, -0.5F, 0F);
 
+        matrixStack.translate(0.5F, 0.5F, 0.5F);
         matrixStack.mulPose(Axis.XP.rotationDegrees(pitch));
-
-        matrixStack.translate(0.5F, 0, -0.5F);
         matrixStack.mulPose(Axis.YP.rotationDegrees(yaw));
-        matrixStack.translate(-0.5F, 0, 0.5F);
-
-        matrixStack.pushPose();
-        matrixStack.translate(0, 0, -1);
+        matrixStack.translate(-0.5F, -0.5F, -0.5F);
 
         SingleBlockRenderer.render(block, modelData, matrixStack);
 
-        matrixStack.popPose();
+        Lighting.setupFor3DItems();
+
         matrixStack.popPose();
     }
 
