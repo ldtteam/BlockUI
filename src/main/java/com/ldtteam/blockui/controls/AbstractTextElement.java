@@ -200,26 +200,28 @@ public abstract class AbstractTextElement extends Pane
         }
 
         final int maxWidth = (int) (textWidth / textScale) - (textShadow ? 1 : 0);
-        preparedText = text.stream().flatMap(textBlock -> {
-            if (textBlock.getContents() instanceof final SpacerTextComponent spacer)
-            {
-                return Stream.of(spacer.getVisualOrderText());
-            }
-            else if (textBlock.getContents() instanceof final ToggleableTextComponent toggleable)
-            {
-                return mc.font.split(toggleable.data(), maxWidth)
-                    .stream()
-                    .map(formatted -> new FormattedToggleableCharSequence(toggleable.condition(), formatted));
-            }
-            else if (textBlock.getContents() == ComponentContents.EMPTY && textBlock.getSiblings().isEmpty())
-            {
-                return Stream.of(textBlock.getVisualOrderText());
-            }
-            else
-            {
-                return mc.font.split(textBlock, maxWidth).stream();
-            }
-        }).collect(Collectors.toList());
+        preparedText = text.stream().flatMap(textBlock -> toFormattedSequence(maxWidth, textBlock)).collect(Collectors.toList());
+    }
+
+    private Stream<? extends FormattedCharSequence> toFormattedSequence(final int maxWidth, MutableComponent textBlock)
+    {
+        if (textBlock.getContents() instanceof final SpacerTextComponent spacer)
+        {
+            return Stream.of(spacer.getVisualOrderText());
+        }
+        else if (textBlock.getContents() instanceof final ToggleableTextComponent toggleable)
+        {
+            return toFormattedSequence(maxWidth, toggleable.data())
+                .map(formatted -> new FormattedToggleableCharSequence(toggleable.condition(), formatted));
+        }
+        else if (textBlock.getContents() == ComponentContents.EMPTY && textBlock.getSiblings().isEmpty())
+        {
+            return Stream.of(textBlock.getVisualOrderText());
+        }
+        else
+        {
+            return mc.font.split(textBlock, maxWidth).stream();
+        }
     }
 
     public void recalcPreparedTextBox()
