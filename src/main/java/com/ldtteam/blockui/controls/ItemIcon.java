@@ -111,10 +111,7 @@ public class ItemIcon extends Pane
     {
         this.itemStack = itemStackIn;
         processBlockStateFromCurrentItemStack();
-        if (onHover instanceof final Tooltip tooltip)
-        {
-            tooltip.setTextOld(getModifiedItemStackTooltip());
-        }
+        updateTooltip();
     }
 
     /**
@@ -149,6 +146,10 @@ public class ItemIcon extends Pane
             {
                 Log.getLogger().warn("Cannot create proper itemStack for: " + blockStateExtension.blockState().toString());
             }
+            if (!itemStack.isEmpty() && blockStateExtension.blockEntity() != null)
+            {
+                blockStateExtension.blockEntity().saveToItem(itemStack);
+            }
         }
         setBlockStateWeakOverride(blockStateExtension);
     }
@@ -158,6 +159,7 @@ public class ItemIcon extends Pane
      */
     public void setBlockStateWeakOverride(@Nullable final BlockStateRenderingData blockStateExtension)
     {
+        // should catch barriers and similar
         if (blockStateExtension != null &&
             blockStateExtension.blockState().getRenderShape() == RenderShape.INVISIBLE &&
             blockStateExtension.blockState().getFluidState().isEmpty() &&
@@ -169,7 +171,11 @@ public class ItemIcon extends Pane
         {
             this.blockStateExtension = blockStateExtension;
         }
+        updateTooltip();
+    }
 
+    private void updateTooltip()
+    {
         if (onHover instanceof final Tooltip tooltip)
         {
             tooltip.setTextOld(getModifiedItemStackTooltip());
@@ -254,8 +260,7 @@ public class ItemIcon extends Pane
             final ResourceLocation key = ForgeRegistries.BLOCKS.getKey(blockStateExtension.blockState().getBlock());
             final String nameTKey = Util.makeDescriptionId("block", key);
             final MutableComponent name = Component.translatable(nameTKey);
-            final MutableComponent nameKey =
-                Component.literal(ForgeRegistries.BLOCKS.getKey(blockStateExtension.blockState().getBlock()).toString()).withStyle(ChatFormatting.DARK_GRAY);
+            final MutableComponent nameKey = Component.literal(key.toString()).withStyle(ChatFormatting.DARK_GRAY);
 
             if (tooltipList.isEmpty())
             {

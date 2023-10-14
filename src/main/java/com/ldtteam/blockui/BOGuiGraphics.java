@@ -29,6 +29,7 @@ import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.client.model.data.ModelData;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
+import java.util.function.Function;
 
 public class BOGuiGraphics extends GuiGraphics
 {
@@ -170,6 +171,9 @@ public class BOGuiGraphics extends GuiGraphics
         RenderSystem.applyModelViewMatrix();
     }
 
+    /**
+     * Holds blockstate rendering data for UIs. BlockState must match blockEntity
+     */
     public static record BlockStateRenderingData(BlockState blockState,
         BlockEntity blockEntity,
         ModelData modelData,
@@ -178,19 +182,13 @@ public class BOGuiGraphics extends GuiGraphics
     {
         public static final BlockPos ILLEGAL_BLOCK_ENTITY_POS = BlockPos.ZERO.below(1000);
 
+        /**
+         * @param blockState blockState
+         * @param blockEntity must match blockState
+         */
         public static BlockStateRenderingData of(final BlockState blockState, final BlockEntity blockEntity)
         {
-            ModelData model = ModelData.EMPTY;
-            try
-            {
-                model = blockEntity.getModelData();
-            }
-            catch (final Exception e)
-            {
-                Log.getLogger().warn("Could not get model data for: " + blockState.toString(), e);
-            }
-
-            return new BlockStateRenderingData(blockState, blockEntity, model, true, false);
+            return new BlockStateRenderingData(blockState, blockEntity, getModelData(blockState, blockEntity), true, false);
         }
 
         public static BlockStateRenderingData of(final BlockState blockState)
@@ -230,9 +228,29 @@ public class BOGuiGraphics extends GuiGraphics
                 new BlockStateRenderingData(blockState, blockEntity, modelData, renderItemDecorations, false);
         }
 
+        public BlockStateRenderingData updateBlockEntity(final Function<BlockEntity, BlockEntity> updater)
+        {
+            final BlockEntity updated = updater.apply(blockEntity);
+            return new BlockStateRenderingData(blockState, updated, getModelData(blockState, updated), renderItemDecorations, alwaysAddBlockStateTooltip);
+        }
+
         public ModelData modelData()
         {
             return modelData == null ? ModelData.EMPTY : modelData;
+        }
+
+        private static ModelData getModelData(final BlockState blockState, final BlockEntity blockEntity)
+        {
+            ModelData model = ModelData.EMPTY;
+            try
+            {
+                model = blockEntity.getModelData();
+            }
+            catch (final Exception e)
+            {
+                Log.getLogger().warn("Could not get model data for: " + blockState.toString(), e);
+            }
+            return model;
         }
     }
 }

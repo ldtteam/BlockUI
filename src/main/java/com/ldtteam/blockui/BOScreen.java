@@ -65,11 +65,9 @@ public class BOScreen extends Screen
         mcScale = ms.minecraft.getWindow().getGuiScale();
         renderScale = window.getRenderType().calcRenderScale(ms.minecraft.getWindow(), window);
 
-        if (window.hasLightbox())
+        if (window.hasLightbox() && ms.minecraft.screen == this)
         {
-            width = framebufferWidth;
-            height = framebufferHeight;
-            super.renderBackground(ms);
+            UiRenderMacros.fillGradient(ms.pose(), 0, 0, framebufferWidth, framebufferHeight, -1072689136, -804253680);
             //super.renderBackground(ms);
         }
 
