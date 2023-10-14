@@ -242,8 +242,6 @@
             <xs:extension base="paneType">
                 <xs:attribute name="block" type="xs:string"/>
                 <xs:attribute name="properties" type="xs:string"/>
-                <xs:attribute name="yaw" type="xs:float"/>
-                <xs:attribute name="pitch" type="xs:float"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

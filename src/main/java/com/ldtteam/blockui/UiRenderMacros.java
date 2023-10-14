@@ -1,6 +1,5 @@
 package com.ldtteam.blockui;
 
-import com.ldtteam.blockui.util.fluid.SingleBlockRenderer;
 import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
 import com.ldtteam.blockui.util.texture.OutOfJarTexture;
 import com.mojang.blaze3d.platform.Lighting;
@@ -18,8 +17,6 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.client.model.data.ModelData;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
@@ -612,43 +609,6 @@ public class UiRenderMacros
         buffer.vertex(mat, xEnd, yStart, 0).uv(uMax, vMin).endVertex();
         buffer.vertex(mat, xStart, yEnd, 0).uv(uMin, vMax).endVertex();
         buffer.vertex(mat, xEnd, yEnd, 0).uv(uMax, vMax).endVertex();
-    }
-
-    /**
-     * Render a block model on a GUI.
-     *
-     * @param matrixStack matrix
-     * @param block the blockstate to render
-     * @param modelData the modelData for the block
-     * @param x horizontal center position
-     * @param y vertical bottom position
-     * @param z distance from camera
-     * @param pitch rotation forwards
-     * @param yaw rotation sideways
-     * @param scale scaling factor
-     */
-    public static void drawBlock(final PoseStack matrixStack, final BlockState block, final ModelData modelData,
-                                 final float x, final float y, final float z,
-                                 final float pitch, final float yaw, final float scale)
-    {
-        matrixStack.pushPose();
-
-        Lighting.setupForFlatItems();
-
-        matrixStack.translate(x, y, z);
-        matrixStack.scale(-scale, -scale, -scale);
-        matrixStack.translate(-0.5F, -0.5F, 0F);
-
-        matrixStack.translate(0.5F, 0.5F, 0.5F);
-        matrixStack.mulPose(Axis.XP.rotationDegrees(pitch));
-        matrixStack.mulPose(Axis.YP.rotationDegrees(yaw));
-        matrixStack.translate(-0.5F, -0.5F, -0.5F);
-
-        SingleBlockRenderer.render(block, modelData, matrixStack);
-
-        Lighting.setupFor3DItems();
-
-        matrixStack.popPose();
     }
 
     /**

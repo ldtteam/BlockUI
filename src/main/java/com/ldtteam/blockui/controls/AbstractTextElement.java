@@ -108,12 +108,12 @@ public abstract class AbstractTextElement extends Pane
     public AbstractTextElement()
     {
         this(
-          DEFAULT_TEXT_ALIGNMENT,
-          DEFAULT_TEXT_COLOR,
-          DEFAULT_TEXT_COLOR,
-          DEFAULT_TEXT_COLOR,
-          DEFAULT_TEXT_SHADOW,
-          DEFAULT_TEXT_WRAP
+                DEFAULT_TEXT_ALIGNMENT,
+                DEFAULT_TEXT_COLOR,
+                DEFAULT_TEXT_COLOR,
+                DEFAULT_TEXT_COLOR,
+                DEFAULT_TEXT_SHADOW,
+                DEFAULT_TEXT_WRAP
         );
     }
 
@@ -121,12 +121,12 @@ public abstract class AbstractTextElement extends Pane
      * Creates an instance of the abstractTextElement.
      */
     public AbstractTextElement(
-      final Alignment defaultTextAlignment,
-      final int defaultTextColor,
-      final int defaultTextHoverColor,
-      final int defaultTextDisabledColor,
-      final boolean defaultTextShadow,
-      final boolean defaultTextWrap)
+            final Alignment defaultTextAlignment,
+            final int defaultTextColor,
+            final int defaultTextHoverColor,
+            final int defaultTextDisabledColor,
+            final boolean defaultTextShadow,
+            final boolean defaultTextWrap)
     {
         super();
 
@@ -141,13 +141,13 @@ public abstract class AbstractTextElement extends Pane
     public AbstractTextElement(final PaneParams params)
     {
         this(
-          params,
-          DEFAULT_TEXT_ALIGNMENT,
-          DEFAULT_TEXT_COLOR,
-          DEFAULT_TEXT_COLOR,
-          DEFAULT_TEXT_COLOR,
-          DEFAULT_TEXT_SHADOW,
-          DEFAULT_TEXT_WRAP
+                params,
+                DEFAULT_TEXT_ALIGNMENT,
+                DEFAULT_TEXT_COLOR,
+                DEFAULT_TEXT_COLOR,
+                DEFAULT_TEXT_COLOR,
+                DEFAULT_TEXT_SHADOW,
+                DEFAULT_TEXT_WRAP
         );
     }
 
@@ -157,12 +157,12 @@ public abstract class AbstractTextElement extends Pane
      * @param params xml parameters.
      */
     public AbstractTextElement(final PaneParams params,
-        final Alignment defaultTextAlignment,
-        final int defaultTextColor,
-        final int defaultTextHoverColor,
-        final int defaultTextDisabledColor,
-        final boolean defaultTextShadow,
-        final boolean defaultTextWrap)
+                               final Alignment defaultTextAlignment,
+                               final int defaultTextColor,
+                               final int defaultTextHoverColor,
+                               final int defaultTextDisabledColor,
+                               final boolean defaultTextShadow,
+                               final boolean defaultTextWrap)
     {
         super(params);
 
@@ -200,26 +200,28 @@ public abstract class AbstractTextElement extends Pane
         }
 
         final int maxWidth = (int) (textWidth / textScale) - (textShadow ? 1 : 0);
-        preparedText = text.stream().flatMap(textBlock -> {
-            if (textBlock.getContents() instanceof final SpacerTextComponent spacer)
-            {
-                return Stream.of(spacer.getVisualOrderText());
-            }
-            else if (textBlock.getContents() instanceof final ToggleableTextComponent toggleable)
-            {
-                return mc.font.split(toggleable.data(), maxWidth)
-                    .stream()
+        preparedText = text.stream().flatMap(textBlock -> toFormattedSequence(maxWidth, textBlock)).collect(Collectors.toList());
+    }
+
+    private Stream<? extends FormattedCharSequence> toFormattedSequence(final int maxWidth, MutableComponent textBlock)
+    {
+        if (textBlock.getContents() instanceof final SpacerTextComponent spacer)
+        {
+            return Stream.of(spacer.getVisualOrderText());
+        }
+        else if (textBlock.getContents() instanceof final ToggleableTextComponent toggleable)
+        {
+            return toFormattedSequence(maxWidth, toggleable.data())
                     .map(formatted -> new FormattedToggleableCharSequence(toggleable.condition(), formatted));
-            }
-            else if (textBlock.getContents() == ComponentContents.EMPTY && textBlock.getSiblings().isEmpty())
-            {
-                return Stream.of(textBlock.getVisualOrderText());
-            }
-            else
-            {
-                return mc.font.split(textBlock, maxWidth).stream();
-            }
-        }).collect(Collectors.toList());
+        }
+        else if (textBlock.getContents() == ComponentContents.EMPTY && textBlock.getSiblings().isEmpty())
+        {
+            return Stream.of(textBlock.getVisualOrderText());
+        }
+        else
+        {
+            return mc.font.split(textBlock, maxWidth).stream();
+        }
     }
 
     public void recalcPreparedTextBox()
@@ -317,7 +319,7 @@ public abstract class AbstractTextElement extends Pane
         final float newScaleY = (float) Math.round(oldScaleY * textScale * FILTERING_ROUNDING) / FILTERING_ROUNDING;
 
         if (Math.abs((float) Math.round(newScaleX) - newScaleX) > FILTERING_THRESHOLD
-            || Math.abs((float) Math.round(newScaleY) - newScaleY) > FILTERING_THRESHOLD)
+                || Math.abs((float) Math.round(newScaleY) - newScaleY) > FILTERING_THRESHOLD)
         {
             // smooth the texture
             // if (newScaleX < window.getScreen().getVanillaGuiScale() || newScaleY < window.getScreen().getVanillaGuiScale())

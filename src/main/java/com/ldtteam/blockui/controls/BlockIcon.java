@@ -5,10 +5,13 @@ import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneBuilders;
 import com.ldtteam.blockui.PaneParams;
+import com.mojang.math.Axis;
 import com.mojang.serialization.JsonOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -31,8 +34,6 @@ public class BlockIcon extends Pane
      */
     @Nullable private BlockState blockState;
     private ModelData modelData = ModelData.EMPTY;
-    private float yaw = 45;
-    private float pitch = -30;
 
     /**
      * Standard constructor instantiating the blockIcon without any additional settings.
@@ -61,8 +62,6 @@ public class BlockIcon extends Pane
                 setBlock(state, ModelData.EMPTY);
             }
         }
-        this.yaw = params.getFloat("yaw", this.yaw);
-        this.pitch = params.getFloat("pitch", this.pitch);
     }
 
     /**
@@ -97,23 +96,19 @@ public class BlockIcon extends Pane
         return this.modelData;
     }
 
-    public void setYaw(final float yaw)
-    {
-        this.yaw = yaw;
-    }
-
-    public void setPitch(final float pitch)
-    {
-        this.pitch = pitch;
-    }
-
     @Override
     public void drawSelf(final BOGuiGraphics ms, double mx, double my)
     {
         if (blockState != null)
         {
-            final float scale = Math.min(this.getWidth(), this.getHeight()) / 2F;
-            drawBlock(ms.pose(), this.blockState, this.modelData, x + getWidth() / 2F, y + scale, 0F, this.pitch, this.yaw, scale);
+            final float scale = Math.min(this.getWidth(), this.getHeight()) / 16F;
+            ms.pose().pushPose();
+            ms.pose().translate(x, y, 0F);
+            ms.pose().scale(scale, scale, 1F);
+
+            ms.renderBlockStateAsItem(this.blockState, this.modelData, new ItemStack(Items.COBBLESTONE));
+
+            ms.pose().popPose();
         }
     }
 
