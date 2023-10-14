@@ -45,12 +45,15 @@ public class Pane extends UiRenderMacros
     // Runtime
     protected BOWindow window;
     protected View parent;
+
     /**
      * Should be only used during drawing methods. Outside drawing scope value may be outdated.
      */
     protected boolean wasCursorInPane = false;
     @Nullable
     private List<MutableComponent> toolTipLines = null;
+    @Nullable
+    private PaneParams params;
 
     /**
      * Default constructor.
@@ -70,6 +73,11 @@ public class Pane extends UiRenderMacros
     {
         super();
         id = params.getString("id", id);
+
+        if (params.getBoolean("cloneable", false))
+        {
+            this.params = params;
+        }
 
         params.getScaledInteger("size", params.getParentWidth(), params.getParentHeight(), a -> {
             width = a.get(0);
@@ -127,6 +135,28 @@ public class Pane extends UiRenderMacros
     public void onFocus()
     {
         // Can be overloaded
+    }
+
+    /**
+     * Creates a copy of this pane (only if declared cloneable="true").
+     * Clones are not themselves cloneable.
+     * The clone is created in the originally loaded state, not the current state.
+     *
+     * @return the clone, or null if not cloneable.
+     */
+    @Nullable
+    public Pane clone(final View newParent)
+    {
+        if (params != null)
+        {
+            final Pane cloned = Loader.createFromPaneParams(params, newParent);
+            if (cloned != null)
+            {
+                cloned.params = null;
+                return cloned;
+            }
+        }
+        return null;
     }
 
     /**

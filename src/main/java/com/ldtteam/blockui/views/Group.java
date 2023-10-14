@@ -8,10 +8,13 @@ import com.ldtteam.blockui.PaneParams;
  * a Y-sorted list in the order they are added.
  * <p>
  * All children are set to a Top version of their alignment, and have their Y coordinates overwritten.
+ * <p>
+ * If horizontal="true" then it changes to an X-sorted list aligned to Left.
  */
 public class Group extends View
 {
     private int spacing = 0;
+    private boolean horizontal = false;
 
     /**
      * Required default constructor.
@@ -30,10 +33,56 @@ public class Group extends View
     {
         super(params);
         spacing = params.getInteger("spacing", spacing);
+        horizontal = params.getBoolean("horizontal", horizontal);
     }
 
     @Override
     public void adjustChild(final Pane child)
+    {
+        if (horizontal)
+        {
+            adjustChildHorizontal(child);
+        } else
+        {
+            adjustChildVertical(child);
+        }
+    }
+
+    private void adjustChildHorizontal(final Pane child)
+    {
+        int childX = spacing;
+        int childY = child.getY();
+        final int childWidth = child.getWidth();
+        int childHeight = child.getHeight();
+
+        // Adjust for vertical size and alignment
+        if (childHeight < 0)
+        {
+            childHeight = getInteriorHeight();
+        }
+        else if (child.getAlignment().isBottomAligned())
+        {
+            childY = (getInteriorHeight() - childHeight) - childY;
+        }
+        else if (child.getAlignment().isVerticalCentered())
+        {
+            childY = ((getInteriorHeight() - childHeight) / 2) + childY;
+        }
+
+        for (final Pane c : children)
+        {
+            if (c == child)
+            {
+                break;
+            }
+            childX = c.getX() + c.getWidth() + spacing;
+        }
+
+        child.setSize(childWidth, childHeight);
+        child.setPosition(childX, childY);
+    }
+
+    private void adjustChildVertical(final Pane child)
     {
         int childX = child.getX();
         int childY = spacing;
@@ -54,7 +103,7 @@ public class Group extends View
             childX = ((getInteriorWidth() - childWidth) / 2) + childX;
         }
 
-        for (        final Pane c : children)
+        for (final Pane c : children)
         {
             if (c == child)
             {
@@ -72,14 +121,30 @@ public class Group extends View
     {
         super.removeChild(child);
 
-        final int formerChildY = child.getY();
-        final int formerChildHeight = child.getHeight();
-
-        for (        final Pane c : children)
+        if (horizontal)
         {
-            if (c.getY() > formerChildY)
+            final int formerChildX = child.getX();
+            final int formerChildWidth = child.getWidth();
+
+            for (final Pane c : children)
             {
-                c.moveBy(0, -formerChildHeight);
+                if (c.getX() > formerChildX)
+                {
+                    c.moveBy(-formerChildWidth, 0);
+                }
+            }
+        }
+        else
+        {
+            final int formerChildY = child.getY();
+            final int formerChildHeight = child.getHeight();
+
+            for (final Pane c : children)
+            {
+                if (c.getY() > formerChildY)
+                {
+                    c.moveBy(0, -formerChildHeight);
+                }
             }
         }
     }

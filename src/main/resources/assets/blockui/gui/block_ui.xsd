@@ -59,6 +59,7 @@
     <!-- Pane basic attributes -->
     <xs:complexType name="paneType">
         <xs:attribute name="id" type="xs:string"/>
+        <xs:attribute name="cloneable" type="xs:boolean"/>
 
         <xs:attribute name="align" type="align"/>
         <xs:attribute name="size" type="sizePair"/>
@@ -153,6 +154,7 @@
         <xs:complexContent>
             <xs:extension base="viewType">
                 <xs:attribute name="spacing" type="xs:integer"/>
+                <xs:attribute name="horizontal" type="xs:boolean"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
