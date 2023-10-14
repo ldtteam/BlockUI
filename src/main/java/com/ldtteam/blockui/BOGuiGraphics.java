@@ -1,5 +1,6 @@
 package com.ldtteam.blockui;
 
+import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.util.SingleBlockNeighborhood;
 import com.ldtteam.blockui.util.cursor.Cursor;
 import com.mojang.blaze3d.platform.Lighting;
@@ -17,6 +18,10 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraftforge.client.ForgeHooksClient;
@@ -88,14 +93,17 @@ public class BOGuiGraphics extends GuiGraphics
     /**
      * Render given blockState with model just like {@link #renderItem(ItemStack, int, int)}
      *
-     * @param blockState blockState
-     * @param modelData  model data for given blockState
-     * @param itemStack  backing itemStack for given blockState
+     * @param data      blockState rendering data
+     * @param itemStack backing itemStack for given blockState
      */
-    public void renderBlockStateAsItem(final BlockState blockState, final ModelData modelData, final ItemStack itemStack)
+    public void renderBlockStateAsItem(final BlockStateRenderingData data, final ItemStack itemStack)
     {
-        final BakedModel itemModel = minecraft.getItemRenderer().getModel(itemStack, null, null, 0);
-        final boolean lighting = !itemModel.usesBlockLight();
+        BakedModel itemModel = minecraft.getItemRenderer().getModel(itemStack, null, null, 0);
+        if (!itemModel.isGui3d() || data.blockState().getRenderShape() == RenderShape.INVISIBLE)
+        {
+            // well, some items are bit dumb
+            itemModel = minecraft.getItemRenderer().getModel(new ItemStack(Blocks.STONE), null, null, 0);
+        }
 
         pose().pushPose();
         pose().translate(8, 8, 150);
@@ -105,25 +113,39 @@ public class BOGuiGraphics extends GuiGraphics
         pose().translate(-0.5F, -0.5F, -0.5F);
         pushPvmToShader();
 
-        if (lighting)
-        {
-            Lighting.setupForFlatItems();
-        }
-        else
-        {
-            Lighting.setupLevel(new Matrix4f());
-        }
+        Lighting.setupLevel(new Matrix4f());
 
-        minecraft.getBlockRenderer().renderSingleBlock(blockState, new PoseStack(), bufferSource(), LightTexture.pack(10, 10), OverlayTexture.NO_OVERLAY, modelData, null);
+        final int light = LightTexture.pack(10, 10);
+        minecraft.getBlockRenderer()
+            .renderSingleBlock(data.blockState,
+                new PoseStack(),
+                bufferSource(),
+                light,
+                OverlayTexture.NO_OVERLAY,
+                data.modelData(),
+                null);
+        if (data.blockEntity != null)
+        {
+            try
+            {
+                minecraft.getBlockEntityRenderDispatcher()
+                    .renderItem(data.blockEntity, new PoseStack(), bufferSource(), light, OverlayTexture.NO_OVERLAY);
+            }
+            catch (final Exception e)
+            {
+                // well, noop then
+            }
+        }
         flush();
 
-        final FluidState fluidState = blockState.getFluidState();
+        final FluidState fluidState = data.blockState.getFluidState();
         if (!fluidState.isEmpty())
         {
             final RenderType renderType = ItemBlockRenderTypes.getRenderLayer(fluidState);
 
-            NEIGHBORHOOD.blockState = blockState;
-            minecraft.getBlockRenderer().renderLiquid(BlockPos.ZERO, NEIGHBORHOOD, bufferSource().getBuffer(renderType), blockState, fluidState);
+            NEIGHBORHOOD.blockState = data.blockState;
+            minecraft.getBlockRenderer()
+                .renderLiquid(BlockPos.ZERO, NEIGHBORHOOD, bufferSource().getBuffer(renderType), data.blockState, fluidState);
 
             bufferSource().endBatch(renderType);
         }
@@ -146,5 +168,71 @@ public class BOGuiGraphics extends GuiGraphics
     {
         RenderSystem.getModelViewStack().popPose();
         RenderSystem.applyModelViewMatrix();
+    }
+
+    public static record BlockStateRenderingData(BlockState blockState,
+        BlockEntity blockEntity,
+        ModelData modelData,
+        boolean renderItemDecorations,
+        boolean alwaysAddBlockStateTooltip)
+    {
+        public static final BlockPos ILLEGAL_BLOCK_ENTITY_POS = BlockPos.ZERO.below(1000);
+
+        public static BlockStateRenderingData of(final BlockState blockState, final BlockEntity blockEntity)
+        {
+            ModelData model = ModelData.EMPTY;
+            try
+            {
+                model = blockEntity.getModelData();
+            }
+            catch (final Exception e)
+            {
+                Log.getLogger().warn("Could not get model data for: " + blockState.toString(), e);
+            }
+
+            return new BlockStateRenderingData(blockState, blockEntity, model, true, false);
+        }
+
+        public static BlockStateRenderingData of(final BlockState blockState)
+        {
+            if (blockState.hasBlockEntity() && blockState.getBlock() instanceof final EntityBlock entityBlock)
+            {
+                final BlockEntity be = entityBlock.newBlockEntity(ILLEGAL_BLOCK_ENTITY_POS, blockState);
+                if (be != null)
+                {
+                    return of(blockState, be);
+                }
+            }
+            return new BlockStateRenderingData(blockState, null, null, true, false);
+        }
+
+        public BlockStateRenderingData withItemDecorations()
+        {
+            return renderItemDecorations ? this :
+                new BlockStateRenderingData(blockState, blockEntity, modelData, true, alwaysAddBlockStateTooltip);
+        }
+
+        public BlockStateRenderingData withoutItemDecorations()
+        {
+            return !renderItemDecorations ? this :
+                new BlockStateRenderingData(blockState, blockEntity, modelData, false, alwaysAddBlockStateTooltip);
+        }
+
+        public BlockStateRenderingData withForcedBlockStateTooltip()
+        {
+            return alwaysAddBlockStateTooltip ? this :
+                new BlockStateRenderingData(blockState, blockEntity, modelData, renderItemDecorations, true);
+        }
+
+        public BlockStateRenderingData withoutForcedBlockStateTooltip()
+        {
+            return !alwaysAddBlockStateTooltip ? this :
+                new BlockStateRenderingData(blockState, blockEntity, modelData, renderItemDecorations, false);
+        }
+
+        public ModelData modelData()
+        {
+            return modelData == null ? ModelData.EMPTY : modelData;
+        }
     }
 }

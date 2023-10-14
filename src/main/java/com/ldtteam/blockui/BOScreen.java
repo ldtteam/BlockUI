@@ -70,6 +70,7 @@ public class BOScreen extends Screen
             width = framebufferWidth;
             height = framebufferHeight;
             super.renderBackground(ms);
+            //super.renderBackground(ms);
         }
 
         width = window.getWidth();
@@ -86,7 +87,7 @@ public class BOScreen extends Screen
         shaderPs.setIdentity();
 
         final PoseStack newMs = new PoseStack();
-        newMs.translate(x, y, 0);
+        newMs.translate(x, y, ms.pose().last().pose().m32());
         newMs.scale((float) renderScale, (float) renderScale, 1.0f);
 
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
