@@ -1,10 +1,10 @@
 package com.ldtteam.blockui.mod;
 
 import com.ldtteam.blockui.PaneBuilders;
-import com.ldtteam.blockui.BOGuiGraphics.BlockStateRenderingData;
 import com.ldtteam.blockui.controls.ItemIcon;
 import com.ldtteam.blockui.controls.Text;
 import com.ldtteam.blockui.controls.Tooltip;
+import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
 import com.ldtteam.blockui.views.BOWindow;
 import com.ldtteam.blockui.views.ZoomDragView;
 import net.minecraft.network.chat.Component;
@@ -32,20 +32,30 @@ public class BlockStateTestGui
             icon.setItem(new ItemStack(block));
             view.addChildPlain(icon);
 
+            final ItemIcon pickIcon = new ItemIcon();
+            pickIcon.setPosition(16, rowY);
+            pickIcon.setSize(16, 16);
+            view.addChildPlain(pickIcon);
+
             final Text text = PaneBuilders.textBuilder().append(Component.literal(ForgeRegistries.BLOCKS.getKey(block).toString())).colorName("black").build();
-            text.setPosition(20, rowY);
+            text.setPosition(35, rowY);
             text.setSize(Tooltip.DEFAULT_MAX_WIDTH, Tooltip.DEFAULT_MAX_HEIGHT);
             text.recalcPreparedTextBox();
             text.setSize(text.getRenderedTextWidth() + 10, rowHeight);
             view.addChildPlain(text);
 
-            int x = 20 + text.getWidth();
+            int x = 35 + text.getWidth();
             for (final BlockState blockState : block.getStateDefinition().getPossibleStates())
             {
                 final ItemIcon blockIcon = new ItemIcon();
                 blockIcon.setPosition(x, rowY);
                 blockIcon.setSize(16, 16);
                 blockIcon.setBlockStateOverride(BlockStateRenderingData.of(blockState).withForcedBlockStateTooltip());
+
+                if (pickIcon.getItem() == null && blockIcon.getBlockStateExtension() != null)
+                {
+                    blockIcon.getBlockStateExtension().itemStack().ifPresent(pickIcon::setItem);
+                }
 
                 view.addChildPlain(blockIcon);
                 x += rowHeight;

@@ -32,8 +32,8 @@ import java.util.stream.Stream;
  */
 public abstract class AbstractTextElement extends Pane
 {
-    private static final int FILTERING_ROUNDING = 50;
-    private static final float FILTERING_THRESHOLD = 0.02f; // should be 1/FILTERING_ROUNDING
+    public static final int FILTERING_ROUNDING = 50;
+    public static final float FILTERING_THRESHOLD = 0.02f; // should be 1/FILTERING_ROUNDING
 
     public static final double DEFAULT_TEXT_SCALE = 1.0d;
     public static final Alignment DEFAULT_TEXT_ALIGNMENT = Alignment.MIDDLE_LEFT;

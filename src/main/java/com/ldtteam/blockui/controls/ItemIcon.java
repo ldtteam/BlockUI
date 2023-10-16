@@ -4,8 +4,8 @@ import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneBuilders;
 import com.ldtteam.blockui.PaneParams;
-import com.ldtteam.blockui.BOGuiGraphics.BlockStateRenderingData;
 import com.ldtteam.blockui.mod.Log;
+import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
 import com.ldtteam.blockui.util.SpacerTextComponent;
 import com.ldtteam.blockui.util.ToggleableTextComponent;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -29,6 +29,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.block.AirBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -137,11 +138,9 @@ public class ItemIcon extends Pane
      */
     public void setBlockStateOverride(@Nullable final BlockStateRenderingData blockStateExtension)
     {
-        if (blockStateExtension != null && (itemStack == null || !(itemStack.getItem() instanceof final BlockItem blockItem) ||
-            blockItem.getBlock() != blockStateExtension.blockState().getBlock()))
+        if (blockStateExtension != null)
         {
-            // TODO: override this in structurize so it returns correct item (move that logic from struct here)
-            itemStack = new ItemStack(blockStateExtension.blockState().getBlock());
+            itemStack = blockStateExtension.itemStack().orElse(ItemStack.EMPTY);
             if (itemStack.isEmpty() && !(blockStateExtension.blockState().getBlock() instanceof AirBlock))
             {
                 Log.getLogger().warn("Cannot create proper itemStack for: " + blockStateExtension.blockState().toString());
@@ -159,8 +158,9 @@ public class ItemIcon extends Pane
      */
     public void setBlockStateWeakOverride(@Nullable final BlockStateRenderingData blockStateExtension)
     {
-        // should catch barriers and similar
+        // should catch barriers and similar and make them render as normal itemstack
         if (blockStateExtension != null &&
+            blockStateExtension.blockState().getBlock() != Blocks.LIGHT &&
             blockStateExtension.blockState().getRenderShape() == RenderShape.INVISIBLE &&
             blockStateExtension.blockState().getFluidState().isEmpty() &&
             blockStateExtension.blockEntity() == null)
@@ -209,6 +209,10 @@ public class ItemIcon extends Pane
             }
             else
             {
+                if (blockStateExtension.blockState().getBlock() == Blocks.LIGHT && itemStack != null)
+                {
+                    target.renderItem(itemStack, 0, 0);
+                }
                 target.renderBlockStateAsItem(blockStateExtension, itemStack);
             }
 
@@ -401,7 +405,7 @@ public class ItemIcon extends Pane
             }
             catch (Exception e)
             {
-                Log.getLogger().warn("Error while parsing blockentity data", e);
+                Log.getLogger().warn("Error while parsing blockentity data: " + blockEntityTag, e);
             }
         }
 

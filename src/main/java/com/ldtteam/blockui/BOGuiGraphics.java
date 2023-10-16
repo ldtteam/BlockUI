@@ -1,6 +1,8 @@
 package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.mod.Log;
+import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
+import com.ldtteam.blockui.mod.item.BlockToItemHelper;
 import com.ldtteam.blockui.util.SingleBlockNeighborhood;
 import com.ldtteam.blockui.util.cursor.Cursor;
 import com.mojang.blaze3d.platform.Lighting;
@@ -16,6 +18,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
@@ -24,9 +27,13 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.client.model.data.ModelData;
+import net.minecraftforge.common.util.Lazy;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import java.util.function.Function;
@@ -118,19 +125,19 @@ public class BOGuiGraphics extends GuiGraphics
 
         final int light = LightTexture.pack(10, 10);
         minecraft.getBlockRenderer()
-            .renderSingleBlock(data.blockState,
+            .renderSingleBlock(data.blockState(),
                 new PoseStack(),
                 bufferSource(),
                 light,
                 OverlayTexture.NO_OVERLAY,
                 data.modelData(),
                 null);
-        if (data.blockEntity != null)
+        if (data.blockEntity() != null)
         {
             try
             {
                 minecraft.getBlockEntityRenderDispatcher()
-                    .renderItem(data.blockEntity, new PoseStack(), bufferSource(), light, OverlayTexture.NO_OVERLAY);
+                    .renderItem(data.blockEntity(), new PoseStack(), bufferSource(), light, OverlayTexture.NO_OVERLAY);
             }
             catch (final Exception e)
             {
@@ -139,14 +146,14 @@ public class BOGuiGraphics extends GuiGraphics
         }
         flush();
 
-        final FluidState fluidState = data.blockState.getFluidState();
+        final FluidState fluidState = data.blockState().getFluidState();
         if (!fluidState.isEmpty())
         {
             final RenderType renderType = ItemBlockRenderTypes.getRenderLayer(fluidState);
 
-            NEIGHBORHOOD.blockState = data.blockState;
+            NEIGHBORHOOD.blockState = data.blockState();
             minecraft.getBlockRenderer()
-                .renderLiquid(BlockPos.ZERO, NEIGHBORHOOD, bufferSource().getBuffer(renderType), data.blockState, fluidState);
+                .renderLiquid(BlockPos.ZERO, NEIGHBORHOOD, bufferSource().getBuffer(renderType), data.blockState(), fluidState);
 
             bufferSource().endBatch(renderType);
         }
@@ -169,88 +176,5 @@ public class BOGuiGraphics extends GuiGraphics
     {
         RenderSystem.getModelViewStack().popPose();
         RenderSystem.applyModelViewMatrix();
-    }
-
-    /**
-     * Holds blockstate rendering data for UIs. BlockState must match blockEntity
-     */
-    public static record BlockStateRenderingData(BlockState blockState,
-        BlockEntity blockEntity,
-        ModelData modelData,
-        boolean renderItemDecorations,
-        boolean alwaysAddBlockStateTooltip)
-    {
-        public static final BlockPos ILLEGAL_BLOCK_ENTITY_POS = BlockPos.ZERO.below(1000);
-
-        /**
-         * @param blockState blockState
-         * @param blockEntity must match blockState
-         */
-        public static BlockStateRenderingData of(final BlockState blockState, final BlockEntity blockEntity)
-        {
-            return new BlockStateRenderingData(blockState, blockEntity, getModelData(blockState, blockEntity), true, false);
-        }
-
-        public static BlockStateRenderingData of(final BlockState blockState)
-        {
-            if (blockState.hasBlockEntity() && blockState.getBlock() instanceof final EntityBlock entityBlock)
-            {
-                final BlockEntity be = entityBlock.newBlockEntity(ILLEGAL_BLOCK_ENTITY_POS, blockState);
-                if (be != null)
-                {
-                    return of(blockState, be);
-                }
-            }
-            return new BlockStateRenderingData(blockState, null, null, true, false);
-        }
-
-        public BlockStateRenderingData withItemDecorations()
-        {
-            return renderItemDecorations ? this :
-                new BlockStateRenderingData(blockState, blockEntity, modelData, true, alwaysAddBlockStateTooltip);
-        }
-
-        public BlockStateRenderingData withoutItemDecorations()
-        {
-            return !renderItemDecorations ? this :
-                new BlockStateRenderingData(blockState, blockEntity, modelData, false, alwaysAddBlockStateTooltip);
-        }
-
-        public BlockStateRenderingData withForcedBlockStateTooltip()
-        {
-            return alwaysAddBlockStateTooltip ? this :
-                new BlockStateRenderingData(blockState, blockEntity, modelData, renderItemDecorations, true);
-        }
-
-        public BlockStateRenderingData withoutForcedBlockStateTooltip()
-        {
-            return !alwaysAddBlockStateTooltip ? this :
-                new BlockStateRenderingData(blockState, blockEntity, modelData, renderItemDecorations, false);
-        }
-
-        public BlockStateRenderingData updateBlockEntity(final Function<BlockEntity, BlockEntity> updater)
-        {
-            final BlockEntity updated = updater.apply(blockEntity);
-            return new BlockStateRenderingData(blockState, updated, getModelData(blockState, updated), renderItemDecorations, alwaysAddBlockStateTooltip);
-        }
-
-        public ModelData modelData()
-        {
-            return modelData == null ? ModelData.EMPTY : modelData;
-        }
-
-        private static ModelData getModelData(final BlockState blockState, final BlockEntity blockEntity)
-        {
-            ModelData model = ModelData.EMPTY;
-            try
-            {
-                model = blockEntity.getModelData();
-            }
-            catch (final Exception e)
-            {
-                Log.getLogger().warn("Could not get model data for: " + blockState.toString(), e);
-            }
-            return model;
-        }
     }
 }

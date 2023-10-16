@@ -1,7 +1,6 @@
 package com.ldtteam.blockui.mod;
 
 import com.ldtteam.blockui.BOScreen;
-import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.controls.Button;
 import com.ldtteam.blockui.controls.ButtonVanilla;
 import com.ldtteam.blockui.hooks.HookManager;
