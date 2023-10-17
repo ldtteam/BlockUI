@@ -91,6 +91,7 @@ public class ImageRepeatable extends Pane
     public void setImageLoc(final ResourceLocation loc)
     {
         resourceLocation = loc;
+        loadMapDimensions(loc);
     }
 
     /**

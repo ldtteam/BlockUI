@@ -143,13 +143,13 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
      * @param resource xml as a {@link ResourceLocation}.
      * @param parent   parent view.
      */
-    public static void createFromXMLFile(final ResourceLocation resource, final View parent)
+    public static Pane createFromXMLFile(final ResourceLocation resource, final View parent)
     {
         if (INSTANCE.xmlCache.containsKey(resource))
         {
             try
             {
-                createFromPaneParams(INSTANCE.xmlCache.get(resource), parent);
+                return createFromPaneParams(INSTANCE.xmlCache.get(resource), parent);
             }
             catch (Exception e)
             {
