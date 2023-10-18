@@ -37,7 +37,10 @@ public class BlockStateTestGui
             pickIcon.setSize(16, 16);
             view.addChildPlain(pickIcon);
 
-            final Text text = PaneBuilders.textBuilder().append(Component.literal(ForgeRegistries.BLOCKS.getKey(block).toString())).colorName("black").build();
+            final Text text = PaneBuilders.textBuilder()
+                .append(Component.literal(ForgeRegistries.BLOCKS.getKey(block).toString()))
+                .colorName(BlockStateRenderingData.checkModelForYrotation(block.defaultBlockState()) ? "red" : "black")
+                .build();
             text.setPosition(35, rowY);
             text.setSize(Tooltip.DEFAULT_MAX_WIDTH, Tooltip.DEFAULT_MAX_HEIGHT);
             text.recalcPreparedTextBox();

@@ -1,13 +1,12 @@
 package com.ldtteam.blockui;
 
-import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
-import com.ldtteam.blockui.mod.item.BlockToItemHelper;
 import com.ldtteam.blockui.util.SingleBlockNeighborhood;
 import com.ldtteam.blockui.util.cursor.Cursor;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -18,25 +17,15 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
-import net.minecraftforge.client.model.data.ModelData;
-import net.minecraftforge.common.util.Lazy;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
-import java.util.function.Function;
 
 public class BOGuiGraphics extends GuiGraphics
 {
@@ -113,31 +102,48 @@ public class BOGuiGraphics extends GuiGraphics
             itemModel = minecraft.getItemRenderer().getModel(new ItemStack(Blocks.STONE), null, null, 0);
         }
 
+        // prepare pose just like itemStack rendering would do
+
         pose().pushPose();
         pose().translate(8, 8, 150);
         pose().mulPoseMatrix(new Matrix4f().scaling(1.0F, -1.0F, 1.0F));
         pose().scale(16.0F, 16.0F, 16.0F);
         ForgeHooksClient.handleCameraTransforms(pose(), itemModel, ItemDisplayContext.GUI, false);
+
+        final boolean modelRotated = BlockStateRenderingData.checkModelForYrotation(data.blockState());
+        if (modelRotated)
+        {
+            pose().pushPose();
+            pose().rotateAround(Axis.YP.rotationDegrees(45), 0.0f, 0.5f, 0.0f);
+        }
+
         pose().translate(-0.5F, -0.5F, -0.5F);
-        pushPvmToShader();
 
-        Lighting.setupLevel(new Matrix4f());
+        RenderSystem.getModelViewStack().pushPose();
+        applyPoseToShader();
 
+        if (modelRotated)
+        {
+            Lighting.setupLevel(new Matrix4f().rotationAround(Axis.ZP.rotationDegrees(-180), 0.5f, 0.0f, 0.5f));
+        }
+        else
+        {
+            Lighting.setupLevel(new Matrix4f().rotationAround(Axis.YP.rotationDegrees(-45), 0.0f, 0.5f, 0.0f));
+        }
+
+        // render block and BE
+
+        final PoseStack poseStack = new PoseStack();
         final int light = LightTexture.pack(10, 10);
         minecraft.getBlockRenderer()
-            .renderSingleBlock(data.blockState(),
-                new PoseStack(),
-                bufferSource(),
-                light,
-                OverlayTexture.NO_OVERLAY,
-                data.modelData(),
-                null);
+            .renderSingleBlock(data.blockState(), poseStack, bufferSource(), light, OverlayTexture.NO_OVERLAY, data.modelData(), null);
         if (data.blockEntity() != null)
         {
             try
             {
                 minecraft.getBlockEntityRenderDispatcher()
-                    .renderItem(data.blockEntity(), new PoseStack(), bufferSource(), light, OverlayTexture.NO_OVERLAY);
+                    .getRenderer(data.blockEntity())
+                    .render(data.blockEntity(), 0, poseStack, bufferSource(), light, OverlayTexture.NO_OVERLAY);
             }
             catch (final Exception e)
             {
@@ -145,6 +151,15 @@ public class BOGuiGraphics extends GuiGraphics
             }
         }
         flush();
+
+        if (modelRotated) // this might need shift before BER?
+        {
+            pose().popPose();
+            pose().translate(-0.5F, -0.5F, -0.5F);
+            applyPoseToShader();
+        }
+
+        // render fluid
 
         final FluidState fluidState = data.blockState().getFluidState();
         if (!fluidState.isEmpty())
@@ -160,21 +175,16 @@ public class BOGuiGraphics extends GuiGraphics
 
         Lighting.setupFor3DItems();
 
-        popPvmFromShader();
+        RenderSystem.getModelViewStack().popPose();
+        RenderSystem.applyModelViewMatrix();
+
         pose().popPose();
     }
 
-    public void pushPvmToShader()
+    public void applyPoseToShader()
     {
-        RenderSystem.getModelViewStack().pushPose();
         RenderSystem.getModelViewStack().setIdentity();
         RenderSystem.getModelViewStack().mulPoseMatrix(pose().last().pose());
-        RenderSystem.applyModelViewMatrix();
-    }
-
-    public void popPvmFromShader()
-    {
-        RenderSystem.getModelViewStack().popPose();
         RenderSystem.applyModelViewMatrix();
     }
 }
