@@ -33,6 +33,7 @@ public record BlockStateRenderingData(BlockState blockState,
     ModelData modelData,
     boolean renderItemDecorations,
     boolean alwaysAddBlockStateTooltip,
+    boolean modelNeedsRotationFix,
     Lazy<Optional<ItemStack>> playerPickedItemStack)
 {
 
@@ -50,11 +51,11 @@ public record BlockStateRenderingData(BlockState blockState,
             modelData,
             alwaysAddBlockStateTooltip,
             alwaysAddBlockStateTooltip,
+            checkModelForYrotation(blockState),
             Lazy.of(() -> BlockToItemHelper.getItemStack(blockState, blockEntity)));
     }
 
     /**
-     * @param blockState  blockState
      * @param blockEntity must match blockState
      */
     public static BlockStateRenderingData of(final BlockState blockState, final BlockEntity blockEntity)
@@ -63,6 +64,9 @@ public record BlockStateRenderingData(BlockState blockState,
             new BlockStateRenderingData(blockState, blockEntity, getModelData(blockState, blockEntity), true, false);
     }
 
+    /**
+     * If blockState should have blockEntity then a new fresh empty one will be created. Use {@link #of(BlockState, BlockEntity)} everywhere possible
+     */
     public static BlockStateRenderingData of(final BlockState blockState)
     {
         if (blockState.hasBlockEntity() && blockState.getBlock() instanceof final EntityBlock entityBlock)
@@ -76,39 +80,49 @@ public record BlockStateRenderingData(BlockState blockState,
         return new BlockStateRenderingData(blockState, null, null, true, false);
     }
 
+    /**
+     * @return will enable itemStack decorations like enchantment foil or itemStack count
+     */
     public BlockStateRenderingData withItemDecorations()
     {
         return renderItemDecorations ? this :
-            new BlockStateRenderingData(blockState, blockEntity, modelData, true, alwaysAddBlockStateTooltip, playerPickedItemStack);
+            new BlockStateRenderingData(blockState, blockEntity, modelData, true, alwaysAddBlockStateTooltip, modelNeedsRotationFix, playerPickedItemStack);
     }
 
+    /**
+     * @return will disable itemStack decorations like enchantment foil or itemStack count
+     */
     public BlockStateRenderingData withoutItemDecorations()
     {
         return !renderItemDecorations ? this :
-            new BlockStateRenderingData(blockState, blockEntity, modelData, false, alwaysAddBlockStateTooltip, playerPickedItemStack);
+            new BlockStateRenderingData(blockState, blockEntity, modelData, false, alwaysAddBlockStateTooltip, modelNeedsRotationFix, playerPickedItemStack);
     }
 
+    /**
+     * @return will forcibly show blockState properties in tooltip
+     */
     public BlockStateRenderingData withForcedBlockStateTooltip()
     {
         return alwaysAddBlockStateTooltip ? this :
-            new BlockStateRenderingData(blockState, blockEntity, modelData, renderItemDecorations, true, playerPickedItemStack);
+            new BlockStateRenderingData(blockState, blockEntity, modelData, renderItemDecorations, true, modelNeedsRotationFix, playerPickedItemStack);
     }
 
+    /**
+     * @return will on-demand show blockState properties in tooltip
+     */
     public BlockStateRenderingData withoutForcedBlockStateTooltip()
     {
         return !alwaysAddBlockStateTooltip ? this :
-            new BlockStateRenderingData(blockState, blockEntity, modelData, renderItemDecorations, false, playerPickedItemStack);
+            new BlockStateRenderingData(blockState, blockEntity, modelData, renderItemDecorations, false, modelNeedsRotationFix, playerPickedItemStack);
     }
 
+    /**
+     * Useful when you want to update blockEntity. Keeps modelData in sync
+     */
     public BlockStateRenderingData updateBlockEntity(final Function<BlockEntity, BlockEntity> updater)
     {
         final BlockEntity updated = updater.apply(blockEntity);
-        return new BlockStateRenderingData(blockState,
-            updated,
-            getModelData(blockState, updated),
-            renderItemDecorations,
-            alwaysAddBlockStateTooltip,
-            playerPickedItemStack);
+        return new BlockStateRenderingData(blockState, updated, getModelData(blockState, updated), renderItemDecorations, alwaysAddBlockStateTooltip, modelNeedsRotationFix, playerPickedItemStack);
     }
 
     public ModelData modelData()

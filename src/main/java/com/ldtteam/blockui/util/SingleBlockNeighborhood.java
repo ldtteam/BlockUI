@@ -31,7 +31,7 @@ public class SingleBlockNeighborhood implements BlockAndTintGetter
     @Override
     public BlockState getBlockState(final BlockPos pos)
     {
-        return BlockPos.ZERO.equals(pos) ? blockState : Blocks.AIR.defaultBlockState();
+        return BlockPos.ZERO.equals(pos) ? blockState : Blocks.VOID_AIR.defaultBlockState();
     }
 
     @Override

@@ -110,8 +110,7 @@ public class BOGuiGraphics extends GuiGraphics
         pose().scale(16.0F, 16.0F, 16.0F);
         ForgeHooksClient.handleCameraTransforms(pose(), itemModel, ItemDisplayContext.GUI, false);
 
-        final boolean modelRotated = BlockStateRenderingData.checkModelForYrotation(data.blockState());
-        if (modelRotated)
+        if (data.modelNeedsRotationFix())
         {
             pose().pushPose();
             pose().rotateAround(Axis.YP.rotationDegrees(45), 0.0f, 0.5f, 0.0f);
@@ -122,7 +121,7 @@ public class BOGuiGraphics extends GuiGraphics
         RenderSystem.getModelViewStack().pushPose();
         applyPoseToShader();
 
-        if (modelRotated)
+        if (data.modelNeedsRotationFix())
         {
             Lighting.setupLevel(new Matrix4f().rotationAround(Axis.ZP.rotationDegrees(-180), 0.5f, 0.0f, 0.5f));
         }
@@ -152,7 +151,7 @@ public class BOGuiGraphics extends GuiGraphics
         }
         flush();
 
-        if (modelRotated) // this might need shift before BER?
+        if (data.modelNeedsRotationFix()) // this might need shift before BER?
         {
             pose().popPose();
             pose().translate(-0.5F, -0.5F, -0.5F);

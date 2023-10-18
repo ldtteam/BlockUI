@@ -14,11 +14,18 @@ import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
-
 import java.util.Optional;
 
+/**
+ * Methods for getting itemStack from blockState
+ */
 public class BlockToItemHelper
 {
+    /**
+     * Same as {@link #getItemStackUsingPlayerPick(BlockState, BlockEntity)} but liquids return buckets, fires flint&steel, etc.
+     * 
+     * @return result of enhanced simulatated middle mouse button click, empty if crashed or no pick result available
+     */
     public static Optional<ItemStack> getItemStack(final BlockState blockState, final BlockEntity blockEntity)
     {
         // quick path air blocks
@@ -29,6 +36,9 @@ public class BlockToItemHelper
         return getItemStackUsingPlayerPick(blockState, blockEntity).or(() -> Optional.ofNullable(getItem(blockState)).map(ItemStack::new));
     }
 
+    /**
+     * @return result of simulatated middle mouse button click, empty if crashed or no pick result available
+     */
     public static Optional<ItemStack> getItemStackUsingPlayerPick(final BlockState blockState, final BlockEntity blockEntity)
     {
         try
@@ -45,7 +55,7 @@ public class BlockToItemHelper
                     @Override
                     public BlockState getBlockState(final BlockPos pos)
                     {
-                        return BlockPos.ZERO.equals(pos) ? blockState : Blocks.AIR.defaultBlockState();
+                        return BlockPos.ZERO.equals(pos) ? blockState : Blocks.VOID_AIR.defaultBlockState();
                     }
 
                     @Override
@@ -67,7 +77,7 @@ public class BlockToItemHelper
                     }
                 }, BlockPos.ZERO, null)).map(result -> result.isEmpty() ? null : result);
         }
-        catch (Exception e)
+        catch (final Exception e)
         {
             return Optional.empty();
         }
@@ -91,10 +101,8 @@ public class BlockToItemHelper
         {
             return Items.FLINT_AND_STEEL;
         }
-        else
-        {
-            final Item asItem = block.asItem();
-            return asItem == Items.AIR ? null : asItem;
-        }
+
+        final Item asItem = block.asItem();
+        return asItem == Items.AIR ? null : asItem;
     }
 }
