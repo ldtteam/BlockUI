@@ -143,7 +143,31 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
      * @param resource xml as a {@link ResourceLocation}.
      * @param parent   parent view.
      */
-    public static Pane createFromXMLFile(final ResourceLocation resource, final View parent)
+    public static void createFromXMLFile(final ResourceLocation resource, final View parent)
+    {
+        if (INSTANCE.xmlCache.containsKey(resource))
+        {
+            try
+            {
+                createFromPaneParams(INSTANCE.xmlCache.get(resource), parent);
+            }
+            catch (Exception e)
+            {
+                throw new RuntimeException("Can't parse xml at: " + resource.toString(), e);
+            }
+        }
+        else
+        {
+            throw new RuntimeException("Gui at \"" + resource.toString() + "\" was not found!");
+            // TODO: create "missing gui" gui and don't crash?
+        }
+    }
+
+    /**
+     * TODO: breaks bin compat, merge with old on vanilla major
+     */
+    @Deprecated(forRemoval = true, since = "1.20.1")
+    public static Pane createFromXMLFile2(final ResourceLocation resource, final View parent)
     {
         if (INSTANCE.xmlCache.containsKey(resource))
         {
