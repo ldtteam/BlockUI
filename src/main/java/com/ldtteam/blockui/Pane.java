@@ -1,6 +1,10 @@
 package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.controls.AbstractTextBuilder.TooltipBuilder;
+import com.ldtteam.blockui.mod.BlockUI;
+import com.ldtteam.blockui.util.cursor.Cursor;
+import com.ldtteam.blockui.util.cursor.CursorUtils;
+import com.ldtteam.blockui.util.cursor.CursorUtils.StandardCursor;
 import com.ldtteam.blockui.views.View;
 import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.vertex.*;
@@ -37,6 +41,7 @@ public class Pane extends UiRenderMacros
     protected boolean visible = true;
     protected boolean enabled = true;
     protected String onHoverId = "";
+    protected Cursor cursor = Cursor.DEFAULT;
     // Runtime
     protected BOWindow window;
     protected View parent;
@@ -81,6 +86,13 @@ public class Pane extends UiRenderMacros
         enabled = params.getBoolean("enabled", enabled);
         onHoverId = params.getString("onHoverId", onHoverId);
         toolTipLines = params.getMultilineText("tooltip", toolTipLines);
+
+        params.getResource("cursor", resLoc -> {
+            cursor = (BlockUI.MOD_ID + "_std").equalsIgnoreCase(resLoc.getNamespace()) ?
+                // do not use Cursor instances, there are instance equality checks
+                () -> CursorUtils.setStandardCursor(StandardCursor.valueOf(resLoc.getPath().toUpperCase())) :
+                Cursor.of(resLoc);
+        });
     }
 
     /**
@@ -298,6 +310,22 @@ public class Pane extends UiRenderMacros
     }
 
     /**
+     * Used mostly for overrides for default logics like {@link com.ldtteam.blockui.views.ZoomDragView#getCursor ZoomDragView}
+     */
+    public Cursor getCursor()
+    {
+        return cursor;
+    }
+
+    /**
+     * @param cursor use {@link Cursor} instances for default behaviour (or new instances to prevent it)
+     */
+    public void setCursor(final Cursor cursor)
+    {
+        this.cursor = cursor;
+    }
+
+    /**
      * Draw the current Pane if visible.
      *
      * @param mx mouse x.
@@ -311,7 +339,14 @@ public class Pane extends UiRenderMacros
 
         if (visible)
         {
+            if (wasCursorInPane && enabled)
+            {
+                // intentional getter cuz overrides
+                window.getScreen().setCursor(ms, getCursor());
+            }
+
             drawSelf(ms, mx, my);
+
             if (debugging)
             {
                 final int color = wasCursorInPane ? 0xFF00FF00 : 0xFF0000FF;

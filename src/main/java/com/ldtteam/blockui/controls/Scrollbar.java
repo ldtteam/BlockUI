@@ -4,6 +4,7 @@ import com.ldtteam.blockui.BOScreen;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.Parsers;
+import com.ldtteam.blockui.util.cursor.Cursor;
 import com.ldtteam.blockui.views.ScrollingContainer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.util.Mth;
@@ -80,6 +81,7 @@ public class Scrollbar extends Pane
     {
         super();
         this.container = container;
+        this.cursor = Cursor.VERTICAL_RESIZE;
     }
 
     /**

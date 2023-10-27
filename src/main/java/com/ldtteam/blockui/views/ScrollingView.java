@@ -56,7 +56,7 @@ public class ScrollingView extends View
         scrollbar.putInside(this);
     }
 
-        protected ScrollingContainer createScrollingContainer()
+    protected ScrollingContainer createScrollingContainer()
     {
         return new ScrollingContainer(this);
     }

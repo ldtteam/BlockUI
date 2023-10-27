@@ -123,6 +123,11 @@ public class Sprite implements AutoCloseable
         }
     }
 
+    public void uploadFirstFrame(final int parentX, final int parentY)
+    {
+        uploadImages(parentX, parentY, 0, 0, byMipLevel);
+    }
+
     public int width()
     {
         return width;

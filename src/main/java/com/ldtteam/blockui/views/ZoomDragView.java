@@ -3,6 +3,7 @@ package com.ldtteam.blockui.views;
 import com.ldtteam.blockui.MouseEventCallback;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
+import com.ldtteam.blockui.util.cursor.Cursor;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.util.Mth;
 
@@ -32,6 +33,7 @@ public class ZoomDragView extends View
     public ZoomDragView()
     {
         super();
+        this.cursor = Cursor.RESIZE;
     }
 
     /**
@@ -48,6 +50,8 @@ public class ZoomDragView extends View
         zoomEnabled = params.getBoolean("zoomenabled", zoomEnabled);
         minScale = params.getDouble("minscale", minScale);
         maxScale = params.getDouble("maxscale", maxScale);
+        
+        this.cursor = this.cursor == Cursor.DEFAULT ? Cursor.RESIZE : this.cursor;
     }
 
     @Override
@@ -55,6 +59,32 @@ public class ZoomDragView extends View
     {
         return calcInverseAbsoluteX(child.getX()) < getInteriorWidth() && calcInverseAbsoluteY(child.getY()) < getInteriorHeight()
             && calcInverseAbsoluteX(child.getX() + child.getWidth()) >= 0 && calcInverseAbsoluteY(child.getY() + child.getHeight()) >= 0;
+    }
+
+    @Override
+    public Cursor getCursor()
+    {
+        Cursor superCursor = super.getCursor();
+
+        // if not default
+        if (superCursor != Cursor.RESIZE)
+        {
+            return superCursor;
+        }
+
+        // x scroll -> disable horizontal
+        if (getMaxScrollX() == 0)
+        {
+            superCursor = Cursor.VERTICAL_RESIZE;
+        }
+
+        // y scroll -> disable vertical
+        if (getMaxScrollY() == 0)
+        {
+            superCursor = superCursor == Cursor.RESIZE ? Cursor.HORIZONTAL_RESIZE : Cursor.DEFAULT;
+        }
+
+        return superCursor;
     }
 
     /**

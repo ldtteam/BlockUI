@@ -58,8 +58,9 @@ public class OutOfJarResourceLocation extends ResourceLocation
     {
         if (resLoc instanceof final OutOfJarResourceLocation nioResLoc)
         {
-            return fileExists(nioResLoc.withFileSuffix(".mcmeta"), fallbackManager) ?
-                new OutOfJarResource(nioResLoc, parseMetadata(nioResLoc)) :
+            final OutOfJarResourceLocation mcmeta = nioResLoc.withFileSuffix(".mcmeta");
+            return fileExists(mcmeta, fallbackManager) ?
+                new OutOfJarResource(nioResLoc, parseMetadata(mcmeta)) :
                 new OutOfJarResource(nioResLoc);
         }
         return fallbackManager.getResource(resLoc).orElseThrow(() -> new RuntimeException("File not found: " + resLoc));
@@ -68,7 +69,14 @@ public class OutOfJarResourceLocation extends ResourceLocation
     private static IoSupplier<ResourceMetadata> parseMetadata(final OutOfJarResourceLocation path)
     {
         return () -> {
-            return ResourceMetadata.EMPTY;
+            try (var is = Files.newInputStream(path.nioPath))
+            {
+                return ResourceMetadata.fromJsonStream(is);
+            }
+            catch (final Exception e)
+            {
+                return ResourceMetadata.EMPTY;
+            }
         };
     }
 

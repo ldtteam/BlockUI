@@ -1,5 +1,7 @@
 package com.ldtteam.blockui;
 
+import com.ldtteam.blockui.util.cursor.Cursor;
+import com.ldtteam.blockui.util.cursor.CursorUtils;
 import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -29,6 +31,8 @@ public class BOScreen extends Screen
     protected int framebufferHeight;
     protected int absoluteMouseX;
     protected int absoluteMouseY;
+    private int cursorMaxDepth;
+    private Cursor selectedCursor;
 
     /**
      * Create a GuiScreen from a BlockOut window.
@@ -66,17 +70,18 @@ public class BOScreen extends Screen
         mcScale = minecraft.getWindow().getGuiScale();
         renderScale = window.getRenderType().calcRenderScale(minecraft.getWindow(), window);
 
-        if (window.hasLightbox())
+        if (window.hasLightbox() && minecraft.screen == this)
         {
-            width = framebufferWidth;
-            height = framebufferHeight;
-            super.renderBackground(ms);
+            UiRenderMacros.fillGradient(ms, 0, 0, framebufferWidth, framebufferHeight, -1072689136, -804253680);
+            //super.renderBackground(ms);
         }
 
         width = window.getWidth();
         height = window.getHeight();
         x = Math.floor((guiWidth - width * renderScale) / 2.0d);
         y = Math.floor((guiHeight - height * renderScale) / 2.0d);
+        cursorMaxDepth = -1;
+        selectedCursor = Cursor.DEFAULT;
 
         // replace vanilla projection
         final PoseStack shaderPs = RenderSystem.getModelViewStack();
@@ -97,6 +102,7 @@ public class BOScreen extends Screen
         try
         {
             window.draw(newMs, calcRelativeX(mx), calcRelativeY(my));
+            applyCursor();
             window.drawLast(newMs, calcRelativeX(mx), calcRelativeY(my));
         }
         catch (final Exception e)
@@ -316,6 +322,7 @@ public class BOScreen extends Screen
         finally
         {
             BOWindow.clearFocus();
+            CursorUtils.resetCursor();
             minecraft.keyboardHandler.setSendRepeatsToGui(false);
         }
     }
@@ -370,5 +377,19 @@ public class BOScreen extends Screen
     public int getAbsoluteMouseY()
     {
         return absoluteMouseY;
+    }
+  
+    public void setCursor(final PoseStack ms, final Cursor cursor)
+    {
+        if (ms.poseStack.size() >= cursorMaxDepth)
+        {
+            cursorMaxDepth = ms.poseStack.size();
+            selectedCursor = cursor;
+        }
+    }
+
+    public void applyCursor()
+    {
+        selectedCursor.apply();
     }
 }
