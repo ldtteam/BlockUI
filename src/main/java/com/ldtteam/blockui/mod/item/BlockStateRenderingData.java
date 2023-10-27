@@ -36,10 +36,10 @@ public record BlockStateRenderingData(BlockState blockState,
     boolean modelNeedsRotationFix,
     Lazy<Optional<ItemStack>> playerPickedItemStack)
 {
-
     public static final HitResult CLONE_ITEM_STACK_HIT_RESULT =
         new BlockHitResult(Vec3.atCenterOf(BlockPos.ZERO), Direction.DOWN, BlockPos.ZERO, false);
     public static final BlockPos ILLEGAL_BLOCK_ENTITY_POS = BlockPos.ZERO.below(1000);
+
     public BlockStateRenderingData(BlockState blockState,
         BlockEntity blockEntity,
         ModelData modelData,

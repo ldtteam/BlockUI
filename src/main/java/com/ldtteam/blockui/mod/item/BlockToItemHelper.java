@@ -93,9 +93,9 @@ public class BlockToItemHelper
         {
             return liquid.getFluid().getBucket();
         }
-        else if (block instanceof BubbleColumnBlock)
+        else if (block instanceof final BubbleColumnBlock column)
         {
-            return Items.WATER_BUCKET;
+            return column.getFluidState(blockState).getType().getBucket();
         }
         else if (block instanceof BaseFireBlock)
         {
