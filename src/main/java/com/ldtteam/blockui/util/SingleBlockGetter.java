@@ -18,7 +18,7 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 import javax.annotation.Nullable;
 
 /**
- * Small single blockstate level wrapper. Lighting set to 10, full shading
+ * Small single blockstate level wrapper
  */
 public class SingleBlockGetter implements BlockGetter
 {
@@ -72,6 +72,9 @@ public class SingleBlockGetter implements BlockGetter
         return 0;
     }
 
+    /**
+     * Small single blockstate level wrapper. Lighting set to 10, full shading
+     */
     public static class SingleBlockNeighborhood extends SingleBlockGetter implements BlockAndTintGetter
     {
         public SingleBlockNeighborhood(final BlockState blockState, final BlockEntity blockEntity)

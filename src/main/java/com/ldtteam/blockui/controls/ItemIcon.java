@@ -211,7 +211,7 @@ public class ItemIcon extends Pane
                 this.blockStateExtension = null;
             }
             // but if it is waterlogged then go for both?
-            else if (bs.hasProperty(BlockStateProperties.WATERLOGGED) && bs.getValue(BlockStateProperties.WATERLOGGED))
+            else if (bs.hasProperty(BlockStateProperties.WATERLOGGED))
             {
                 this.renderItemAlongBlockState = true;
             }

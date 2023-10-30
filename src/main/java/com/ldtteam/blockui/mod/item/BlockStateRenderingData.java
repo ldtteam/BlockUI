@@ -117,7 +117,7 @@ public record BlockStateRenderingData(BlockState blockState,
     public BlockStateRenderingData updateBlockEntity(final Function<BlockEntity, BlockEntity> updater)
     {
         final BlockEntity updated = updater.apply(blockEntity);
-        return new BlockStateRenderingData(blockState, updated, getModelData(blockState, updated), renderItemDecorations, alwaysAddBlockStateTooltip, modelNeedsRotationFix, playerPickedItemStack);
+        return new BlockStateRenderingData(blockState, updated, getModelData(blockState, updated), renderItemDecorations, alwaysAddBlockStateTooltip, modelNeedsRotationFix, Lazy.of(() -> BlockToItemHelper.getItemStack(blockState, blockEntity, Minecraft.getInstance().player)));
     }
 
     public ModelData modelData()
