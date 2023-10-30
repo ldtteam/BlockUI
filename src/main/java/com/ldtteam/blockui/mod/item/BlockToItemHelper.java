@@ -1,91 +1,68 @@
 package com.ldtteam.blockui.mod.item;
 
+import com.ldtteam.blockui.util.SingleBlockGetter;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.AirBlock;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BubbleColumnBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.FluidState;
-import java.util.Optional;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.util.FakePlayerFactory;
 
 /**
  * Methods for getting itemStack from blockState
  */
 public class BlockToItemHelper
 {
+    public static final HitResult CLONE_ITEM_STACK_HIT_RESULT =
+        new BlockHitResult(Vec3.atCenterOf(BlockPos.ZERO), Direction.DOWN, BlockPos.ZERO, false);
+
     /**
-     * Same as {@link #getItemStackUsingPlayerPick(BlockState, BlockEntity)} but liquids return buckets, fires flint&steel, etc.
+     * Same as {@link #getItemStackUsingPlayerPick(BlockState, BlockEntity, Player)} but liquids return buckets, fires flint&steel, etc.
      * 
      * @return result of enhanced simulatated middle mouse button click, empty if crashed or no pick result available
      */
-    public static Optional<ItemStack> getItemStack(final BlockState blockState, final BlockEntity blockEntity)
+    public static ItemStack getItemStack(final BlockState blockState, final BlockEntity blockEntity, final Player player)
     {
         // quick path air blocks
         if (blockState.getBlock() instanceof AirBlock)
         {
-            return Optional.empty();
+            return ItemStack.EMPTY;
         }
-        return getItemStackUsingPlayerPick(blockState, blockEntity).or(() -> Optional.ofNullable(getItem(blockState)).map(ItemStack::new));
+        final ItemStack result = getItemStackUsingPlayerPick(blockState, blockEntity, player);
+        return result.isEmpty() ? getItem(blockState).getDefaultInstance() : result;
+    }
+
+    /**
+     * Same as {@link #getItemStackUsingPlayerPick(BlockState, BlockEntity, Player)} but liquids return buckets, fires flint&steel, etc.
+     * 
+     * @param  serverLevel for fake player instance
+     * @return             result of enhanced simulatated middle mouse button click, empty if crashed or no pick result available
+     */
+    public static ItemStack getItemStack(final BlockState blockState, final BlockEntity blockEntity, final ServerLevel serverLevel)
+    {
+        return getItemStack(blockState, blockEntity, FakePlayerFactory.getMinecraft(serverLevel));
     }
 
     /**
      * @return result of simulatated middle mouse button click, empty if crashed or no pick result available
      */
-    public static Optional<ItemStack> getItemStackUsingPlayerPick(final BlockState blockState, final BlockEntity blockEntity)
+    public static ItemStack getItemStackUsingPlayerPick(final BlockState blockState, final BlockEntity blockEntity, final Player player)
     {
-        try
-        {
-            return Optional
-                .ofNullable(blockState.getCloneItemStack(BlockStateRenderingData.CLONE_ITEM_STACK_HIT_RESULT, new BlockGetter()
-                {
-                    @Override
-                    public BlockEntity getBlockEntity(final BlockPos pos)
-                    {
-                        return BlockPos.ZERO.equals(pos) ? blockEntity : null;
-                    }
-
-                    @Override
-                    public BlockState getBlockState(final BlockPos pos)
-                    {
-                        return BlockPos.ZERO.equals(pos) ? blockState : Blocks.VOID_AIR.defaultBlockState();
-                    }
-
-                    @Override
-                    public FluidState getFluidState(final BlockPos pos)
-                    {
-                        return getBlockState(pos).getFluidState();
-                    }
-
-                    @Override
-                    public int getHeight()
-                    {
-                        return 1;
-                    }
-
-                    @Override
-                    public int getMinBuildHeight()
-                    {
-                        return 0;
-                    }
-                }, BlockPos.ZERO, null)).map(result -> result.isEmpty() ? null : result);
-        }
-        catch (final Exception e)
-        {
-            return Optional.empty();
-        }
+        return blockState.getCloneItemStack(CLONE_ITEM_STACK_HIT_RESULT, new SingleBlockGetter(blockState, blockEntity), BlockPos.ZERO, player);
     }
 
-    /**
-     * @return null instead of air
-     */
     private static Item getItem(final BlockState blockState)
     {
         final Block block = blockState.getBlock();
@@ -102,7 +79,6 @@ public class BlockToItemHelper
             return Items.FLINT_AND_STEEL;
         }
 
-        final Item asItem = block.asItem();
-        return asItem == Items.AIR ? null : asItem;
+        return block.asItem();
     }
 }

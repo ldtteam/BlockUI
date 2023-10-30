@@ -1,7 +1,7 @@
 package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
-import com.ldtteam.blockui.util.SingleBlockNeighborhood;
+import com.ldtteam.blockui.util.SingleBlockGetter.SingleBlockNeighborhood;
 import com.ldtteam.blockui.util.cursor.Cursor;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;

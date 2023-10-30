@@ -245,7 +245,6 @@ public class BOWindow extends View
     public void close()
     {
         Minecraft.getInstance().popGuiLayer();
-        this.mc.player.closeContainer();
     }
 
     /**

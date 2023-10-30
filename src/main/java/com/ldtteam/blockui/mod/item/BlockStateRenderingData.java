@@ -17,27 +17,22 @@ import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.common.util.Lazy;
-import java.util.Optional;
+import org.jetbrains.annotations.Nullable;
 import java.util.function.Function;
 
 /**
  * Holds blockstate rendering data for UIs. BlockState must match blockEntity
  */
 public record BlockStateRenderingData(BlockState blockState,
-    BlockEntity blockEntity,
+    @Nullable BlockEntity blockEntity,
     ModelData modelData,
     boolean renderItemDecorations,
     boolean alwaysAddBlockStateTooltip,
     boolean modelNeedsRotationFix,
-    Lazy<Optional<ItemStack>> playerPickedItemStack)
+    Lazy<ItemStack> playerPickedItemStack)
 {
-    public static final HitResult CLONE_ITEM_STACK_HIT_RESULT =
-        new BlockHitResult(Vec3.atCenterOf(BlockPos.ZERO), Direction.DOWN, BlockPos.ZERO, false);
     public static final BlockPos ILLEGAL_BLOCK_ENTITY_POS = BlockPos.ZERO.below(1000);
 
     public BlockStateRenderingData(BlockState blockState,
@@ -52,13 +47,13 @@ public record BlockStateRenderingData(BlockState blockState,
             alwaysAddBlockStateTooltip,
             alwaysAddBlockStateTooltip,
             checkModelForYrotation(blockState),
-            Lazy.of(() -> BlockToItemHelper.getItemStack(blockState, blockEntity)));
+            Lazy.of(() -> BlockToItemHelper.getItemStack(blockState, blockEntity, Minecraft.getInstance().player)));
     }
 
     /**
      * @param blockEntity must match blockState
      */
-    public static BlockStateRenderingData of(final BlockState blockState, final BlockEntity blockEntity)
+    public static BlockStateRenderingData of(final BlockState blockState, @Nullable final BlockEntity blockEntity)
     {
         return blockEntity == null ? of(blockState) :
             new BlockStateRenderingData(blockState, blockEntity, getModelData(blockState, blockEntity), true, false);
@@ -147,7 +142,7 @@ public record BlockStateRenderingData(BlockState blockState,
     /**
      * @return best guess using player pick and similar methods
      */
-    public Optional<ItemStack> itemStack()
+    public ItemStack itemStack()
     {
         return playerPickedItemStack.get();
     }

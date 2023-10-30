@@ -55,9 +55,9 @@ public class BlockStateTestGui
                 blockIcon.setSize(16, 16);
                 blockIcon.setBlockStateOverride(BlockStateRenderingData.of(blockState).withForcedBlockStateTooltip());
 
-                if (pickIcon.getItem() == null && blockIcon.getBlockStateExtension() != null)
+                if (pickIcon.isItemEmpty() && blockIcon.getBlockStateExtension() != null)
                 {
-                    blockIcon.getBlockStateExtension().itemStack().ifPresent(pickIcon::setItem);
+                    pickIcon.setItem(blockIcon.getBlockStateExtension().itemStack());
                 }
 
                 view.addChildPlain(blockIcon);

@@ -29,11 +29,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.block.AirBlock;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraftforge.common.CreativeModeTabRegistry;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -60,6 +60,9 @@ public class ItemIcon extends Pane
      * BlockState + BlockEntity ModelData override
      */
     private BlockStateRenderingData blockStateExtension;
+    private boolean renderItemAlongBlockState = false;
+
+    private boolean tooltipUpdateScheduled = false;
 
     /**
      * Standard constructor instantiating the itemIcon without any additional settings.
@@ -84,35 +87,52 @@ public class ItemIcon extends Pane
             final Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(itemName));
             if (item != null)
             {
-                setItem(item.getDefaultInstance());
-            }
-        }
+                final ItemStack newItemStack = item.getDefaultInstance();
 
-        final String nbt = params.getString("nbt");
-        if (nbt != null && itemStack != null)
-        {
-            try
-            {
-                itemStack.setTag(TagParser.parseTag(nbt));
-                processBlockStateFromCurrentItemStack();
-            }
-            catch (final CommandSyntaxException e)
-            {
-                Log.getLogger().error("Cannot parse item nbt", e);
+                final String nbt = params.getString("nbt");
+                if (nbt != null)
+                {
+                    try
+                    {
+                        newItemStack.setTag(TagParser.parseTag(nbt));
+                    }
+                    catch (final CommandSyntaxException e)
+                    {
+                        Log.getLogger().error("Cannot parse item nbt", e);
+                    }
+                }
+
+                setItem(newItemStack);
             }
         }
     }
 
     /**
-     * Set the item of the icon.
-     *
-     * @param itemStackIn the itemstack to set.
+     * @param renderItemAlongBlockState if true (and applicable) then will render itemStack before blockState rendering
      */
-    public void setItem(final ItemStack itemStackIn)
+    public void setRenderItemAlongBlockState(final boolean renderItemAlongBlockState)
     {
-        this.itemStack = itemStackIn;
-        processBlockStateFromCurrentItemStack();
-        updateTooltip();
+        this.renderItemAlongBlockState = renderItemAlongBlockState;
+    }
+
+    /**
+     * @return true if (applicable and) should render itemStack before blockState rendering
+     */
+    public boolean renderItemAlongBlockState()
+    {
+        return renderItemAlongBlockState;
+    }
+
+    /**
+     * Set the item of the icon. Will render as blockState if stack nbt contains blockState tag.
+     *
+     * @param itemStack the itemstack to set.
+     */
+    public void setItem(final ItemStack itemStack)
+    {
+        this.itemStack = itemStack;
+        clearBlockStateAndUpdateTooltip();
+        readBlockStateFromCurrentItemStack();
     }
 
     /**
@@ -126,60 +146,83 @@ public class ItemIcon extends Pane
     }
 
     /**
-     * Overrides itemstack rendering with custom blockstate
+     * Sets itemStack from blockState.
+     * 
+     * @see #setItem(ItemStack) equivalent of setItem(ItemStack)
      */
-    public void setBlockStateOverride(@Nullable final BlockState blockState)
+    public void setItemFromBlockState(final BlockState blockState, @Nullable final BlockEntity blockEntity)
     {
-        setBlockStateOverride(blockState == null ? null : BlockStateRenderingData.of(blockState));
+        setItemFromBlockState(BlockStateRenderingData.of(blockState, blockEntity));
     }
 
     /**
-     * Overrides itemstack rendering with custom blockstate
+     * Sets itemStack from blockState.
+     * 
+     * @see #setItem(ItemStack) equivalent of setItem(ItemStack)
      */
-    public void setBlockStateOverride(@Nullable final BlockStateRenderingData blockStateExtension)
+    public void setItemFromBlockState(final BlockStateRenderingData blockStateExtension)
     {
-        if (blockStateExtension != null)
+        clearBlockStateAndUpdateTooltip();
+
+        itemStack = blockStateExtension.itemStack();
+        if (itemStack.isEmpty() && !(blockStateExtension.blockState().getBlock() instanceof AirBlock))
         {
-            itemStack = blockStateExtension.itemStack().orElse(ItemStack.EMPTY);
-            if (itemStack.isEmpty() && !(blockStateExtension.blockState().getBlock() instanceof AirBlock))
-            {
-                Log.getLogger().warn("Cannot create proper itemStack for: " + blockStateExtension.blockState().toString());
-            }
-            if (!itemStack.isEmpty() && blockStateExtension.blockEntity() != null)
-            {
-                blockStateExtension.blockEntity().saveToItem(itemStack);
-            }
+            Log.getLogger().warn("Cannot create proper itemStack for: " + blockStateExtension.blockState().toString());
         }
+        if (!itemStack.isEmpty() && blockStateExtension.blockEntity() != null)
+        {
+            blockStateExtension.blockEntity().saveToItem(itemStack);
+        }
+    }
+
+    /**
+     * Overrides itemStack rendering with custom blockState.
+     * Sets itemStack from blockState
+     */
+    public void setBlockStateOverride(final BlockState blockState, @Nullable final BlockEntity blockEntity)
+    {
+        setBlockStateOverride(BlockStateRenderingData.of(blockState, blockEntity));
+    }
+
+    /**
+     * Overrides itemStack rendering with custom blockState.
+     * Sets itemStack from blockState
+     */
+    public void setBlockStateOverride(final BlockStateRenderingData blockStateExtension)
+    {
+        setItemFromBlockState(blockStateExtension);
         setBlockStateWeakOverride(blockStateExtension);
     }
 
     /**
      * Overrides itemstack rendering with custom blockstate. Does not check for itemStack block vs blockState equality
      */
-    public void setBlockStateWeakOverride(@Nullable final BlockStateRenderingData blockStateExtension)
+    public void setBlockStateWeakOverride(final BlockStateRenderingData blockStateExtension)
     {
-        // should catch barriers and similar and make them render as normal itemstack
-        if (blockStateExtension != null &&
-            blockStateExtension.blockState().getBlock() != Blocks.LIGHT &&
-            blockStateExtension.blockState().getRenderShape() == RenderShape.INVISIBLE &&
-            blockStateExtension.blockState().getFluidState().isEmpty() &&
-            blockStateExtension.blockEntity() == null)
+        clearBlockStateAndUpdateTooltip();
+        this.blockStateExtension = blockStateExtension;
+        
+        final BlockState bs = blockStateExtension.blockState();
+        // if it is invisible block without fluid or block entity then switch back to item rendering
+        if (bs.getRenderShape() == RenderShape.INVISIBLE && blockStateExtension.blockEntity() == null)
         {
-            this.blockStateExtension = null;
+            if (bs.getFluidState().isEmpty())
+            {
+                this.blockStateExtension = null;
+            }
+            // but if it is waterlogged then go for both?
+            else if (bs.hasProperty(BlockStateProperties.WATERLOGGED) && bs.getValue(BlockStateProperties.WATERLOGGED))
+            {
+                this.renderItemAlongBlockState = true;
+            }
         }
-        else
-        {
-            this.blockStateExtension = blockStateExtension;
-        }
-        updateTooltip();
     }
 
-    private void updateTooltip()
+    public void clearBlockStateAndUpdateTooltip()
     {
-        if (onHover instanceof final Tooltip tooltip)
-        {
-            tooltip.setTextOld(getModifiedItemStackTooltip());
-        }
+        blockStateExtension = null;
+        renderItemAlongBlockState = false;
+        tooltipUpdateScheduled = true;
     }
 
     public BlockStateRenderingData getBlockStateExtension()
@@ -187,7 +230,7 @@ public class ItemIcon extends Pane
         return blockStateExtension;
     }
 
-    protected boolean isEmpty()
+    public boolean isItemEmpty()
     {
         return (itemStack == null || itemStack.isEmpty()) && blockStateExtension == null;
     }
@@ -195,10 +238,18 @@ public class ItemIcon extends Pane
     @Override
     public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
-        final PoseStack ms = target.pose();
-
-        if (!isEmpty())
+        if (tooltipUpdateScheduled)
         {
+            if (onHover instanceof final Tooltip tooltip)
+            {
+                tooltip.setTextOld(getModifiedItemStackTooltip());
+            }
+            tooltipUpdateScheduled = false;
+        }
+
+        if (!isItemEmpty())
+        {
+            final PoseStack ms = target.pose();
             ms.pushPose();
             ms.translate(x, y, 0.0f);
             ms.scale(this.getWidth() / DEFAULT_ITEMSTACK_SIZE, this.getHeight() / DEFAULT_ITEMSTACK_SIZE, 1.0f);
@@ -209,7 +260,7 @@ public class ItemIcon extends Pane
             }
             else
             {
-                if (blockStateExtension.blockState().getBlock() == Blocks.LIGHT && itemStack != null)
+                if (renderItemAlongBlockState)
                 {
                     target.renderItem(itemStack, 0, 0);
                 }
@@ -230,7 +281,7 @@ public class ItemIcon extends Pane
     @Override
     public void onUpdate()
     {
-        if (onHover == null && !isEmpty())
+        if (onHover == null && !isItemEmpty())
         {
             PaneBuilders.tooltipBuilder().hoverPane(this).build().setTextOld(getModifiedItemStackTooltip());
         }
@@ -362,11 +413,8 @@ public class ItemIcon extends Pane
     /**
      * Extracts blockstate/modeldata from current itemstack
      */
-    protected void processBlockStateFromCurrentItemStack()
+    protected void readBlockStateFromCurrentItemStack()
     {
-        // remove old extension
-        blockStateExtension = null;
-
         if (!(itemStack.getItem() instanceof final BlockItem blockItem))
         {
             return;
@@ -409,7 +457,7 @@ public class ItemIcon extends Pane
             }
         }
 
-        blockStateExtension = BlockStateRenderingData.of(blockstate, be);
+        setBlockStateWeakOverride(BlockStateRenderingData.of(blockstate, be));
     }
 
     private static <T extends Comparable<T>> BlockState updateState(final BlockState state, final Property<T> property, final String valueName)
