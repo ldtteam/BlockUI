@@ -18,9 +18,9 @@ public class ClientLifecycleSubscriber
     @SubscribeEvent
     public static void onRegisterBlockColor(final RegisterColorHandlersEvent.Block event)
     {
-        // replace cauldron with plains default color
-        event.register((state, level, pos, p_92624_) -> {
-            return level != null && pos != null ? BiomeColors.getAverageWaterColor(level, pos) : 4159204;
-         }, Blocks.WATER_CAULDRON);
+        // replace cauldron with plains default color (4159204, with slighty more light in HSL += 8%)
+        event.register(
+            (state, level, pos, tintIndex) -> level != null && pos != null ? BiomeColors.getAverageWaterColor(level, pos) : 0x638fe9,
+            Blocks.WATER_CAULDRON);
     }
 }

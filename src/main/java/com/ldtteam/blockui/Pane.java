@@ -494,7 +494,7 @@ public class Pane extends UiRenderMacros
     @Nullable
     public <T extends Pane> T findPaneByType(final Class<T> type)
     {
-        return type.isAssignableFrom(this.getClass()) ? type.cast(this) : null;
+        return type.isInstance(this.getClass()) ? type.cast(this) : null;
     }
 
     /**
