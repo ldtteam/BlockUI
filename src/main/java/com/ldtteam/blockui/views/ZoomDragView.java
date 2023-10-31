@@ -128,9 +128,9 @@ public class ZoomDragView extends View
     }
 
     @Override
-    public void addChild(final Pane child)
+    public void postAddChild(final Pane child)
     {
-        super.addChild(child);
+        super.postAddChild(child);
         computeContentSize();
     }
 
