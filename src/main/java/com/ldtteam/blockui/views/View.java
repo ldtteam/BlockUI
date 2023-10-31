@@ -276,8 +276,24 @@ public class View extends Pane
      */
     public void addChild(final Pane child)
     {
-        child.setWindow(getWindow());
         children.add(child);
+        postAddChild(child);
+    }
+
+    /**
+     * Add child Pane to this view.
+     *
+     * @param child pane to add.
+     */
+    public void addChild(final Pane child, final int index)
+    {
+        children.add(index, child);
+        postAddChild(child);
+    }
+
+    protected void postAddChild(final Pane child)
+    {
+        child.setWindow(getWindow());
         adjustChild(child);
         child.setParentView(this);
     }
