@@ -28,8 +28,6 @@ import java.util.function.Function;
 public record BlockStateRenderingData(BlockState blockState,
     @Nullable BlockEntity blockEntity,
     ModelData modelData,
-    boolean renderItemDecorations,
-    boolean alwaysAddBlockStateTooltip,
     boolean modelNeedsRotationFix,
     Lazy<ItemStack> playerPickedItemStack)
 {
@@ -44,8 +42,6 @@ public record BlockStateRenderingData(BlockState blockState,
         this(blockState,
             blockEntity,
             modelData,
-            alwaysAddBlockStateTooltip,
-            alwaysAddBlockStateTooltip,
             checkModelForYrotation(blockState),
             Lazy.of(() -> BlockToItemHelper.getItemStack(blockState, blockEntity, Minecraft.getInstance().player)));
     }
@@ -76,48 +72,12 @@ public record BlockStateRenderingData(BlockState blockState,
     }
 
     /**
-     * @return will enable itemStack decorations like enchantment foil or itemStack count
-     */
-    public BlockStateRenderingData withItemDecorations()
-    {
-        return renderItemDecorations ? this :
-            new BlockStateRenderingData(blockState, blockEntity, modelData, true, alwaysAddBlockStateTooltip, modelNeedsRotationFix, playerPickedItemStack);
-    }
-
-    /**
-     * @return will disable itemStack decorations like enchantment foil or itemStack count
-     */
-    public BlockStateRenderingData withoutItemDecorations()
-    {
-        return !renderItemDecorations ? this :
-            new BlockStateRenderingData(blockState, blockEntity, modelData, false, alwaysAddBlockStateTooltip, modelNeedsRotationFix, playerPickedItemStack);
-    }
-
-    /**
-     * @return will forcibly show blockState properties in tooltip
-     */
-    public BlockStateRenderingData withForcedBlockStateTooltip()
-    {
-        return alwaysAddBlockStateTooltip ? this :
-            new BlockStateRenderingData(blockState, blockEntity, modelData, renderItemDecorations, true, modelNeedsRotationFix, playerPickedItemStack);
-    }
-
-    /**
-     * @return will on-demand show blockState properties in tooltip
-     */
-    public BlockStateRenderingData withoutForcedBlockStateTooltip()
-    {
-        return !alwaysAddBlockStateTooltip ? this :
-            new BlockStateRenderingData(blockState, blockEntity, modelData, renderItemDecorations, false, modelNeedsRotationFix, playerPickedItemStack);
-    }
-
-    /**
      * Useful when you want to update blockEntity. Keeps modelData in sync
      */
     public BlockStateRenderingData updateBlockEntity(final Function<BlockEntity, BlockEntity> updater)
     {
         final BlockEntity updated = updater.apply(blockEntity);
-        return new BlockStateRenderingData(blockState, updated, getModelData(blockState, updated), renderItemDecorations, alwaysAddBlockStateTooltip, modelNeedsRotationFix, Lazy.of(() -> BlockToItemHelper.getItemStack(blockState, blockEntity, Minecraft.getInstance().player)));
+        return new BlockStateRenderingData(blockState, updated, getModelData(blockState, updated), modelNeedsRotationFix, Lazy.of(() -> BlockToItemHelper.getItemStack(blockState, blockEntity, Minecraft.getInstance().player)));
     }
 
     public ModelData modelData()

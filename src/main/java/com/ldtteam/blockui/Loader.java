@@ -44,7 +44,7 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
         register("image", Image::new);
         register("imagerepeat", ImageRepeatable::new);
         register("box", Box::new);
-        register("itemicon", ItemIcon::new);
+        register("itemicon", ItemIconWithBlockState::new);
         register("entityicon", EntityIcon::new);
         register("switch", SwitchView::new);
         register("dropdown", DropDownList::new);

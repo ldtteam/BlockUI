@@ -2,6 +2,7 @@ package com.ldtteam.blockui.mod;
 
 import com.ldtteam.blockui.PaneBuilders;
 import com.ldtteam.blockui.controls.ItemIcon;
+import com.ldtteam.blockui.controls.ItemIconWithBlockState;
 import com.ldtteam.blockui.controls.Text;
 import com.ldtteam.blockui.controls.Tooltip;
 import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
@@ -50,14 +51,15 @@ public class BlockStateTestGui
             int x = 35 + text.getWidth();
             for (final BlockState blockState : block.getStateDefinition().getPossibleStates())
             {
-                final ItemIcon blockIcon = new ItemIcon();
+                final ItemIconWithBlockState blockIcon = new ItemIconWithBlockState();
                 blockIcon.setPosition(x, rowY);
                 blockIcon.setSize(16, 16);
-                blockIcon.setBlockStateOverride(BlockStateRenderingData.of(blockState).withForcedBlockStateTooltip());
+                blockIcon.setAlwaysAddBlockStateTooltip(true);
+                blockIcon.setBlockState(blockState, null);
 
-                if (pickIcon.isItemEmpty() && blockIcon.getBlockStateExtension() != null)
+                if (pickIcon.isDataEmpty() && blockIcon.getBlockState() != null)
                 {
-                    pickIcon.setItem(blockIcon.getBlockStateExtension().itemStack());
+                    pickIcon.setItem(blockIcon.getBlockState().itemStack());
                 }
 
                 view.addChildPlain(blockIcon);
