@@ -1,16 +1,22 @@
 package com.ldtteam.blockui.mod;
 
 import com.ldtteam.blockui.BOScreen;
+import com.ldtteam.blockui.Pane;
+import com.ldtteam.blockui.controls.Text;
 import com.ldtteam.blockui.hooks.HookManager;
 import com.ldtteam.blockui.hooks.HookRegistries;
 import com.ldtteam.blockui.mod.container.ContainerHook;
+import com.ldtteam.blockui.util.records.SizeI;
 import com.ldtteam.blockui.views.BOWindow;
+import com.ldtteam.blockui.views.ScrollingList;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.util.Tuple;
 import net.minecraftforge.client.event.InputEvent.MouseScrollingEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
@@ -22,6 +28,7 @@ import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 public class ClientEventSubscriber
@@ -61,6 +68,47 @@ public class ClientEventSubscriber
             else if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_C))
             {
                 new BOWindow(new ResourceLocation(BlockUI.MOD_ID, "gui/test2.xml")).open();
+            }
+            else if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_Z))
+            {
+                final BOWindow boWindow3 = new BOWindow(new ResourceLocation(BlockUI.MOD_ID, "gui/test3.xml"));
+                boWindow3.open();
+
+                final ScrollingList list1 = boWindow3.findPaneOfTypeByID("list1", ScrollingList.class);
+                list1.setDataProvider(new ScrollingList.DataProvider() {
+                    @Override
+                    public int getElementCount()
+                    {
+                        return 10;
+                    }
+
+                    @Override
+                    public void updateElement(final int index, final Pane rowPane)
+                    {
+                        rowPane.findPaneByType(Text.class).setText(Component.literal("Hi " + index));
+                    }
+                });
+
+                final ScrollingList list2 = boWindow3.findPaneOfTypeByID("list2", ScrollingList.class);
+                list2.setDataProvider(new ScrollingList.DataProvider() {
+                    @Override
+                    public int getElementCount()
+                    {
+                        return 10;
+                    }
+
+                    @Override
+                    public SizeI.@Nullable MutableSizeI getElementSize(final int index, final Pane rowPane)
+                    {
+                        return index % 2 == 0 ? new SizeI.MutableSizeI(100, 40) : null;
+                    }
+
+                    @Override
+                    public void updateElement(final int index, final Pane rowPane)
+                    {
+                        rowPane.findPaneByType(Text.class).setText(Component.literal("Hi " + index));
+                    }
+                });
             }
         }
 

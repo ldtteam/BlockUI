@@ -3,14 +3,14 @@ package com.ldtteam.blockui.views;
 import com.ldtteam.blockui.Loader;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
+import com.ldtteam.blockui.util.records.SizeI;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * A Blockout pane that contains a scrolling line of other panes.
  */
 public class ScrollingListContainer extends ScrollingContainer
 {
-    private int listElementHeight = 0;
-
     ScrollingListContainer(final ScrollingList owner)
     {
         super(owner);
@@ -24,36 +24,41 @@ public class ScrollingListContainer extends ScrollingContainer
      */
     public void refreshElementPanes(final ScrollingList.DataProvider dataProvider, final PaneParams listNodeParams, final int height, final int childSpacing)
     {
+        int currentYpos = 0;
+
         final int numElements = (dataProvider != null) ? dataProvider.getElementCount() : 0;
         if (dataProvider != null)
         {
             for (int i = 0; i < numElements; ++i)
             {
                 final Pane child;
-                final int childYpos = (childSpacing + listElementHeight) * i;
-                if (childYpos + listElementHeight >= scrollY && childYpos <= scrollY + height)
+                if (i < children.size())
                 {
-                    if (i < children.size())
+                    child = children.get(i);
+                }
+                else
+                {
+                    child = Loader.createFromPaneParams(listNodeParams, this);
+                    if (child == null)
                     {
-                        child = children.get(i);
+                        continue;
                     }
-                    else
-                    {
-                        child = Loader.createFromPaneParams(listNodeParams, this);
-                        if (child == null)
-                        {
-                            continue;
-                        }
+                }
 
-                        if (i == 0)
-                        {
-                            listElementHeight = child.getHeight() + childSpacing;
-                        }
-                    }
-                    child.setPosition(0, childYpos);
+                child.setPosition(0, currentYpos);
 
+                final @Nullable SizeI.MutableSizeI customElementSize = dataProvider.getElementSize(i, child);
+                if (customElementSize != null)
+                {
+                    child.setSize(customElementSize.width, customElementSize.height);
+                }
+
+                if (currentYpos + child.getHeight() >= scrollY && currentYpos <= scrollY + height)
+                {
                     dataProvider.updateElement(i, child);
                 }
+
+                currentYpos += child.getHeight() + childSpacing;
             }
         }
 
@@ -62,7 +67,7 @@ public class ScrollingListContainer extends ScrollingContainer
             removeChild(children.get(numElements));
         }
 
-        setContentHeight(numElements * (listElementHeight + childSpacing) - childSpacing);
+        setContentHeight(currentYpos - childSpacing);
     }
 
     /**
@@ -85,33 +90,5 @@ public class ScrollingListContainer extends ScrollingContainer
         }
 
         return getChildren().indexOf(parentPane);
-    }
-
-    /**
-     * This is an optimized version that relies on the fixed size and order of children to quickly determine.
-     *
-     * @param mx Mouse X, relative to the top-left of this Pane.
-     * @param my Mouse Y, relative to the top-left of this Pane.
-     * @return a Pane that will handle a click action.
-     */
-    @Override
-    public Pane findPaneForClick(final double mx, final double my)
-    {
-        if (children.isEmpty() || listElementHeight == 0)
-        {
-            return null;
-        }
-
-        final int listElement = (int) my / listElementHeight;
-        if (listElement < children.size())
-        {
-            final Pane child = children.get(listElement);
-            if (child.canHandleClick(mx, my))
-            {
-                return child;
-            }
-        }
-
-        return null;
     }
 }
