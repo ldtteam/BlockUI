@@ -16,7 +16,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.util.Tuple;
 import net.minecraftforge.client.event.InputEvent.MouseScrollingEvent;
 import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.event.RenderLevelLastEvent;
@@ -98,9 +97,9 @@ public class ClientEventSubscriber
                     }
 
                     @Override
-                    public SizeI.@Nullable MutableSizeI getElementSize(final int index, final Pane rowPane)
+                    public @Nullable SizeI getElementSize(final int index, final Pane rowPane)
                     {
-                        return index % 2 == 0 ? new SizeI.MutableSizeI(100, 40) : null;
+                        return index % 2 == 0 ? new SizeI(100, 40) : null;
                     }
 
                     @Override

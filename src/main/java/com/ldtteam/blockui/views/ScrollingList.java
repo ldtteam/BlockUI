@@ -3,7 +3,6 @@ package com.ldtteam.blockui.views;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.util.records.SizeI;
-import net.minecraft.util.Tuple;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -142,8 +141,7 @@ public class ScrollingList extends ScrollingView
          * @param rowPane the parent Pane for the row, containing the elements to update
          * @return a new size for the element, or null to use the template element size.
          */
-        @Nullable
-        default SizeI.MutableSizeI getElementSize(int index, Pane rowPane)
+        default @Nullable SizeI getElementSize(int index, Pane rowPane)
         {
             return null;
         }
