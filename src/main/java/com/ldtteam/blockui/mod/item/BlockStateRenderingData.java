@@ -33,11 +33,10 @@ public record BlockStateRenderingData(BlockState blockState,
 {
     public static final BlockPos ILLEGAL_BLOCK_ENTITY_POS = BlockPos.ZERO.below(1000);
 
-    public BlockStateRenderingData(BlockState blockState,
-        BlockEntity blockEntity,
-        ModelData modelData,
-        boolean renderItemDecorations,
-        boolean alwaysAddBlockStateTooltip)
+    private BlockStateRenderingData(final BlockState blockState,
+        final BlockEntity blockEntity,
+        final ModelData modelData,
+        final boolean modelNeedsRotationFix)
     {
         this(blockState,
             blockEntity,
@@ -46,13 +45,17 @@ public record BlockStateRenderingData(BlockState blockState,
             Lazy.of(() -> BlockToItemHelper.getItemStack(blockState, blockEntity, Minecraft.getInstance().player)));
     }
 
+    public BlockStateRenderingData(final BlockState blockState, final BlockEntity blockEntity, final ModelData modelData)
+    {
+        this(blockState, blockEntity, modelData, checkModelForYrotation(blockState));
+    }
+
     /**
      * @param blockEntity must match blockState
      */
     public static BlockStateRenderingData of(final BlockState blockState, @Nullable final BlockEntity blockEntity)
     {
-        return blockEntity == null ? of(blockState) :
-            new BlockStateRenderingData(blockState, blockEntity, getModelData(blockState, blockEntity), true, false);
+        return blockEntity == null ? of(blockState) : new BlockStateRenderingData(blockState, blockEntity, getModelData(blockState, blockEntity));
     }
 
     /**
@@ -68,7 +71,7 @@ public record BlockStateRenderingData(BlockState blockState,
                 return of(blockState, be);
             }
         }
-        return new BlockStateRenderingData(blockState, null, null, true, false);
+        return new BlockStateRenderingData(blockState, null, null);
     }
 
     /**
@@ -77,7 +80,7 @@ public record BlockStateRenderingData(BlockState blockState,
     public BlockStateRenderingData updateBlockEntity(final Function<BlockEntity, BlockEntity> updater)
     {
         final BlockEntity updated = updater.apply(blockEntity);
-        return new BlockStateRenderingData(blockState, updated, getModelData(blockState, updated), modelNeedsRotationFix, Lazy.of(() -> BlockToItemHelper.getItemStack(blockState, blockEntity, Minecraft.getInstance().player)));
+        return new BlockStateRenderingData(blockState, updated, getModelData(blockState, updated), modelNeedsRotationFix);
     }
 
     public ModelData modelData()

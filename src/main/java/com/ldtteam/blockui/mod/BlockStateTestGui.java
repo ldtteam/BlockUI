@@ -59,7 +59,7 @@ public class BlockStateTestGui
 
                 if (pickIcon.isDataEmpty() && blockIcon.getBlockState() != null)
                 {
-                    pickIcon.setItem(blockIcon.getBlockState().itemStack());
+                    pickIcon.setItemFromBlockState(blockIcon.getBlockState());
                 }
 
                 view.addChildPlain(blockIcon);

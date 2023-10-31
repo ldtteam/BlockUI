@@ -136,6 +136,8 @@ public class ItemIcon extends Pane
     {
         clearDataAndScheduleTooltipUpdate();
 
+        // intentionally not calling setItem cuz iconWithBlock would replace its internal data
+        // end-users should use setBlockState of iconWithBlock if they want to set both
         itemStack = blockStateExtension.itemStack();
         if (itemStack.isEmpty() && !(blockStateExtension.blockState().getBlock() instanceof AirBlock))
         {
@@ -199,7 +201,7 @@ public class ItemIcon extends Pane
     @Override
     public void onUpdate()
     {
-        if (onHover == null && !isDataEmpty())
+        if (onHover == null && itemStack != null && !itemStack.isEmpty())
         {
             PaneBuilders.tooltipBuilder().hoverPane(this).build().setTextOld(getModifiedItemStackTooltip());
         }
@@ -216,8 +218,9 @@ public class ItemIcon extends Pane
     }
 
     /**
-     * prevTooltipSize: if you add elements which are always shown, then add their count to this value
-     * if you add elements that are wrapped via ToggleableTextComponent and want to display
+     * prevTooltipSize: This value if for determining whether to append "show more info" text or not.
+     * If you add elements which are wrapped via ToggleableTextComponent (and want to show "show more info" text), then add their count to this value.
+     * else if you want to hide the text then set this value to {@code tooltipList.size()}
      * 
      * @param tooltipList tooltip to modify
      * @param prevTooltipSize tooltip size before any modifications

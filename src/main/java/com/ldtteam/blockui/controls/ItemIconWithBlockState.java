@@ -146,29 +146,21 @@ public class ItemIconWithBlockState extends ItemIcon
             final MutableComponent name = Component.translatable(nameTKey);
             final MutableComponent nameKey = Component.literal(key.toString()).withStyle(ChatFormatting.DARK_GRAY);
 
-            if (tooltipList.isEmpty())
+            // add block name if present and differs from item
+            if (!tooltipList.get(0).getString().equals(name.getString()) && !name.getString().equals(nameTKey))
             {
-                tooltipList.add(name);
-                tooltipList.add(nameKey);
+                tooltipList.add(nameOffset, name.withStyle(ChatFormatting.GRAY));
+                nameOffset++;
             }
-            else
-            {
-                // add block name if present and differs from item
-                if (!tooltipList.get(0).getString().equals(name.getString()) && !name.getString().equals(nameTKey))
-                {
-                    tooltipList.add(1, name.withStyle(ChatFormatting.GRAY));
-                    nameOffset++;
-                }
 
-                // replace id with blockstate id
-                for (int i = tooltipList.size() - 1; i >= 0; i--)
+            // replace id with blockstate id
+            for (int i = tooltipList.size() - 1; i >= 0; i--)
+            {
+                if (tooltipList.get(i).getContents() instanceof final LiteralContents literalContents &&
+                    ResourceLocation.isValidResourceLocation(literalContents.text()))
                 {
-                    if (tooltipList.get(i).getContents() instanceof final LiteralContents literalContents &&
-                        ResourceLocation.isValidResourceLocation(literalContents.text()))
-                    {
-                        tooltipList.set(i, nameKey);
-                        break;
-                    }
+                    tooltipList.set(i, nameKey);
+                    break;
                 }
             }
         }
