@@ -47,10 +47,10 @@ public class ScrollingListContainer extends ScrollingContainer
 
                 child.setPosition(0, currentYpos);
 
-                final @Nullable SizeI.MutableSizeI customElementSize = dataProvider.getElementSize(i, child);
+                final @Nullable SizeI customElementSize = dataProvider.getElementSize(i, child);
                 if (customElementSize != null)
                 {
-                    child.setSize(customElementSize.width, customElementSize.height);
+                    child.setSize(customElementSize.width(), customElementSize.height());
                 }
 
                 if (currentYpos + child.getHeight() >= scrollY && currentYpos <= scrollY + height)
