@@ -13,7 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.Objects;
 
 import net.minecraft.util.Mth;
-import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.neoforged.fml.loading.FMLEnvironment;
 
 /**
  * Clickable image.

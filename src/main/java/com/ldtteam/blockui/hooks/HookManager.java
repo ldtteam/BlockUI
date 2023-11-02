@@ -4,7 +4,7 @@ import com.ldtteam.blockui.mod.Log;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.registries.IForgeRegistry;
+import net.neoforged.neoforge.registries.IForgeRegistry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

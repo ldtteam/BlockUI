@@ -22,8 +22,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraftforge.client.ForgeHooksClient;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.neoforge.client.ClientHooks;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 
@@ -113,7 +113,7 @@ public class BOGuiGraphics extends GuiGraphics
         pose().translate(8, 8, 150);
         pose().mulPoseMatrix(new Matrix4f().scaling(1.0F, -1.0F, 1.0F));
         pose().scale(16.0F, 16.0F, 16.0F);
-        ForgeHooksClient.handleCameraTransforms(pose(), itemModel, ItemDisplayContext.GUI, false);
+        ClientHooks.handleCameraTransforms(pose(), itemModel, ItemDisplayContext.GUI, false);
 
         if (data.modelNeedsRotationFix())
         {

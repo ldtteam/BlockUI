@@ -3,9 +3,9 @@ package com.ldtteam.blockui.mod;
 import com.ldtteam.blockui.Loader;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
-import net.minecraftforge.client.event.RegisterColorHandlersEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
 
 public class ClientLifecycleSubscriber
 {

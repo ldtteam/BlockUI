@@ -13,7 +13,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.client.ForgeRenderTypes;
+import net.neoforged.neoforge.client.NeoForgeRenderTypes;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.Objects;
@@ -61,8 +61,8 @@ public class BOScreen extends Screen
         final int guiWidth = Math.max(framebufferWidth, 320);
         final int guiHeight = Math.max(framebufferHeight, 240);
 
-        final boolean oldFilteringValue = ForgeRenderTypes.enableTextTextureLinearFiltering;
-        ForgeRenderTypes.enableTextTextureLinearFiltering = false;
+        final boolean oldFilteringValue = NeoForgeRenderTypes.enableTextTextureLinearFiltering;
+        NeoForgeRenderTypes.enableTextTextureLinearFiltering = false;
 
         mcScale = ms.minecraft.getWindow().getGuiScale();
         renderScale = window.getRenderType().calcRenderScale(ms.minecraft.getWindow(), window);
@@ -124,7 +124,7 @@ public class BOScreen extends Screen
             RenderSystem.setProjectionMatrix(oldProjection, VertexSorting.ORTHOGRAPHIC_Z);
             RenderSystem.applyModelViewMatrix();
 
-            ForgeRenderTypes.enableTextTextureLinearFiltering = oldFilteringValue;
+            NeoForgeRenderTypes.enableTextTextureLinearFiltering = oldFilteringValue;
         }
     }
 

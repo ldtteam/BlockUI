@@ -17,8 +17,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-
+import net.neoforged.fml.loading.FMLEnvironment;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.NoSuchFileException;

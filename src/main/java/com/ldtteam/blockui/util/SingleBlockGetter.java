@@ -13,8 +13,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraftforge.server.ServerLifecycleHooks;
-
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import javax.annotation.Nullable;
 
 /**
