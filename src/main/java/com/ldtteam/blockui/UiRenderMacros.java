@@ -1,11 +1,8 @@
 package com.ldtteam.blockui;
 
-import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
 import com.ldtteam.blockui.util.texture.OutOfJarTexture;
 import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -19,14 +16,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
-import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
-import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import java.io.IOException;
 
 /**
  * Our replacement for GuiComponent.

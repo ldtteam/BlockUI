@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import com.ldtteam.blockui.Color;
 import com.ldtteam.blockui.Pane;
+import com.ldtteam.blockui.controls.Tooltip.AutomaticTooltip;
 import com.ldtteam.blockui.util.SpacerTextComponent;
 
 import net.minecraft.network.chat.Component;
@@ -380,9 +381,22 @@ public abstract class AbstractTextBuilder<P extends AbstractTextElement, R exten
         return new ArrayList<>(text); // copy, so different elements are not backed by the same list
     }
 
+    public static class AutomaticTooltipBuilder extends TooltipBuilder
+    {
+        public AutomaticTooltipBuilder()
+        {
+            super(AutomaticTooltip::new);
+        }
+    }
+
     public static class TooltipBuilder extends AbstractTextBuilder<Tooltip, TooltipBuilder>
     {
         private Pane hoverPane;
+
+        protected TooltipBuilder(final Supplier<Tooltip> paneFactory)
+        {
+            super(paneFactory, Tooltip.DEFAULT_TEXT_COLOR);
+        }
 
         @SuppressWarnings("deprecation")
         public TooltipBuilder()

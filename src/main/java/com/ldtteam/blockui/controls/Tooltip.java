@@ -3,6 +3,7 @@ package com.ldtteam.blockui.controls;
 import java.util.Collections;
 import com.ldtteam.blockui.Alignment;
 import com.ldtteam.blockui.BOScreen;
+import com.ldtteam.blockui.PaneBuilders;
 import com.ldtteam.blockui.PaneParams;
 import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -34,8 +35,8 @@ public class Tooltip extends AbstractTextElement
     /**
      * Standard constructor which instantiates the tooltip.
      * 
-     * @see com.ldtteam.blockui.PaneBuilders#tooltipBuilder()
-     * @deprecated {@link com.ldtteam.blockui.PaneBuilders#tooltipBuilder()}
+     * @see PaneBuilders#tooltipBuilder()
+     * @deprecated {@link PaneBuilders#tooltipBuilder()}
      */
     @Deprecated
     public Tooltip()
@@ -229,5 +230,12 @@ public class Tooltip extends AbstractTextElement
     {
         // untargetable element
         return false;
+    }
+
+    /**
+     * Class to mark tooltip which has automatically generated content
+     */
+    public static final class AutomaticTooltip extends Tooltip
+    {
     }
 }

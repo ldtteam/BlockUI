@@ -3,6 +3,7 @@ package com.ldtteam.blockui.views;
 import com.ldtteam.blockui.MouseEventCallback;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
+import com.ldtteam.blockui.controls.AbstractTextElement;
 import com.ldtteam.blockui.util.cursor.Cursor;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.util.Mth;
@@ -245,6 +246,14 @@ public class ZoomDragView extends View
             final double oldX = (childX + scrollX) / scale;
             final double oldY = (childY + scrollY) / scale;
             scale = wheel < 0 ? scale / zoomFactor : scale * zoomFactor;
+
+            // try to round if around whole number (cuz of text texture)
+            final double rounded = Math.rint(scale);
+            if (Math.abs(scale - rounded) < 3 * AbstractTextElement.FILTERING_THRESHOLD)
+            {
+                scale = rounded;
+            }
+
             scale = Mth.clamp(scale, minScale, maxScale);
             setScrollX(oldX * scale - childX);
             setScrollY(oldY * scale - childY);

@@ -25,12 +25,12 @@ public class BOWindow extends View
     /**
      * The default width.
      */
-    protected static final int DEFAULT_WIDTH = 420;
+    public static final int DEFAULT_WIDTH = 420;
 
     /**
      * The default height.
      */
-    protected static final int DEFAULT_HEIGHT = 240;
+    public static final int DEFAULT_HEIGHT = 240;
 
     /**
      * The screen of the window.
@@ -245,7 +245,6 @@ public class BOWindow extends View
     public void close()
     {
         Minecraft.getInstance().popGuiLayer();
-        this.mc.player.closeContainer();
     }
 
     /**

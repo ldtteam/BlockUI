@@ -2,8 +2,11 @@ package com.ldtteam.blockui.controls;
 
 import com.ldtteam.blockui.MatrixUtils;
 import com.ldtteam.blockui.Pane;
-import com.ldtteam.blockui.PaneBuilders;
 import com.ldtteam.blockui.PaneParams;
+import com.ldtteam.blockui.controls.AbstractTextBuilder.AutomaticTooltipBuilder;
+import com.ldtteam.blockui.controls.Tooltip.AutomaticTooltip;
+import com.ldtteam.blockui.mod.Log;
+import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
 import com.ldtteam.blockui.util.SpacerTextComponent;
 import com.ldtteam.blockui.util.ToggleableTextComponent;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -20,8 +23,12 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.minecraft.world.level.block.AirBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraftforge.common.CreativeModeTabRegistry;
 import net.minecraftforge.registries.ForgeRegistries;
-
+import org.jetbrains.annotations.Nullable;
 import java.util.Collections;
 import java.util.List;
 
@@ -30,13 +37,20 @@ import java.util.List;
  */
 public class ItemIcon extends Pane
 {
-    private static final float DEFAULT_ITEMSTACK_SIZE = 16f;
-    private static final MutableComponent FIX_VANILLA_TOOLTIP = SpacerTextComponent.of(1);
+    protected static final float DEFAULT_ITEMSTACK_SIZE = 16f;
+    protected static final MutableComponent FIX_VANILLA_TOOLTIP = SpacerTextComponent.of(1);
 
     /**
      * ItemStack represented in the itemIcon.
      */
-    private ItemStack itemStack;
+    @Nullable
+    protected ItemStack itemStack;
+
+    /**
+     * If true then on next frame tooltip content will recompile
+     */
+    protected boolean tooltipUpdateScheduled = false;
+    protected boolean renderItemDecorations = true;
 
     /**
      * Standard constructor instantiating the itemIcon without any additional settings.
@@ -64,20 +78,19 @@ public class ItemIcon extends Pane
                 setItem(item.getDefaultInstance());
             }
         }
+
+        this.renderItemDecorations = params.getBoolean("renderItemDecorations", renderItemDecorations);
     }
 
     /**
-     * Set the item of the icon.
+     * Set the item of the icon. Will render as blockState if stack nbt contains blockState tag.
      *
-     * @param itemStackIn the itemstack to set.
+     * @param itemStack the itemstack to set.
      */
-    public void setItem(final ItemStack itemStackIn)
+    public void setItem(final ItemStack itemStack)
     {
-        this.itemStack = itemStackIn;
-        if (onHover instanceof final Tooltip tooltip)
-        {
-            tooltip.setTextOld(getModifiedItemStackTooltip());
-        }
+        clearDataAndScheduleTooltipUpdate();
+        this.itemStack = itemStack;
     }
 
     /**
@@ -90,11 +103,87 @@ public class ItemIcon extends Pane
         return this.itemStack;
     }
 
+    /**
+     * @param renderDecorations true if should render itemStack decorations (enchantment foil, itemStack count, ...)
+     */
+    public void setRenderItemDecorations(final boolean renderDecorations)
+    {
+        this.renderItemDecorations = renderDecorations;
+    }
+
+    /**
+     * @return true if shoudl render itemStack decorations (enchantment foil, itemStack count, ...)
+     */
+    public boolean renderItemDecorations()
+    {
+        return renderItemDecorations;
+    }
+
+    /**
+     * Sets itemStack from blockState.
+     * 
+     * @see #setItem(ItemStack) equivalent of setItem(ItemStack)
+     */
+    public void setItemFromBlockState(final BlockState blockState, @Nullable final BlockEntity blockEntity)
+    {
+        setItemFromBlockState(BlockStateRenderingData.of(blockState, blockEntity));
+    }
+
+    /**
+     * Sets itemStack from blockState.
+     * 
+     * @see #setItem(ItemStack) equivalent of setItem(ItemStack)
+     */
+    public void setItemFromBlockState(final BlockStateRenderingData blockStateExtension)
+    {
+        clearDataAndScheduleTooltipUpdate();
+
+        // intentionally not calling setItem cuz iconWithBlock would replace its internal data
+        // end-users should use setBlockState of iconWithBlock if they want to set both
+        itemStack = blockStateExtension.itemStack();
+        if (itemStack.isEmpty() && !(blockStateExtension.blockState().getBlock() instanceof AirBlock))
+        {
+            Log.getLogger().warn("Cannot create proper itemStack for: " + blockStateExtension.blockState().toString());
+        }
+        if (!itemStack.isEmpty() && blockStateExtension.blockEntity() != null)
+        {
+            blockStateExtension.blockEntity().saveToItem(itemStack);
+        }
+    }
+
+    /**
+     * Resets all data in this item icon, effectively making it empty.
+     */
+    public void clearDataAndScheduleTooltipUpdate()
+    {
+        itemStack = null;
+        tooltipUpdateScheduled = true;
+    }
+
+    public boolean isDataEmpty()
+    {
+        return itemStack == null || itemStack.isEmpty();
+    }
+
+    protected void updateTooltipIfNeeded()
+    {
+        if (tooltipUpdateScheduled)
+        {
+            if (onHover instanceof final AutomaticTooltip tooltip)
+            {
+                tooltip.setTextOld(getModifiedItemStackTooltip());
+            }
+            tooltipUpdateScheduled = false;
+        }
+    }
+
     @Override
     public void drawSelf(final PoseStack ms, final double mx, final double my)
     {
-        if (itemStack != null && !itemStack.isEmpty())
+        updateTooltipIfNeeded();
+        if (!isDataEmpty())
         {
+            final PoseStack ms = target.pose();
             ms.pushPose();
             ms.translate(x, y, 0.0f);
             ms.scale(this.getWidth() / DEFAULT_ITEMSTACK_SIZE, this.getHeight() / DEFAULT_ITEMSTACK_SIZE, 1.0f);
@@ -107,7 +196,10 @@ public class ItemIcon extends Pane
             }
 
             mc.getItemRenderer().renderAndDecorateItem(itemStack, 0, 0);
-            mc.getItemRenderer().renderGuiItemDecorations(font, itemStack, 0, 0);
+            if (renderItemDecorations)
+            {
+                mc.getItemRenderer().renderGuiItemDecorations(font, itemStack, 0, 0);
+            }
 
             RenderSystem.defaultBlendFunc();
             RenderSystem.disableBlend();
@@ -121,8 +213,32 @@ public class ItemIcon extends Pane
     {
         if (onHover == null && itemStack != null && !itemStack.isEmpty())
         {
-            PaneBuilders.tooltipBuilder().hoverPane(this).build().setTextOld(getModifiedItemStackTooltip());
+            new AutomaticTooltipBuilder().hoverPane(this).build().setTextOld(getModifiedItemStackTooltip());
         }
+    }
+
+    /**
+     * @param tooltipList tooltip to modify
+     * @param nameOffset points to element right after last name element
+     * @return incremented name offset (if other names were added)
+     */
+    protected int modifyTooltipName(final List<Component> tooltipList, final TooltipFlag tooltipFlags, final int nameOffset)
+    {
+        return nameOffset;
+    }
+
+    /**
+     * prevTooltipSize: This value if for determining whether to append "show more info" text or not.
+     * If you add elements which are wrapped via ToggleableTextComponent (and want to show "show more info" text), then add their count to this value.
+     * else if you want to hide the text then set this value to {@code tooltipList.size()}
+     * 
+     * @param tooltipList tooltip to modify
+     * @param prevTooltipSize tooltip size before any modifications
+     * @return new prevTooltipSize
+     */
+    protected int appendTooltip(final List<Component> tooltipList, final TooltipFlag tooltipFlags, final int prevTooltipSize)
+    {
+        return prevTooltipSize;
     }
 
     /**
@@ -133,35 +249,56 @@ public class ItemIcon extends Pane
      */
     public List<Component> getModifiedItemStackTooltip()
     {
-        if (itemStack == null)
+        if (isDataEmpty())
         {
             return Collections.emptyList();
         }
 
         TooltipFlag.Default tooltipFlags = mc.options.advancedItemTooltips ? TooltipFlag.Default.ADVANCED : TooltipFlag.Default.NORMAL;
 
-        final List<Component> result = itemStack.getTooltipLines(mc.player, tooltipFlags);
+        final List<Component> tooltipList = itemStack.getTooltipLines(mc.player, tooltipFlags);
+        int nameOffset = 1;
 
-        if (tooltipFlags.isAdvanced() && mc.player.isCreative())
+        nameOffset = modifyTooltipName(tooltipList, tooltipFlags, nameOffset);
+
+        int prevTooltipSize = tooltipList.size();
+        if (tooltipFlags.advanced() && tooltipFlags.creative())
         {
-            final Item item = itemStack.getItem();
-            ForgeRegistries.ITEMS.getHolder(item)
+            // add tags
+            final int nameoffset = nameOffset + 1;
+            ForgeRegistries.ITEMS.getHolder(itemStack.getItem())
                 .map(Holder::getTagKeys)
-                .ifPresent(tags -> tags
-                    .forEach(tag -> result.add(1, wrapShift(Component.literal("#" + tag.location()).withStyle(ChatFormatting.DARK_PURPLE)))));
+                .ifPresent(tags -> tags.forEach(tag -> tooltipList.add(nameoffset,
+                    wrapShift(Component.literal("#" + tag.location()).withStyle(ChatFormatting.DARK_PURPLE)))));
 
             if (item.getItemCategory() != null)
             {
-                result.add(1, wrapShift(item.getItemCategory().getDisplayName().copy().withStyle(ChatFormatting.BLUE)));
+                result.add(nameOffset + 1, wrapShift(item.getItemCategory().getDisplayName().copy().withStyle(ChatFormatting.BLUE)));
             }
         }
 
-        result.add(1, FIX_VANILLA_TOOLTIP);
-        return result;
+        prevTooltipSize = appendTooltip(tooltipList, tooltipFlags, prevTooltipSize);
+
+        if (prevTooltipSize != tooltipList.size())
+        {
+            // add "show more info" text
+            tooltipList.add(ToggleableTextComponent.ofNegated(Screen::hasShiftDown, Component.empty()));
+            tooltipList.add(ToggleableTextComponent.ofNegated(Screen::hasShiftDown,
+                Component.translatable("blockui.tooltip.item_additional_info", Component.translatable("key.keyboard.left.shift"))
+                    .withStyle(ChatFormatting.GOLD)));
+        }
+
+        tooltipList.add(nameOffset, FIX_VANILLA_TOOLTIP);
+        return tooltipList;
     }
 
-    private static MutableComponent wrapShift(final MutableComponent wrapped)
+    protected static MutableComponent wrapShift(final MutableComponent wrapped)
     {
         return ToggleableTextComponent.of(Screen::hasShiftDown, wrapped);
+    }
+
+    protected static MutableComponent wrapShift(final MutableComponent wrapped, final boolean shouldWrap)
+    {
+        return shouldWrap ? ToggleableTextComponent.of(Screen::hasShiftDown, wrapped) : wrapped;
     }
 }

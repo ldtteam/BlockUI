@@ -1,6 +1,8 @@
 package com.ldtteam.blockui.mod;
 
 import com.ldtteam.blockui.BOScreen;
+import com.ldtteam.blockui.controls.Button;
+import com.ldtteam.blockui.controls.ButtonVanilla;
 import com.ldtteam.blockui.hooks.HookManager;
 import com.ldtteam.blockui.hooks.HookRegistries;
 import com.ldtteam.blockui.mod.container.ContainerHook;
@@ -9,6 +11,7 @@ import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.InputEvent.MouseScrollingEvent;
@@ -23,6 +26,8 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
+
+import java.util.function.Consumer;
 
 public class ClientEventSubscriber
 {
@@ -56,11 +61,11 @@ public class ClientEventSubscriber
         {
             if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_X))
             {
-                new BOWindow(new ResourceLocation(BlockUI.MOD_ID, "gui/test.xml")).open();
-            }
-            else if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_C))
-            {
-                new BOWindow(new ResourceLocation(BlockUI.MOD_ID, "gui/test2.xml")).open();
+                final BOWindow window = new BOWindow();
+                window.addChild(createTestGuiButton(0, "General All-in-one", new ResourceLocation(BlockUI.MOD_ID, "gui/test.xml")));
+                window.addChild(createTestGuiButton(1, "Tooltip Positioning", new ResourceLocation(BlockUI.MOD_ID, "gui/test2.xml")));
+                window.addChild(createTestGuiButton(2, "ItemIcon To BlockState", new ResourceLocation(BlockUI.MOD_ID, "gui/test3.xml"), BlockStateTestGui::setup));
+                window.open();
             }
         }
 
@@ -70,6 +75,32 @@ public class ClientEventSubscriber
             HookRegistries.tick(Minecraft.getInstance().level.getGameTime());
             Minecraft.getInstance().getProfiler().pop();
         }
+    }
+
+    @SafeVarargs
+    private static Button createTestGuiButton(final int order,
+        final String name,
+        final ResourceLocation testGuiResLoc,
+        final Consumer<BOWindow>... setups)
+    {
+        final Button button = new ButtonVanilla();
+        button.setPosition((order % 2) * (button.getWidth() + 20), (order / 2) * (button.getHeight() + 10));
+        button.setText(Component.literal(name));
+        button.setHandler(b -> {
+            new BOWindow(testGuiResLoc)
+            {
+                @Override
+                public void onOpened()
+                {
+                    super.onOpened();
+                    for (final Consumer<BOWindow> setup : setups)
+                    {
+                        setup.accept(this);
+                    }
+                }
+            }.openAsLayer();
+        });
+        return button;
     }
 
     /**
