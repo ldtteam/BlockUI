@@ -1,6 +1,8 @@
 package com.ldtteam.blockui.mod;
 
 import com.ldtteam.blockui.BOScreen;
+import com.ldtteam.blockui.controls.Button;
+import com.ldtteam.blockui.controls.ButtonVanilla;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.controls.Text;
 import com.ldtteam.blockui.hooks.HookManager;
@@ -25,6 +27,8 @@ import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
+
+import java.util.function.Consumer;
 
 public class ClientEventSubscriber
 {
@@ -58,52 +62,11 @@ public class ClientEventSubscriber
         {
             if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_X))
             {
-                new BOWindow(new ResourceLocation(BlockUI.MOD_ID, "gui/test.xml")).open();
-            }
-            else if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_C))
-            {
-                new BOWindow(new ResourceLocation(BlockUI.MOD_ID, "gui/test2.xml")).open();
-            }
-            else if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_Z))
-            {
-                final BOWindow boWindow3 = new BOWindow(new ResourceLocation(BlockUI.MOD_ID, "gui/test3.xml"));
-                boWindow3.open();
-
-                final ScrollingList list1 = boWindow3.findPaneOfTypeByID("list1", ScrollingList.class);
-                list1.setDataProvider(new ScrollingList.DataProvider() {
-                    @Override
-                    public int getElementCount()
-                    {
-                        return 10;
-                    }
-
-                    @Override
-                    public void updateElement(final int index, final Pane rowPane)
-                    {
-                        rowPane.findPaneByType(Text.class).setText(Component.literal("Hi " + index));
-                    }
-                });
-
-                final ScrollingList list2 = boWindow3.findPaneOfTypeByID("list2", ScrollingList.class);
-                list2.setDataProvider(new ScrollingList.DataProvider() {
-                    @Override
-                    public int getElementCount()
-                    {
-                        return 10;
-                    }
-
-                    @Override
-                    public @Nullable SizeI getElementSize(final int index, final Pane rowPane)
-                    {
-                        return index % 2 == 0 ? new SizeI(100, 40) : null;
-                    }
-
-                    @Override
-                    public void updateElement(final int index, final Pane rowPane)
-                    {
-                        rowPane.findPaneByType(Text.class).setText(Component.literal("Hi " + index));
-                    }
-                });
+                final BOWindow window = new BOWindow();
+                window.addChild(createTestGuiButton(0, "General All-in-one", new ResourceLocation(BlockUI.MOD_ID, "gui/test.xml")));
+                window.addChild(createTestGuiButton(1, "Tooltip Positioning", new ResourceLocation(BlockUI.MOD_ID, "gui/test2.xml")));
+                window.addChild(createTestGuiButton(2, "ItemIcon To BlockState", new ResourceLocation(BlockUI.MOD_ID, "gui/test3.xml"), BlockStateTestGui::setup));
+                window.open();
             }
         }
 
@@ -113,6 +76,32 @@ public class ClientEventSubscriber
             HookRegistries.tick(Minecraft.getInstance().level.getGameTime());
             Minecraft.getInstance().getProfiler().pop();
         }
+    }
+
+    @SafeVarargs
+    private static Button createTestGuiButton(final int order,
+        final String name,
+        final ResourceLocation testGuiResLoc,
+        final Consumer<BOWindow>... setups)
+    {
+        final Button button = new ButtonVanilla();
+        button.setPosition((order % 2) * (button.getWidth() + 20), (order / 2) * (button.getHeight() + 10));
+        button.setText(Component.literal(name));
+        button.setHandler(b -> {
+            new BOWindow(testGuiResLoc)
+            {
+                @Override
+                public void onOpened()
+                {
+                    super.onOpened();
+                    for (final Consumer<BOWindow> setup : setups)
+                    {
+                        setup.accept(this);
+                    }
+                }
+            }.openAsLayer();
+        });
+        return button;
     }
 
     /**

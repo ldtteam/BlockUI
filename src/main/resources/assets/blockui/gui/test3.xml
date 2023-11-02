@@ -1,8 +1,4 @@
-<window xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="block_ui.xsd" size="320 240">
-    <list id="list1" size="160 240">
-        <label size="100 20" align="TOP_LEFT"/>
-    </list>
-    <list id="list2" size="160 240" pos="160 0">
-        <label size="100 20" align="TOP_LEFT"/>
-    </list>
+<window xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="block_ui.xsd" size="1600 900" type="FIXED_VANILLA" pause="true" lightbox="true">
+    <gradient pos="0 0" size="1600 900" gradientstart="white" gradientend="white"/>
+    <zoomdragview pos="0 0" size="1600 900" maxscale="10" dragfactor="5"/>
 </window>

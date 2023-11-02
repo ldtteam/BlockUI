@@ -32,8 +32,8 @@ import java.util.stream.Stream;
  */
 public abstract class AbstractTextElement extends Pane
 {
-    private static final int FILTERING_ROUNDING = 50;
-    private static final float FILTERING_THRESHOLD = 0.02f; // should be 1/FILTERING_ROUNDING
+    public static final int FILTERING_ROUNDING = 50;
+    public static final float FILTERING_THRESHOLD = 0.02f; // should be 1/FILTERING_ROUNDING
 
     public static final double DEFAULT_TEXT_SCALE = 1.0d;
     public static final Alignment DEFAULT_TEXT_ALIGNMENT = Alignment.MIDDLE_LEFT;
@@ -200,26 +200,28 @@ public abstract class AbstractTextElement extends Pane
         }
 
         final int maxWidth = (int) (textWidth / textScale) - (textShadow ? 1 : 0);
-        preparedText = text.stream().flatMap(textBlock -> {
-            if (textBlock.getContents() instanceof final SpacerTextComponent spacer)
-            {
-                return Stream.of(spacer.getVisualOrderText());
-            }
-            else if (textBlock.getContents() instanceof final ToggleableTextComponent toggleable)
-            {
-                return mc.font.split(toggleable.data(), maxWidth)
-                    .stream()
-                    .map(formatted -> new FormattedToggleableCharSequence(toggleable.condition(), formatted));
-            }
-            else if (textBlock.getContents() == ComponentContents.EMPTY && textBlock.getSiblings().isEmpty())
-            {
-                return Stream.of(textBlock.getVisualOrderText());
-            }
-            else
-            {
-                return mc.font.split(textBlock, maxWidth).stream();
-            }
-        }).collect(Collectors.toList());
+        preparedText = text.stream().flatMap(textBlock -> toFormattedSequence(maxWidth, textBlock)).collect(Collectors.toList());
+    }
+
+    private Stream<? extends FormattedCharSequence> toFormattedSequence(final int maxWidth, MutableComponent textBlock)
+    {
+        if (textBlock.getContents() instanceof final SpacerTextComponent spacer)
+        {
+            return Stream.of(spacer.getVisualOrderText());
+        }
+        else if (textBlock.getContents() instanceof final ToggleableTextComponent toggleable)
+        {
+            return toFormattedSequence(maxWidth, toggleable.data())
+                .map(formatted -> new FormattedToggleableCharSequence(toggleable.condition(), formatted));
+        }
+        else if (textBlock.getContents() == ComponentContents.EMPTY && textBlock.getSiblings().isEmpty())
+        {
+            return Stream.of(textBlock.getVisualOrderText());
+        }
+        else
+        {
+            return mc.font.split(textBlock, maxWidth).stream();
+        }
     }
 
     public void recalcPreparedTextBox()

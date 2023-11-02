@@ -20,6 +20,15 @@ public record ToggleableTextComponent(BooleanSupplier condition, MutableComponen
         return MutableComponent.create(new ToggleableTextComponent(condition, data));
     }
 
+    /**
+     * @param negatedCondition if contidition returns false then data will get rendered
+     * @param data what to render when condition returns false
+     */
+    public static MutableComponent ofNegated(final BooleanSupplier negatedCondition, final MutableComponent data)
+    {
+        return MutableComponent.create(new ToggleableTextComponent(() -> !negatedCondition.getAsBoolean(), data));
+    }
+
     public FormattedCharSequence getVisualOrderText()
     {
         return new FormattedToggleableCharSequence(condition, data.getVisualOrderText());
