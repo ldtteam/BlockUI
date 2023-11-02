@@ -1,11 +1,16 @@
 package com.ldtteam.blockui.util.cursor;
 
+import com.ldtteam.blockui.mod.BlockUI;
 import com.ldtteam.blockui.util.texture.CursorTexture;
 import com.ldtteam.blockui.util.texture.IsOurTexture;
+import com.ldtteam.blockui.util.texture.MissingCursorTexture;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,27 +26,52 @@ public class CursorUtils
 
     /**
      * Sets cursor image using given resource location.
+     * Do not forget to load given resLoc as CursorTexture first
      *
      * @param  rl image resource location
      * @return    cursor texture reference
+     * @see #loadCursorTexture(ResourceLocation)
      */
     public static CursorTexture setCursorImage(final ResourceLocation rl)
     {
         AbstractTexture texture = Minecraft.getInstance().getTextureManager().getTexture(rl);
+        if (texture == MissingTextureAtlasSprite.getTexture())
+        {
+            texture = MissingCursorTexture.INSTANCE;
+        }
+
+        if (!(texture instanceof final CursorTexture cursorTexture))
+        {
+            throw new IllegalArgumentException("Did you forget to load CursorTexture for: " + rl);
+        }
+
+        cursorTexture.setCursor();
+        return cursorTexture;
+    }
+
+    /**
+     * Makes sure client global texture manager has CursorTexture assigned to given resLoc
+     *
+     * @param resLoc cursor file location
+     */
+    public static void loadCursorTexture(final ResourceLocation resLoc)
+    {
+        final TextureManager texManager = Minecraft.getInstance().getTextureManager();
+        final AbstractTexture texture = texManager.getTexture(resLoc, null);
         if (!(texture instanceof CursorTexture))
         {
             if (IsOurTexture.isOur(texture))
             {
-                LOGGER.warn("Trying to use special BlockUI texture as cursor? Things may not work well: " + rl.toString());
+                LOGGER.warn("Trying to use special BlockUI texture as cursor? Things may not work well: " + resLoc.toString());
             }
 
-            texture = new CursorTexture(rl);
-            Minecraft.getInstance().getTextureManager().register(rl, texture);
-        }
+            texManager.register(resLoc, new CursorTexture(resLoc));
 
-        final CursorTexture cursorTexture = (CursorTexture) texture;
-        cursorTexture.setCursor();
-        return cursorTexture;
+            if (!FMLEnvironment.production && texManager.getTexture(resLoc) == MissingTextureAtlasSprite.getTexture() && !resLoc.getNamespace().equals(BlockUI.MOD_ID))
+            {
+                throw new IllegalArgumentException("Missing texture: " + resLoc);
+            }
+        }
     }
 
     /**

@@ -85,6 +85,11 @@ public class BOGuiGraphics extends GuiGraphics
     public void applyCursor()
     {
         selectedCursor.apply();
+
+        if (Pane.debugging)
+        {
+            drawString(selectedCursor.toString(), 0, -minecraft.font.lineHeight, Color.getByName("white"));
+        }
     }
 
     /**
