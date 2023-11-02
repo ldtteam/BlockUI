@@ -1,17 +1,22 @@
 package com.ldtteam.blockui.util.texture;
 
+import com.ldtteam.blockui.mod.BlockUI;
 import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.TextureUtil;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.SimpleTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import net.minecraft.client.resources.metadata.texture.TextureMetadataSection;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraftforge.fml.loading.FMLEnvironment;
+import org.jetbrains.annotations.Nullable;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /**
@@ -30,11 +35,6 @@ public class OutOfJarTexture extends AbstractTexture
     @Override
     public void load(final ResourceManager resourceManager) throws IOException
     {
-        if (!OutOfJarResourceLocation.fileExists(resourceLocation, resourceManager))
-        {
-            throw new FileNotFoundException(resourceLocation.toString());
-        }
-
         final Resource resource = OutOfJarResourceLocation.getResourceHandle(resourceLocation, resourceManager);
 
         // redirect to sprite
@@ -74,18 +74,55 @@ public class OutOfJarTexture extends AbstractTexture
         }
     }
 
-    public static void assertLoaded(final OutOfJarResourceLocation resourceLocation, final TextureManager textureManager)
-    {
-        final AbstractTexture current = textureManager.getTexture(resourceLocation, null);
-        if (!IsOurTexture.isOur(current))
-        {
-            final OutOfJarTexture outOfJarTexture = new OutOfJarTexture(resourceLocation);
-            textureManager.register(resourceLocation, outOfJarTexture);
 
-            if (outOfJarTexture.redirectToSprite)
+    public static AbstractTexture assertLoadedDefaultManagers(final ResourceLocation resLoc)
+    {
+        return assertLoaded(resLoc, Minecraft.getInstance().getTextureManager(), Minecraft.getInstance().getResourceManager());
+    }
+
+    /**
+     * Checks whether given resLoc should be loaded into given textureManager as outOfJar or sprite texture
+     * 
+     * @return valid texture instance (including missing texture)
+     */
+    public static AbstractTexture assertLoaded(final ResourceLocation resLoc, final TextureManager textureManager, final ResourceManager resourceManager)
+    {
+        final AbstractTexture current = textureManager.getTexture(resLoc, null);
+        if (!(resLoc instanceof final OutOfJarResourceLocation outOfJarResLoc))
+        {
+            // it it's outOfJar then bottom of this method will redirect to sprite if needed
+            @Nullable
+            final SpriteTexture sprite = SpriteTexture.checkLoaded(resLoc, textureManager, resourceManager);
+            return sprite == null ? current : sprite;
+        }
+
+        if (IsOurTexture.isOur(current))
+        {
+            return current;
+        }
+
+        if (current == MissingTextureAtlasSprite.getTexture())
+        {
+            if (!FMLEnvironment.production && !resLoc.getNamespace().equals(BlockUI.MOD_ID))
             {
-                textureManager.register(resourceLocation, new SpriteTexture(resourceLocation));
+                throw new IllegalArgumentException("Missing texture: " + resLoc);
             }
+
+            return current;
+        }
+
+        final OutOfJarTexture outOfJarTexture = new OutOfJarTexture(outOfJarResLoc);
+        textureManager.register(outOfJarResLoc, outOfJarTexture); // this causes texture to load
+
+        if (!outOfJarTexture.redirectToSprite)
+        {
+            return outOfJarTexture;
+        }
+        else
+        {
+            final SpriteTexture spriteTexture = new SpriteTexture(outOfJarResLoc);
+            textureManager.register(outOfJarResLoc, spriteTexture);
+            return spriteTexture;
         }
     }
 }
