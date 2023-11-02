@@ -148,7 +148,7 @@ public class Image extends Pane
             }
             catch (final NoSuchFileException | FileNotFoundException e)
             {
-                // dont log these
+                // dont log these, texture manager logs it anyway
             }
             catch (final IOException e)
             {
