@@ -2,8 +2,9 @@ package com.ldtteam.blockui.controls;
 
 import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.Pane;
-import com.ldtteam.blockui.PaneBuilders;
 import com.ldtteam.blockui.PaneParams;
+import com.ldtteam.blockui.controls.AbstractTextBuilder.AutomaticTooltipBuilder;
+import com.ldtteam.blockui.controls.Tooltip.AutomaticTooltip;
 import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
 import com.ldtteam.blockui.util.SpacerTextComponent;
@@ -167,7 +168,7 @@ public class ItemIcon extends Pane
     {
         if (tooltipUpdateScheduled)
         {
-            if (onHover instanceof final Tooltip tooltip)
+            if (onHover instanceof final AutomaticTooltip tooltip)
             {
                 tooltip.setTextOld(getModifiedItemStackTooltip());
             }
@@ -203,7 +204,7 @@ public class ItemIcon extends Pane
     {
         if (onHover == null && itemStack != null && !itemStack.isEmpty())
         {
-            PaneBuilders.tooltipBuilder().hoverPane(this).build().setTextOld(getModifiedItemStackTooltip());
+            new AutomaticTooltipBuilder().hoverPane(this).build().setTextOld(getModifiedItemStackTooltip());
         }
     }
 

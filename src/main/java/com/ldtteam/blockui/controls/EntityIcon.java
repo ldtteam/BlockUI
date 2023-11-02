@@ -2,8 +2,9 @@ package com.ldtteam.blockui.controls;
 
 import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.Pane;
-import com.ldtteam.blockui.PaneBuilders;
 import com.ldtteam.blockui.PaneParams;
+import com.ldtteam.blockui.controls.AbstractTextBuilder.AutomaticTooltipBuilder;
+import com.ldtteam.blockui.controls.Tooltip.AutomaticTooltip;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.client.gui.Font;
@@ -79,7 +80,7 @@ public class EntityIcon extends Pane
     public void setEntity(@NotNull Entity entity)
     {
         this.entity = entity;
-        if (onHover instanceof final Tooltip tooltip)
+        if (onHover instanceof final AutomaticTooltip tooltip)
         {
             tooltip.setText(this.entity.getDisplayName());
         }
@@ -88,7 +89,7 @@ public class EntityIcon extends Pane
     public void resetEntity()
     {
         this.entity = null;
-        if (onHover instanceof final Tooltip tooltip)
+        if (onHover instanceof final AutomaticTooltip tooltip)
         {
             tooltip.clearText();
         }
@@ -154,7 +155,7 @@ public class EntityIcon extends Pane
     {
         if (this.onHover == null && this.entity != null)
         {
-            PaneBuilders.tooltipBuilder().hoverPane(this).build().setText(this.entity.getDisplayName());
+            new AutomaticTooltipBuilder().hoverPane(this).build().setText(this.entity.getDisplayName());
         }
     }
 }
