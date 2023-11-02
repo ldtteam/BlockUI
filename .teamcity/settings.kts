@@ -30,8 +30,7 @@ project {
 
     params {
         param("env.JDK_VERSION", "jdk17")
-        select("Current Minecraft Version", "main", label = "Current Minecraft Version",
-                options = listOf("1.12", "1.13", "1.14", "1.15", "1.16", "1.17"))
+        param("Current Minecraft Version", "main")
         text("Repository", "ldtteam/blockUI", label = "Repository", description = "The repository for BlockUI.", readOnly = true, allowEmpty = true)
         param("env.Version.Minor", "0")
         param("env.Version.Patch", "0")
@@ -39,6 +38,9 @@ project {
         param("env.Version.Suffix", "")
         param("env.Version.Major", "1")
         param("env.GRADLE_VERSION", "7.3")
+        param("Project.Type", "mods")
+        param("filename.prefix", "blockui")
+
         text("env.Version", "%env.Version.Major%.%env.Version.Minor%.%env.Version.Patch%%env.Version.Suffix%", label = "Version", description = "The version of the project.", display = ParameterDisplay.HIDDEN, allowEmpty = true)
     }
 
