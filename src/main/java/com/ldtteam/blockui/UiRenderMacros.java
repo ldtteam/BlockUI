@@ -1,7 +1,5 @@
 package com.ldtteam.blockui;
 
-import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
-import com.ldtteam.blockui.util.texture.OutOfJarTexture;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
@@ -418,7 +416,6 @@ public class UiRenderMacros
         final float uMax,
         final float vMax)
     {
-        checkOutOfJarResLoc(rl);
         Minecraft.getInstance().getTextureManager().bindForSetup(rl);
         RenderSystem.setShaderTexture(0, rl);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
@@ -431,14 +428,6 @@ public class UiRenderMacros
         buffer.vertex(m, x + w, y + h, 0).uv(uMax, vMax).endVertex();
         buffer.vertex(m, x + w, y, 0).uv(uMax, vMin).endVertex();
         Tesselator.getInstance().end();
-    }
-
-    private static void checkOutOfJarResLoc(final ResourceLocation rl)
-    {
-        if (rl instanceof final OutOfJarResourceLocation outOfJarResLoc)
-        {
-            OutOfJarTexture.assertLoaded(outOfJarResLoc, Minecraft.getInstance().getTextureManager());
-        }
     }
 
     /**
@@ -542,7 +531,6 @@ public class UiRenderMacros
         // bot left corner
         populateBlitTriangles(buffer, mat, xEnd, xEnd + uLeft, yEnd, yEnd + vLeft, restMinU, restMaxU, restMinV, restMaxV);
 
-        checkOutOfJarResLoc(rl);
         Minecraft.getInstance().getTextureManager().bindForSetup(rl);
         RenderSystem.setShaderTexture(0, rl);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);

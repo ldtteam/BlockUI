@@ -7,8 +7,11 @@
     <itemicon item="minecraft:netherite_upgrade_smithing_template" size="16 16" pos="32 570"/>
     <input id="txtin" size="400 100" pos="0 600"/>
     <image id="vanilla_uv_test" pos="0 750" size="728 20" imageoffset="0 89" imagesize="182 5" source="minecraft:textures/gui/icons.png"/>
+    <image id="missing" pos="120 800" size="100 100" source="blockui:veryuglymissingtexture.png"/>
+    <image id="missing_out_of_jar" pos="240 800" size="100 100"/>
+    <image id="working_out_of_jar" pos="360 800" size="100 100"/>
     <image id="anim_test" pos="0 800" size="100 100" source="blockui:textures/gui/spritesheet_leaves.png"/>
-    <button id="unicodeTest" size="50 50" label="↥" pos="600 270"  textscale="3.5"/>
+    <button id="unicodeTest" cursor="blockui:missingcursortexture" size="50 50" label="↥" pos="600 270"  textscale="3.5"/>
     <zoomdragview id="zdv" pos="800 0" size="800 900">
         <scrollgroup pos="0 0" size="108 900" childspacing="10">
             <button size="100 100" label="0" textscale="10"/>
