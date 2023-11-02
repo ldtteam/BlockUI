@@ -53,36 +53,35 @@ project {
             }
         }
     }
-    subProjectsOrder = arrayListOf(RelativeId("Release"), RelativeId("UpgradeBetaRelease"), RelativeId("UpgradeAlphaBeta"), RelativeId("Alpha"), RelativeId("OfficialPublications"), RelativeId("Branches"), RelativeId("PullRequests2"))
+    subProjectsOrder = arrayListOf(RelativeId("Release"), RelativeId("UpgradeBetaRelease"), RelativeId("Beta"), RelativeId("OfficialPublications"), RelativeId("Branches"), RelativeId("PullRequests2"))
 
     subProject(UpgradeBetaRelease)
-    subProject(Alpha)
+    subProject(Beta)
     subProject(PullRequests2)
     subProject(Branches)
     subProject(OfficialPublications)
     subProject(Release)
-    subProject(UpgradeAlphaBeta)
 }
 
 
-object Alpha : Project({
-    name = "Alpha"
-    description = "Alpha version builds of BlockUI"
+object Beta : Project({
+    name = "Beta"
+    description = "Beta version builds of BlockUI"
 
-    buildType(Alpha_Release)
+    buildType(Beta_Release)
 
     params {
         param("Default.Branch", "version/%Current Minecraft Version%")
         param("VCS.Branches", "+:refs/heads/version/(*)")
-        param("env.CURSERELEASETYPE", "alpha")
-        param("env.Version.Suffix", "-ALPHA")
+        param("env.CURSERELEASETYPE", "beta")
+        param("env.Version.Suffix", "-BETA")
     }
 })
 
-object Alpha_Release : BuildType({
+object Beta_Release : BuildType({
     templates(AbsoluteId("LetSDevTogether_BuildWithRelease"))
     name = "Release"
-    description = "Releases the mod as Alpha to CurseForge"
+    description = "Releases the mod as Beta to CurseForge"
 
     params {
         param("Project.Type", "mods")
@@ -237,7 +236,7 @@ object Release : Project({
 object Release_Release : BuildType({
     templates(AbsoluteId("LetSDevTogether_BuildWithRelease"))
     name = "Release"
-    description = "Releases the mod as Alpha to CurseForge"
+    description = "Releases the mod as Release to CurseForge"
 
     params {
         param("Project.Type", "mods")
@@ -252,36 +251,6 @@ object Release_Release : BuildType({
     }
 })
 
-
-object UpgradeAlphaBeta : Project({
-    name = "Upgrade - Alpha -> Beta"
-    description = "Updates the current alpha to beta."
-
-    buildType(UpgradeAlphaBeta_UpgradeAlphaBeta)
-
-    params {
-        select("Current Minecraft Version", "1.16.3", label = "Current Minecraft Version",
-                options = listOf("1.12", "1.13", "1.14", "1.15", "1.16", "1.17"))
-    }
-})
-
-object UpgradeAlphaBeta_UpgradeAlphaBeta : BuildType({
-    templates(AbsoluteId("LetSDevTogether_Upgrade"))
-    name = "Upgrade - Alpha -> Beta"
-    description = "Upgrades the current Alpha to Beta."
-
-    params {
-        text("Source.Branch", "version", label = "Source branch type", description = "The source branch type for the upgrade. EG: version or testing", allowEmpty = false)
-        text("Default.Branch", "testing/%Current Minecraft Version%", label = "Default branch", description = "The default branch of this build.", allowEmpty = true)
-        param("VCS.Branches", "+:refs/heads/testing/(*)")
-        text("Target.Branch", "testing", label = "Target branch type", description = "The target branch type for the upgrade. EG: testing or release.", allowEmpty = false)
-        text("env.Version", "%env.Version.Major%.%env.Version.Minor%.%build.counter%-BETA", label = "Version", description = "The version of the project.", display = ParameterDisplay.HIDDEN, allowEmpty = true)
-    }
-    
-    disableSettings("BUILD_EXT_9")
-})
-
-
 object UpgradeBetaRelease : Project({
     name = "Upgrade Beta -> Release"
     description = "Upgrades the current Beta to Release"
@@ -295,7 +264,7 @@ object UpgradeBetaRelease_UpgradeBetaRelease : BuildType({
     description = "Upgrades the current Beta to Release."
 
     params {
-        text("Source.Branch", "testing", label = "Source branch type", description = "The source branch type for the upgrade. EG: version or testing", allowEmpty = false)
+        text("Source.Branch", "version", label = "Source branch type", description = "The source branch type for the upgrade. EG: version or testing", allowEmpty = false)
         text("Default.Branch", "release/%Current Minecraft Version%", label = "Default branch", description = "The default branch of this build.", allowEmpty = true)
         param("VCS.Branches", "+:refs/heads/release/(*)")
         text("Target.Branch", "release", label = "Target branch type", description = "The target branch type for the upgrade. EG: testing or release.", allowEmpty = false)
