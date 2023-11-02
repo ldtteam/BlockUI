@@ -1,0 +1,4 @@
+<window xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="block_ui.xsd" size="1600 900" type="FIXED_VANILLA" pause="true" lightbox="true">
+    <gradient pos="0 0" size="1600 900" gradientstart="white" gradientend="white"/>
+    <zoomdragview pos="0 0" size="1600 900" maxscale="10" dragfactor="5"/>
+</window>

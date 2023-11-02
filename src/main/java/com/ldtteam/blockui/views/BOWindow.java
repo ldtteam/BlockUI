@@ -6,6 +6,7 @@ import com.ldtteam.blockui.Loader;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.Parsers;
 import com.mojang.blaze3d.platform.Window;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
@@ -24,12 +25,12 @@ public class BOWindow extends View
     /**
      * The default width.
      */
-    protected static final int DEFAULT_WIDTH = 420;
+    public static final int DEFAULT_WIDTH = 420;
 
     /**
      * The default height.
      */
-    protected static final int DEFAULT_HEIGHT = 240;
+    public static final int DEFAULT_HEIGHT = 240;
 
     /**
      * The screen of the window.
@@ -161,6 +162,14 @@ public class BOWindow extends View
     }
 
     /**
+     * Open the window.
+     */
+    public void openAsLayer()
+    {
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> mc.submit(() -> mc.pushGuiLayer(screen)));
+    }
+
+    /**
      * Windows wrap a GuiScreen.
      *
      * @return The current GuiScreen.
@@ -235,8 +244,7 @@ public class BOWindow extends View
      */
     public void close()
     {
-        screen.removed();
-        this.mc.player.closeContainer();
+        Minecraft.getInstance().popGuiLayer();
     }
 
     /**

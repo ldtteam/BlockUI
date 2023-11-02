@@ -1,5 +1,6 @@
 package com.ldtteam.blockui;
 
+import com.ldtteam.blockui.util.cursor.CursorUtils;
 import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -64,11 +65,10 @@ public class BOScreen extends Screen
         mcScale = ms.minecraft.getWindow().getGuiScale();
         renderScale = window.getRenderType().calcRenderScale(ms.minecraft.getWindow(), window);
 
-        if (window.hasLightbox())
+        if (window.hasLightbox() && ms.minecraft.screen == this)
         {
-            width = framebufferWidth;
-            height = framebufferHeight;
-            super.renderBackground(ms);
+            UiRenderMacros.fillGradient(ms.pose(), 0, 0, framebufferWidth, framebufferHeight, -1072689136, -804253680);
+            //super.renderBackground(ms);
         }
 
         width = window.getWidth();
@@ -85,7 +85,7 @@ public class BOScreen extends Screen
         shaderPs.setIdentity();
 
         final PoseStack newMs = new PoseStack();
-        newMs.translate(x, y, 0);
+        newMs.translate(x, y, ms.pose().last().pose().m32());
         newMs.scale((float) renderScale, (float) renderScale, 1.0f);
 
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -311,6 +311,7 @@ public class BOScreen extends Screen
         finally
         {
             BOWindow.clearFocus();
+            CursorUtils.resetCursor();
         }
     }
 
