@@ -6,11 +6,13 @@ import com.ldtteam.blockui.Parsers;
 import com.ldtteam.blockui.util.records.SizeI;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 
 import java.util.Objects;
 
 import net.minecraft.util.Mth;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
 /**
  * Clickable image.
@@ -335,7 +337,15 @@ public class ButtonImage extends Button
     @Override
     public void drawSelf(final PoseStack ms, final double mx, final double my)
     {
-        Objects.requireNonNull(image, () -> id + " | " + window.getXmlResourceLocation());
+        if (!FMLEnvironment.production)
+        {
+            Objects.requireNonNull(image, () -> id + " | " + window.getXmlResourceLocation());
+        }
+        else if (image == null)
+        {
+            image = MissingTextureAtlasSprite.getLocation();
+        }
+
         ResourceLocation bind = image;
         int u = imageOffsetX;
         int v = imageOffsetY;
