@@ -13,6 +13,8 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceMetadata;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
@@ -21,6 +23,7 @@ import java.io.IOException;
  */
 public class SpriteTexture extends AbstractTexture implements Tickable
 {
+    private static final Logger LOGGER = LoggerFactory.getLogger(SpriteTexture.class);
     private final ResourceLocation resourceLocation;
 
     private Sprite sprite;
@@ -97,15 +100,14 @@ public class SpriteTexture extends AbstractTexture implements Tickable
         }
 
         // parse mcmeta (or exit)
-        final Resource resource = OutOfJarResourceLocation.getResourceHandle(resourceLocation, resourceManager);
         final ResourceMetadata metadata;
         try
         {
-            metadata = resource.metadata();
+            metadata = OutOfJarResourceLocation.getResourceHandle(resourceLocation, resourceManager).metadata();
         }
         catch (final IOException e)
         {
-            // want to log this, but this is called from frame rendering => log spam
+            LOGGER.error("Parsing sprite metadata", e);
             return null;
         }
 

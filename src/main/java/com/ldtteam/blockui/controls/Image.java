@@ -6,6 +6,7 @@ import com.ldtteam.blockui.Parsers;
 import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.util.records.SizeI;
 import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
+import com.ldtteam.blockui.util.texture.OutOfJarTexture;
 import com.ldtteam.blockui.util.texture.SpriteTexture;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -13,10 +14,14 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Tuple;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.util.Iterator;
 import java.util.Objects;
 
@@ -65,8 +70,7 @@ public class Image extends Pane
 
     private void loadMapDimensions(final ResourceLocation rl)
     {
-        final SpriteTexture sprite = SpriteTexture.checkLoaded(rl, Minecraft.getInstance().getTextureManager(), Minecraft.getInstance().getResourceManager());
-        if (sprite != null)
+        if (OutOfJarTexture.assertLoadedDefaultManagers(rl) instanceof final SpriteTexture sprite)
         {
             mapWidth = sprite.width();
             mapHeight = sprite.height();
@@ -119,6 +123,9 @@ public class Image extends Pane
      */
     public static SizeI getImageDimensions(final ResourceLocation resourceLocation)
     {
+        // this is called by most of image classes -> parse our textures
+        OutOfJarTexture.assertLoadedDefaultManagers(resourceLocation);
+
         final int pos = resourceLocation.getPath().lastIndexOf(".");
 
         if (pos == -1)
@@ -138,6 +145,10 @@ public class Image extends Pane
                 reader.setInput(stream);
 
                 return new SizeI(reader.getWidth(reader.getMinIndex()), reader.getHeight(reader.getMinIndex()));
+            }
+            catch (final NoSuchFileException | FileNotFoundException e)
+            {
+                // dont log these, texture manager logs it anyway
             }
             catch (final IOException e)
             {
@@ -208,7 +219,15 @@ public class Image extends Pane
     @Override
     public void drawSelf(final PoseStack ms, final double mx, final double my)
     {
-        Objects.requireNonNull(resourceLocation, () -> id + " | " + window.getXmlResourceLocation());
+        if (!FMLEnvironment.production)
+        {
+            Objects.requireNonNull(resourceLocation, () -> id + " | " + window.getXmlResourceLocation());
+        }
+        else if (resourceLocation == null)
+        {
+            resourceLocation = MissingTextureAtlasSprite.getLocation();
+        }
+
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 

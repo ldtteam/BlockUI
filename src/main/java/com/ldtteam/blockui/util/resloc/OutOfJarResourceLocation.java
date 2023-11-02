@@ -8,6 +8,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceMetadata;
 import org.jetbrains.annotations.Nullable;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -54,7 +55,7 @@ public class OutOfJarResourceLocation extends ResourceLocation
         return fallbackManager.getResource(resLoc).isPresent();
     }
 
-    public static Resource getResourceHandle(final ResourceLocation resLoc, final ResourceManager fallbackManager)
+    public static Resource getResourceHandle(final ResourceLocation resLoc, final ResourceManager fallbackManager) throws IOException
     {
         if (resLoc instanceof final OutOfJarResourceLocation nioResLoc)
         {
@@ -63,7 +64,7 @@ public class OutOfJarResourceLocation extends ResourceLocation
                 new OutOfJarResource(nioResLoc, parseMetadata(mcmeta)) :
                 new OutOfJarResource(nioResLoc);
         }
-        return fallbackManager.getResource(resLoc).orElseThrow(() -> new RuntimeException("File not found: " + resLoc));
+        return fallbackManager.getResource(resLoc).orElseThrow(() -> new FileNotFoundException("File not found: " + resLoc));
     }
 
     private static IoSupplier<ResourceMetadata> parseMetadata(final OutOfJarResourceLocation path)

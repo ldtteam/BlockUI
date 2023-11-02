@@ -3,14 +3,12 @@ package com.ldtteam.blockui.mod;
 import com.ldtteam.blockui.BOScreen;
 import com.ldtteam.blockui.controls.Button;
 import com.ldtteam.blockui.controls.ButtonVanilla;
-import com.ldtteam.blockui.Pane;
-import com.ldtteam.blockui.controls.Text;
+import com.ldtteam.blockui.controls.Image;
 import com.ldtteam.blockui.hooks.HookManager;
 import com.ldtteam.blockui.hooks.HookRegistries;
 import com.ldtteam.blockui.mod.container.ContainerHook;
-import com.ldtteam.blockui.util.records.SizeI;
+import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
 import com.ldtteam.blockui.views.BOWindow;
-import com.ldtteam.blockui.views.ScrollingList;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
@@ -29,7 +27,6 @@ import net.minecraftforge.event.TickEvent.Phase;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.function.Consumer;
@@ -67,7 +64,10 @@ public class ClientEventSubscriber
             if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_X))
             {
                 final BOWindow window = new BOWindow();
-                window.addChild(createTestGuiButton(0, "General All-in-one", new ResourceLocation(BlockUI.MOD_ID, "gui/test.xml")));
+                window.addChild(createTestGuiButton(0, "General All-in-one", new ResourceLocation(BlockUI.MOD_ID, "gui/test.xml"), parent -> {
+                    parent.findPaneOfTypeByID("missing_out_of_jar", Image.class).setImage(OutOfJarResourceLocation.ofMinecraftFolder(BlockUI.MOD_ID, "missing_out_of_jar.png"), false);
+                    parent.findPaneOfTypeByID("working_out_of_jar", Image.class).setImage(OutOfJarResourceLocation.ofMinecraftFolder(BlockUI.MOD_ID, "../../src/test/resources/button.png"), false);
+                }));
                 window.addChild(createTestGuiButton(1, "Tooltip Positioning", new ResourceLocation(BlockUI.MOD_ID, "gui/test2.xml")));
                 window.addChild(createTestGuiButton(2, "ItemIcon To BlockState", new ResourceLocation(BlockUI.MOD_ID, "gui/test3.xml"), BlockStateTestGui::setup));
                 window.addChild(createTestGuiButton(3, "Dynamic ScrollingLists", new ResourceLocation(BlockUI.MOD_ID, "gui/test4.xml"), DynamicScrollingListGui::setup));
