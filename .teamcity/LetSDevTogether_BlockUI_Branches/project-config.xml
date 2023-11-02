@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" parent-id="LetSDevTogether_BlockUI" xsi:noNamespaceSchemaLocation="https://www.jetbrains.com/teamcity/schemas/2021.1/project-config.xsd">
+  <name>Branches</name>
+  <description>All none release branches.</description>
+  <parameters>
+    <param name="Default.Branch" value="CI/Default" spec="text label='Default branch' description='The default branch for branch builds' validationMode='any' readOnly='true'" />
+    <param name="VCS.Branches"><![CDATA[+:refs/heads/(*)
+-:refs/heads/version/*
+-:refs/heads/testing/*
+-:refs/heads/release/*
+-:refs/pull/*/head
+-:refs/heads/CI/*]]></param>
+    <param name="env.Version.Suffix" value="-PERSONAL" />
+  </parameters>
+  <cleanup>
+    <policy type="days" cleanup-level="EVERYTHING">
+      <parameters>
+        <param name="keepDays.count" value="60" />
+      </parameters>
+    </policy>
+  </cleanup>
+</project>
+
