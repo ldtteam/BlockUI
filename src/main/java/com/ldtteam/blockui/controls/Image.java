@@ -146,12 +146,13 @@ public class Image extends Pane
 
                 return new SizeI(reader.getWidth(reader.getMinIndex()), reader.getHeight(reader.getMinIndex()));
             }
+            catch (final NoSuchFileException | FileNotFoundException e)
+            {
+                // dont log these
+            }
             catch (final IOException e)
             {
-                if (!(e instanceof NoSuchFileException || e instanceof FileNotFoundException))
-                {
-                    Log.getLogger().warn(e);
-                }
+                Log.getLogger().warn(e);
             }
             finally
             {
