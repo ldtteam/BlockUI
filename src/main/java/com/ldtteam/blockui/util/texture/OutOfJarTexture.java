@@ -74,7 +74,6 @@ public class OutOfJarTexture extends AbstractTexture
         }
     }
 
-
     public static AbstractTexture assertLoadedDefaultManagers(final ResourceLocation resLoc)
     {
         return assertLoaded(resLoc, Minecraft.getInstance().getTextureManager(), Minecraft.getInstance().getResourceManager());
