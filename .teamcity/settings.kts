@@ -30,7 +30,7 @@ project {
 
     params {
         param("env.JDK_VERSION", "jdk17")
-        select("Current Minecraft Version", "latest", label = "Current Minecraft Version",
+        select("Current Minecraft Version", "main", label = "Current Minecraft Version",
                 options = listOf("1.12", "1.13", "1.14", "1.15", "1.16", "1.17"))
         text("Repository", "ldtteam/blockUI", label = "Repository", description = "The repository for BlockUI.", readOnly = true, allowEmpty = true)
         param("env.Version.Minor", "0")
