@@ -104,11 +104,10 @@ public class SpriteTexture extends AbstractTexture implements Tickable
         }
 
         // parse mcmeta (or exit)
-        final Resource resource = OutOfJarResourceLocation.getResourceHandle(resourceLocation, resourceManager);
         final ResourceMetadata metadata;
         try
         {
-            metadata = resource.metadata();
+            metadata = OutOfJarResourceLocation.getResourceHandle(resourceLocation, resourceManager).metadata();
         }
         catch (final IOException e)
         {

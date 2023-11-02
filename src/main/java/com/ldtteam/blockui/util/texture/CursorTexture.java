@@ -36,7 +36,7 @@ public class CursorTexture extends AbstractTexture
     private int hotspotY = 0;
     private long glfwCursorAddress = 0;
     @Nullable
-    private NativeImage nativeImage = null;
+    protected NativeImage nativeImage = null;
 
     public CursorTexture(final ResourceLocation resLoc)
     {
@@ -87,7 +87,7 @@ public class CursorTexture extends AbstractTexture
         }
     }
 
-    private void destroyCursorHandle()
+    protected void destroyCursorHandle()
     {
         if (glfwCursorAddress != 0)
         {

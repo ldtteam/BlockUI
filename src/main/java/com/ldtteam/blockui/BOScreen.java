@@ -16,6 +16,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraftforge.client.ForgeRenderTypes;
 import org.lwjgl.glfw.GLFW;
 
+import java.util.Objects;
+
 /**
  * Wraps MineCrafts GuiScreen for BlockOut's Window.
  */
@@ -97,7 +99,11 @@ public class BOScreen extends Screen
         {
             final BOGuiGraphics target = new BOGuiGraphics(ms.minecraft, newMs, ms.bufferSource());
             window.draw(target, calcRelativeX(mx), calcRelativeY(my));
-            target.applyCursor();
+
+            if (ms.minecraft.screen == this)
+            {
+                target.applyCursor();
+            }
 
             window.drawLast(target, calcRelativeX(mx), calcRelativeY(my));
         }
@@ -183,7 +189,7 @@ public class BOScreen extends Screen
         {
             final CrashReport crashReport = CrashReport.forThrowable(e, "MousePressed event for BO screen");
             final CrashReportCategory category = crashReport.addCategory("BO screen mouse event details");
-            category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
+            category.setDetail("XML res loc", () -> Objects.toString(window.getXmlResourceLocation()));
             category.setDetail("GLFW mouse key value", () -> Integer.toString(keyCode));
             throw new ReportedException(crashReport);
         }
