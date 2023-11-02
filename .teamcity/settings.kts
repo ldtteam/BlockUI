@@ -38,6 +38,7 @@ project {
         param("env.Version.Suffix", "")
         param("env.Version.Major", "1")
         param("env.GRADLE_VERSION", "7.3")
+        param("Default.Branch", "version/main")
         param("Project.Type", "mods")
         param("filename.prefix", "blockui")
 
