@@ -43,6 +43,14 @@ public class ItemIconWithBlockState extends ItemIcon
      */
     protected boolean renderItemAlongBlockState = false;
 
+    /**
+     * If true then render like item instead, mostly internal
+     */
+    protected boolean isBlockStateModelEmpty = false;
+
+    /**
+     * If true always append blockState properties in tooltip
+     */
     protected boolean alwaysAddBlockStateTooltip = false;
 
     /**
@@ -97,43 +105,48 @@ public class ItemIconWithBlockState extends ItemIcon
         super.clearDataAndScheduleTooltipUpdate();
         blockStateExtension = null;
         renderItemAlongBlockState = false;
+        isBlockStateModelEmpty = false;
+    }
+
+    public boolean isBlockEmpty()
+    {
+        return blockStateExtension == null || isBlockStateModelEmpty;
     }
 
     @Override
     public boolean isDataEmpty()
     {
-        return super.isDataEmpty() && blockStateExtension == null;
+        return super.isDataEmpty() && isBlockEmpty();
     }
 
     @Override
-    public void drawSelf(BOGuiGraphics target, double mx, double my)
+    public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
         updateTooltipIfNeeded();
-        if (blockStateExtension == null)
+        if (isBlockEmpty())
         {
             super.drawSelf(target, mx, my);
+            return;
         }
-        else if (!isDataEmpty())
+        
+        final PoseStack ms = target.pose();
+        ms.pushPose();
+        ms.translate(x, y, 0.0f);
+        ms.scale(this.getWidth() / DEFAULT_ITEMSTACK_SIZE, this.getHeight() / DEFAULT_ITEMSTACK_SIZE, 1.0f);
+
+        if (renderItemAlongBlockState)
         {
-            final PoseStack ms = target.pose();
-            ms.pushPose();
-            ms.translate(x, y, 0.0f);
-            ms.scale(this.getWidth() / DEFAULT_ITEMSTACK_SIZE, this.getHeight() / DEFAULT_ITEMSTACK_SIZE, 1.0f);
-
-            if (renderItemAlongBlockState)
-            {
-                target.renderItem(itemStack, 0, 0);
-            }
-            target.renderBlockStateAsItem(blockStateExtension, itemStack);
-            if (renderItemDecorations)
-            {
-                target.renderItemDecorations(itemStack, 0, 0);
-            }
-
-            RenderSystem.defaultBlendFunc();
-            RenderSystem.disableBlend();
-            ms.popPose();
+            target.renderItem(itemStack, 0, 0);
         }
+        target.renderBlockStateAsItem(blockStateExtension, itemStack);
+        if (renderItemDecorations)
+        {
+            target.renderItemDecorations(itemStack, 0, 0);
+        }
+
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableBlend();
+        ms.popPose();
     }
 
     @Override
@@ -261,7 +274,7 @@ public class ItemIconWithBlockState extends ItemIcon
         {
             if (bs.getFluidState().isEmpty())
             {
-                this.blockStateExtension = null;
+                this.isBlockStateModelEmpty = true;
             }
             // but if it is waterlogged then go for both?
             else if (bs.hasProperty(BlockStateProperties.WATERLOGGED))
@@ -326,8 +339,7 @@ public class ItemIconWithBlockState extends ItemIcon
         setBlockStateWeak(BlockStateRenderingData.of(blockstate, be));
     }
 
-    private static <
-        T extends Comparable<T>> BlockState updateState(final BlockState state, final Property<T> property, final String valueName)
+    private static <T extends Comparable<T>> BlockState updateState(final BlockState state, final Property<T> property, final String valueName)
     {
         return property.getValue(valueName).map(value -> state.setValue(property, value)).orElse(state);
     }

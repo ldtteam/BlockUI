@@ -112,6 +112,7 @@ public record BlockStateRenderingData(BlockState blockState,
 
     /**
      * @return true if model contains only Y axis rotations
+     * TODO: move to tag
      */
     public static boolean checkModelForYrotation(final BlockState blockState)
     {
