@@ -222,11 +222,15 @@ public abstract class HookManager<T, U, K>
 
     // scroll hook management
 
-    public static boolean onScroll(final double scrollDelta)
+    /**
+     * @param horizontalWheel x-axis scrolling, minus for down, plus for up.
+     * @param verticalWheel   y-axis scrolling, minus for down, plus for up.
+     */
+    public static boolean onScroll(final double horizontalWheel, final double verticalWheel)
     {
         if (scrollListener != null)
         {
-            return scrollListener.mouseScrolled(scrollDelta);
+            return scrollListener.mouseScrolled(horizontalWheel, verticalWheel);
         }
         return false;
     }

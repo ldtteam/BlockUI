@@ -67,23 +67,27 @@ public class HookScreen extends BOScreen
     @Deprecated
     public boolean mouseScrolled(final double mx, final double my, final double scrollHorizontalDiff, final double scrollVerticalDiff)
     {
-        return mouseScrolled(scrollVerticalDiff);
+        return mouseScrolled(scrollHorizontalDiff * 10, scrollVerticalDiff * 10);
     }
 
-    public boolean mouseScrolled(final double scrollDiff)
+    /**
+     * @param horizontalWheel x-axis scrolling, minus for down, plus for up.
+     * @param verticalWheel   y-axis scrolling, minus for down, plus for up.
+     */
+    public boolean mouseScrolled(final double horizontalWheel, final double verticalWheel)
     {
-        if (captureScroll && scrollListener != null && scrollDiff != 0)
+        if (captureScroll && scrollListener != null && (horizontalWheel != 0 || verticalWheel != 0))
         {
             try
             {
-                return scrollListener.scrollInput(scrollDiff * 10, scrollListener.getX() + 1, scrollListener.getY() + 1);
+                return scrollListener.scrollInput(horizontalWheel, verticalWheel, scrollListener.getX() + 1, scrollListener.getY() + 1);
             }
             catch (final Exception e)
             {
                 final CrashReport crashReport = CrashReport.forThrowable(e, "MouseScroll event for Hook BO screen");
                 final CrashReportCategory category = crashReport.addCategory("Hook BO screen scroll event details");
                 category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
-                category.setDetail("Scroll value", () -> Double.toString(scrollDiff));
+                category.setDetail("Scroll value", () -> "X: %d Y: %d".formatted(horizontalWheel, verticalWheel));
                 category.setDetail("Hook thing type", () -> windowTyped.getHookThingRegistryKey().toString());
                 category.setDetail("Hook thing", () -> windowTyped.getHookThing().toString());
                 throw new ReportedException(crashReport);

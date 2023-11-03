@@ -123,9 +123,9 @@ public class View extends Pane
     }
 
     @Override
-    public boolean scrollInput(final double wheel, final double mx, final double my)
+    public boolean scrollInput(final double horizontalWheel, final double verticalWheel, final double mx, final double my)
     {
-        return mousePointableEventHandler(mx, my, (child, mxChild, myChild) -> child.scrollInput(wheel, mxChild, myChild), null);
+        return mousePointableEventHandler(mx, my, (child, mxChild, myChild) -> child.scrollInput(horizontalWheel, verticalWheel, mxChild, myChild), null);
     }
 
     @Nullable

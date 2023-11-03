@@ -203,7 +203,7 @@ public class BOScreen extends Screen
         {
             try
             {
-                return window.scrollInput(scrollVerticalDiff * 10, calcRelativeX(mx), calcRelativeY(my));
+                return window.scrollInput(scrollHorizontalDiff * 10, scrollVerticalDiff * 10, calcRelativeX(mx), calcRelativeY(my));
             }
             catch (final Exception e)
             {

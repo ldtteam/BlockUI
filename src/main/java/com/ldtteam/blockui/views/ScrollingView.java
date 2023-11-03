@@ -73,9 +73,9 @@ public class ScrollingView extends View
     }
 
     @Override
-    public boolean scrollInput(final double wheel, final double mx, final double my)
+    public boolean scrollInput(final double horizontalWheel, final double verticalWheel, final double mx, final double my)
     {
-        return setScrollY(getScrollY() - (int) wheel);
+        return setScrollY(getScrollY() - verticalWheel);
     }
 
     public ScrollingContainer getContainer()
