@@ -8,6 +8,7 @@ import net.minecraft.client.renderer.texture.SpriteLoader;
 import net.minecraft.client.renderer.texture.SpriteTicker;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.renderer.texture.Tickable;
+import net.minecraft.client.renderer.texture.atlas.SpriteResourceLoader;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
@@ -48,7 +49,7 @@ public class SpriteTexture extends AbstractTexture implements Tickable
 
         final Resource resource = OutOfJarResourceLocation.getResourceHandle(resourceLocation, resourceManager);
 
-        sprite = SpriteLoader.loadSprite(resourceLocation, resource);
+        sprite = SpriteResourceLoader.create(SpriteLoader.DEFAULT_METADATA_SECTIONS).loadSprite(resourceLocation, resource);
         ticker = sprite.createTicker();
 
         TextureUtil.prepareImage(getId(), 0, width(), height());

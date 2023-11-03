@@ -6,6 +6,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.event.ModMismatchEvent;
 
 public class ClientLifecycleSubscriber
 {
@@ -22,5 +23,12 @@ public class ClientLifecycleSubscriber
         event.register(
             (state, level, pos, tintIndex) -> level != null && pos != null ? BiomeColors.getAverageWaterColor(level, pos) : 0x638fe9,
             Blocks.WATER_CAULDRON);
+    }
+
+    @SubscribeEvent
+    public static void onModMismatch(final ModMismatchEvent event)
+    {
+        // there are no world data and rest is mod compat anyway
+        event.markResolved(BlockUI.MOD_ID);
     }
 }

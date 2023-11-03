@@ -65,9 +65,9 @@ public class HookScreen extends BOScreen
 
     @Override
     @Deprecated
-    public boolean mouseScrolled(final double mx, final double my, final double scrollDiff)
+    public boolean mouseScrolled(final double mx, final double my, final double scrollHorizontalDiff, final double scrollVerticalDiff)
     {
-        return mouseScrolled(scrollDiff);
+        return mouseScrolled(scrollVerticalDiff);
     }
 
     public boolean mouseScrolled(final double scrollDiff)

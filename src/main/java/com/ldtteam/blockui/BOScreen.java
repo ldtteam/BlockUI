@@ -197,20 +197,20 @@ public class BOScreen extends Screen
     }
 
     @Override
-    public boolean mouseScrolled(final double mx, final double my, final double scrollDiff)
+    public boolean mouseScrolled(final double mx, final double my, final double scrollHorizontalDiff, final double scrollVerticalDiff)
     {
-        if (scrollDiff != 0)
+        if (scrollVerticalDiff != 0)
         {
             try
             {
-                return window.scrollInput(scrollDiff * 10, calcRelativeX(mx), calcRelativeY(my));
+                return window.scrollInput(scrollVerticalDiff * 10, calcRelativeX(mx), calcRelativeY(my));
             }
             catch (final Exception e)
             {
                 final CrashReport crashReport = CrashReport.forThrowable(e, "MouseScroll event for BO screen");
                 final CrashReportCategory category = crashReport.addCategory("BO screen scroll event details");
                 category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
-                category.setDetail("Scroll value", () -> Double.toString(scrollDiff));
+                category.setDetail("Scroll value", () -> Double.toString(scrollVerticalDiff));
                 throw new ReportedException(crashReport);
             }
         }

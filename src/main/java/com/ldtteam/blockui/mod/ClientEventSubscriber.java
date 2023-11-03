@@ -19,7 +19,6 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.InputEvent.MouseScrollingEvent;
 import net.neoforged.neoforge.client.event.RenderGuiOverlayEvent;
 import net.neoforged.neoforge.client.gui.overlay.VanillaGuiOverlay;
-import net.neoforged.neoforge.event.ModMismatchEvent;
 import net.neoforged.neoforge.event.TagsUpdatedEvent;
 import net.neoforged.neoforge.event.TickEvent.ClientTickEvent;
 import net.neoforged.neoforge.event.TickEvent.Phase;
@@ -127,18 +126,11 @@ public class ClientEventSubscriber
     }
 
     @SubscribeEvent
-    public static void renderOverlay(final RenderGuiOverlayEvent event)
+    public static void renderOverlay(final RenderGuiOverlayEvent.Pre event)
     {
         if (Minecraft.getInstance().screen instanceof BOScreen && event.getOverlay() == VanillaGuiOverlay.CROSSHAIR.type())
         {
             event.setCanceled(true);
         }
-    }
-
-    @SubscribeEvent
-    public static void onModMismatch(final ModMismatchEvent event)
-    {
-        // there are no world data and rest is mod compat anyway
-        event.markResolved(BlockUI.MOD_ID);
     }
 }
