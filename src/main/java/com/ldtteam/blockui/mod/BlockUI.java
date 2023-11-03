@@ -1,8 +1,7 @@
 package com.ldtteam.blockui.mod;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.fml.DistExecutor;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.loading.FMLEnvironment;
 
 @Mod(BlockUI.MOD_ID)
 public class BlockUI
@@ -11,7 +10,10 @@ public class BlockUI
 
     public BlockUI()
     {
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> Mod.EventBusSubscriber.Bus.MOD.bus().get().register(ClientLifecycleSubscriber.class));
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> Mod.EventBusSubscriber.Bus.FORGE.bus().get().register(ClientEventSubscriber.class));
+        if (FMLEnvironment.dist.isClient())
+        {
+            Mod.EventBusSubscriber.Bus.MOD.bus().get().register(ClientLifecycleSubscriber.class);
+            Mod.EventBusSubscriber.Bus.FORGE.bus().get().register(ClientEventSubscriber.class);
+        }
     }
 }

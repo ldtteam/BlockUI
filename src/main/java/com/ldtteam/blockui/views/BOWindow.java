@@ -11,7 +11,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.fml.DistExecutor;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.function.ToDoubleBiFunction;
@@ -158,7 +157,7 @@ public class BOWindow extends View
      */
     public void open()
     {
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> mc.submit(() -> mc.setScreen(screen)));
+        mc.submit(() -> mc.setScreen(screen));
     }
 
     /**
@@ -166,7 +165,7 @@ public class BOWindow extends View
      */
     public void openAsLayer()
     {
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> mc.submit(() -> mc.pushGuiLayer(screen)));
+        mc.submit(() -> mc.pushGuiLayer(screen));
     }
 
     /**
