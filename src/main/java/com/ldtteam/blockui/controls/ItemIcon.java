@@ -26,7 +26,6 @@ import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraft.world.level.block.AirBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.CreativeModeTabRegistry;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 import java.util.Collections;
@@ -183,7 +182,6 @@ public class ItemIcon extends Pane
         updateTooltipIfNeeded();
         if (!isDataEmpty())
         {
-            final PoseStack ms = target.pose();
             ms.pushPose();
             ms.translate(x, y, 0.0f);
             ms.scale(this.getWidth() / DEFAULT_ITEMSTACK_SIZE, this.getHeight() / DEFAULT_ITEMSTACK_SIZE, 1.0f);
@@ -262,18 +260,19 @@ public class ItemIcon extends Pane
         nameOffset = modifyTooltipName(tooltipList, tooltipFlags, nameOffset);
 
         int prevTooltipSize = tooltipList.size();
-        if (tooltipFlags.advanced() && tooltipFlags.creative())
+        if (tooltipFlags.isAdvanced() && mc.player.isCreative())
         {
+            final Item item = itemStack.getItem();
             // add tags
             final int nameoffset = nameOffset + 1;
-            ForgeRegistries.ITEMS.getHolder(itemStack.getItem())
+            ForgeRegistries.ITEMS.getHolder(item)
                 .map(Holder::getTagKeys)
                 .ifPresent(tags -> tags.forEach(tag -> tooltipList.add(nameoffset,
                     wrapShift(Component.literal("#" + tag.location()).withStyle(ChatFormatting.DARK_PURPLE)))));
 
             if (item.getItemCategory() != null)
             {
-                result.add(nameOffset + 1, wrapShift(item.getItemCategory().getDisplayName().copy().withStyle(ChatFormatting.BLUE)));
+                tooltipList.add(nameOffset + 1, wrapShift(item.getItemCategory().getDisplayName().copy().withStyle(ChatFormatting.BLUE)));
             }
         }
 

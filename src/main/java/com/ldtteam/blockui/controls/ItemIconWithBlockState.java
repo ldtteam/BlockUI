@@ -1,7 +1,8 @@
 package com.ldtteam.blockui.controls;
 
-import com.ldtteam.blockui.BOGuiGraphics;
+import com.ldtteam.blockui.MatrixUtils;
 import com.ldtteam.blockui.PaneParams;
+import com.ldtteam.blockui.UiRenderMacros;
 import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -9,6 +10,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
+import net.minecraft.client.gui.Font;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
@@ -25,6 +27,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 import java.util.List;
@@ -120,29 +123,40 @@ public class ItemIconWithBlockState extends ItemIcon
     }
 
     @Override
-    public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
+    public void drawSelf(final PoseStack ms, final double mx, final double my)
     {
         updateTooltipIfNeeded();
         if (isBlockEmpty())
         {
-            super.drawSelf(target, mx, my);
+            super.drawSelf(ms, mx, my);
             return;
         }
-        
-        final PoseStack ms = target.pose();
+
         ms.pushPose();
         ms.translate(x, y, 0.0f);
         ms.scale(this.getWidth() / DEFAULT_ITEMSTACK_SIZE, this.getHeight() / DEFAULT_ITEMSTACK_SIZE, 1.0f);
 
         if (renderItemAlongBlockState)
         {
-            target.renderItem(itemStack, 0, 0);
+            MatrixUtils.pushShaderMVstack(ms);
+            mc.getItemRenderer().renderAndDecorateItem(itemStack, 0, 0);
+            MatrixUtils.popShaderMVstack();
         }
-        target.renderBlockStateAsItem(blockStateExtension, itemStack);
+        UiRenderMacros.renderBlockStateAsItem(blockStateExtension, itemStack, mc, ms);
         if (renderItemDecorations)
         {
-            target.renderItemDecorations(itemStack, 0, 0);
+            Font font = IClientItemExtensions.DEFAULT.getFont(itemStack, IClientItemExtensions.FontContext.ITEM_COUNT);
+            if (font == null)
+            {
+                font = mc.font;
+            }
+
+            MatrixUtils.pushShaderMVstack(ms);
+            mc.getItemRenderer().renderGuiItemDecorations(font, itemStack, 0, 0);
+            MatrixUtils.popShaderMVstack();
         }
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.disableBlend();
 
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableBlend();
@@ -321,7 +335,7 @@ public class ItemIconWithBlockState extends ItemIcon
         }
 
         // try parsing blockentity
-        final CompoundTag blockEntityTag = itemStack.getTagElement(BlockItem.BLOCK_ENTITY_TAG);
+        final CompoundTag blockEntityTag = BlockItem.getBlockEntityData(itemStack);
         BlockEntity be = null;
         if (blockEntityTag != null)
         {

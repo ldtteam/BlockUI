@@ -2,7 +2,7 @@ package com.ldtteam.blockui.util;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.core.Registry;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ColorResolver;
@@ -107,7 +107,7 @@ public class SingleBlockGetter implements BlockGetter
         @Override
         public int getBlockTint(final BlockPos pos, final ColorResolver colorResolver)
         {
-            return colorResolver.getColor(ServerLifecycleHooks.getCurrentServer().registryAccess().registryOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS), pos.getX(), pos.getZ());
+            return colorResolver.getColor(ServerLifecycleHooks.getCurrentServer().registryAccess().registryOrThrow(Registry.BIOME_REGISTRY).getOrThrow(Biomes.PLAINS), pos.getX(), pos.getZ());
         }
 
         @Override

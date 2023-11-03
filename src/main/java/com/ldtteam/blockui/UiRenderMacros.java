@@ -1,5 +1,7 @@
 package com.ldtteam.blockui;
 
+import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
+import com.ldtteam.blockui.util.SingleBlockGetter.SingleBlockNeighborhood;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
@@ -11,12 +13,27 @@ import com.mojang.math.Matrix4f;
 import com.mojang.math.Quaternion;
 import com.mojang.math.Vector3f;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.ItemBlockRenderTypes;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.block.model.ItemTransforms.TransformType;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraftforge.client.ForgeHooksClient;
+import org.lwjgl.glfw.GLFW;
 
 /**
  * Our replacement for GuiComponent.
@@ -664,5 +681,111 @@ public class UiRenderMacros
             livingEntity.yHeadRot = oldYawHead;
         }
         poseStack.popPose();
+    }
+
+    private static final SingleBlockNeighborhood NEIGHBORHOOD = new SingleBlockNeighborhood();
+    private static final Matrix4f LIGHTING = new Matrix4f();
+
+    static
+    {
+        LIGHTING.setIdentity();
+        LIGHTING.m03 = 0.045804605f;
+        LIGHTING.m13 = -0.4198204f;
+        LIGHTING.m23 = 0.30773196f;
+    }
+
+    /**
+     * Render given blockState with model just like {@link #renderItem(ItemStack, int, int)}
+     *
+     * @param data      blockState rendering data
+     * @param itemStack backing itemStack for given blockState
+     */
+    public static void renderBlockStateAsItem(final BlockStateRenderingData data, final ItemStack itemStack, final Minecraft minecraft, final PoseStack ms)
+    {
+        BakedModel itemModel = minecraft.getItemRenderer().getModel(itemStack, null, null, 0);
+        if (!itemModel.isGui3d() || data.blockState().getRenderShape() == RenderShape.INVISIBLE)
+        {
+            // well, some items are bit dumb
+            itemModel = minecraft.getItemRenderer().getModel(new ItemStack(Blocks.STONE), null, null, 0);
+        }
+
+        // prepare pose just like itemStack rendering would do
+
+        ms.pushPose();
+        ms.translate(8, 8, 150);
+        ms.scale(16.0F, -16.0F, 16.0F);
+        ForgeHooksClient.handleCameraTransforms(ms, itemModel, TransformType.GUI, false);
+
+        if (data.modelNeedsRotationFix())
+        {
+            ms.pushPose();
+            ms.translate(0, 0.5f, 0);
+            ms.mulPose(Vector3f.YP.rotationDegrees(45));
+            ms.translate(0, -0.5f, 0);
+        }
+
+        ms.translate(-0.5F, -0.5F, -0.5F);
+
+        RenderSystem.getModelViewStack().pushPose();
+        applyPoseToShader(ms);
+
+        Lighting.setupLevel(LIGHTING);
+
+        // render block and BE
+
+        final MultiBufferSource.BufferSource buffersource = minecraft.renderBuffers().bufferSource();
+        final PoseStack poseStack = new PoseStack();
+        final int light = LightTexture.pack(15, 15);
+        minecraft.getBlockRenderer()
+            .renderSingleBlock(data.blockState(), poseStack, buffersource, light, OverlayTexture.NO_OVERLAY, data.modelData(), null);
+        if (data.blockEntity() != null && !(data.blockEntity() instanceof SpawnerBlockEntity))
+        {
+            try
+            {
+                minecraft.getBlockEntityRenderDispatcher()
+                    .getRenderer(data.blockEntity())
+                    .render(data.blockEntity(), 0, poseStack, buffersource, light, OverlayTexture.NO_OVERLAY);
+            }
+            catch (final Exception e)
+            {
+                // well, noop then
+            }
+        }
+        buffersource.endBatch();
+
+        if (data.modelNeedsRotationFix()) // this might need shift before BER?
+        {
+            ms.popPose();
+            ms.translate(-0.5F, -0.5F, -0.5F);
+            applyPoseToShader(ms);
+        }
+
+        // render fluid
+
+        final FluidState fluidState = data.blockState().getFluidState();
+        if (!fluidState.isEmpty())
+        {
+            final RenderType renderType = ItemBlockRenderTypes.getRenderLayer(fluidState);
+
+            NEIGHBORHOOD.blockState = data.blockState();
+            minecraft.getBlockRenderer()
+                .renderLiquid(BlockPos.ZERO, NEIGHBORHOOD, buffersource.getBuffer(renderType), data.blockState(), fluidState);
+
+            buffersource.endBatch(renderType);
+        }
+
+        Lighting.setupFor3DItems();
+
+        RenderSystem.getModelViewStack().popPose();
+        RenderSystem.applyModelViewMatrix();
+
+        ms.popPose();
+    }
+
+    public static void applyPoseToShader(final PoseStack ms)
+    {
+        RenderSystem.getModelViewStack().setIdentity();
+        RenderSystem.getModelViewStack().mulPoseMatrix(ms.last().pose());
+        RenderSystem.applyModelViewMatrix();
     }
 }

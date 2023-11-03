@@ -64,7 +64,7 @@ public class BOScreen extends Screen
 
         final float renderZlevel = MatrixUtils.getLastMatrixTranslateZ(ms);
         final float oldZ = minecraft.getItemRenderer().blitOffset;
-        minecraft.getItemRenderer().blitOffset = renderZlevel;
+        minecraft.getItemRenderer().blitOffset = 0;
 
         final boolean oldFilteringValue = ForgeRenderTypes.enableTextTextureLinearFiltering;
         ForgeRenderTypes.enableTextTextureLinearFiltering = false;
@@ -104,7 +104,7 @@ public class BOScreen extends Screen
         try
         {
             window.draw(newMs, calcRelativeX(mx), calcRelativeY(my));
-            if (ms.minecraft.screen == this)
+            if (minecraft.screen == this)
             {
                 applyCursor();
             }

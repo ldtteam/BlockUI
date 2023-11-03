@@ -122,7 +122,7 @@ public record BlockStateRenderingData(BlockState blockState,
         final UnbakedModel model = modelBakery.getModel(modelResLoc);
         final BlockModel blockModel = model instanceof final BlockModel bm ? bm :
             (model instanceof final MultiVariant mv ?
-                modelBakery.modelResources.get(ModelBakery.MODEL_LISTER.idToFile(mv.getVariants().get(0).getModelLocation())) :
+                (modelBakery.getModel(mv.getVariants().get(0).getModelLocation()) instanceof final BlockModel bm ? bm : null) :
                 null);
 
         if (blockModel == null || blockModel.getElements().isEmpty())
@@ -132,7 +132,7 @@ public record BlockStateRenderingData(BlockState blockState,
 
         for (final BlockElement element : blockModel.getElements())
         {
-            if (element.rotation == null || element.rotation.axis() != Direction.Axis.Y)
+            if (element.rotation == null || element.rotation.axis != Direction.Axis.Y)
             {
                 return false;
             }
