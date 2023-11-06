@@ -5,6 +5,7 @@ buildscript {
     repositories {
         maven { url = 'https://maven.neoforged.net/releases' }
         maven { url = 'https://maven.parchmentmc.org' }
+        flatDir { dirs 'libs' }
         mavenLocal()
         mavenCentral()
         gradlePluginPortal()
@@ -14,10 +15,7 @@ buildscript {
     }
 }
 
-apply plugin: 'java-library'
 apply plugin: net.neoforged.gradle.userdev.UserDevPlugin
-apply plugin: 'eclipse'
-apply plugin: 'idea'
 apply plugin: 'maven-publish'
 
 version = modVersion
@@ -37,7 +35,7 @@ minecraft.accessTransformers.file rootProject.file('src/main/resources/META-INF/
 
 runs {
     configureEach {
-        systemProperty 'forge.logging.console.level', 'debug'
+        systemProperty 'forge.logging.console.level', 'info'
         modSource project.sourceSets.main
 
         final File gameDir = project.file("run/${it.name}") as File
@@ -49,13 +47,11 @@ runs {
 
     client {
         systemProperty 'forge.enabledGameTestNamespaces', project.modId
-        workingDirectory project.file('run/client')
     }
 
     server {
         systemProperty 'forge.enabledGameTestNamespaces', project.modId
         programArgument '--nogui'
-        workingDirectory project.file('run/server')
     }
 
     data {
