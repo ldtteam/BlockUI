@@ -70,7 +70,6 @@ public class ClientEventSubscriber
                 }));
                 window.addChild(createTestGuiButton(1, "Tooltip Positioning", new ResourceLocation(BlockUI.MOD_ID, "gui/test2.xml")));
                 window.addChild(createTestGuiButton(2, "ItemIcon To BlockState", new ResourceLocation(BlockUI.MOD_ID, "gui/test3.xml"), BlockStateTestGui::setup));
-                window.addChild(createTestGuiButton(3, "Dynamic ScrollingLists", new ResourceLocation(BlockUI.MOD_ID, "gui/test4.xml"), DynamicScrollingListGui::setup));
                 window.open();
             }
         }
