@@ -2,8 +2,7 @@ package com.ldtteam.blockui.views;
 
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
-import com.ldtteam.blockui.util.records.SizeI;
-import org.jetbrains.annotations.Nullable;
+import com.ldtteam.blockui.views.ScrollingListContainer.EventMutableSizeI;
 
 import java.util.List;
 import java.util.function.IntSupplier;
@@ -140,7 +139,7 @@ public class ScrollingList extends ScrollingView
          * @param index the index of the row/list element.
          * @param event the event used to modify the size.
          */
-        default void getElementSize(int index, final ScrollingListContainer.EventMutableSizeI event)
+        default void getElementSize(int index, final EventMutableSizeI event)
         {
             // No implementation by default
         }

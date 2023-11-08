@@ -4,6 +4,7 @@ import com.ldtteam.blockui.Loader;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.mod.Log;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 
 /**
  * A Blockout pane that contains a scrolling line of other panes.
@@ -28,8 +29,15 @@ public class ScrollingListContainer extends ScrollingContainer
         final Pane template = Loader.createFromPaneParams(listNodeParams, null);
         if (template == null)
         {
-            Log.getLogger().error("Scrolling list template could not be loaded. Is there a reference to another layout in the list children?");
-            return;
+            if (FMLEnvironment.production)
+            {
+                Log.getLogger().error("Scrolling list template could not be loaded. Is there a reference to another layout in the list children?");
+                return;
+            }
+            else
+            {
+                throw new IllegalStateException("Scrolling list template could not be loaded. Is there a reference to another layout in the list children?");
+            }
         }
 
         final EventMutableSizeI event = new EventMutableSizeI();
