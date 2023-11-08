@@ -2,8 +2,6 @@ package com.ldtteam.blockui.views;
 
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
-import com.ldtteam.blockui.util.records.SizeI;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.IntSupplier;
@@ -16,11 +14,11 @@ import java.util.function.IntSupplier;
  */
 public class ScrollingList extends ScrollingView
 {
-    protected int          childSpacing = 0;
+    protected int childSpacing = 0;
     // Runtime
     protected DataProvider dataProvider;
-    private   PaneParams   listNodeParams;
-    private   int          maxHeight;
+    private PaneParams listNodeParams;
+    private int maxHeight;
 
     /**
      * Default constructor required by Blockout.
@@ -44,7 +42,6 @@ public class ScrollingList extends ScrollingView
 
     /**
      * Max height setter.
-     *
      * @param maxHeight the height to set.
      */
     public void setMaxHeight(final int maxHeight)
@@ -133,18 +130,6 @@ public class ScrollingList extends ScrollingView
          * @return number of rows in the list
          */
         int getElementCount();
-
-        /**
-         * Override this to pick a custom size for this element. Tuple arguments are width and height, in that order.
-         *
-         * @param index   the index of the row/list element
-         * @param rowPane the parent Pane for the row, containing the elements to update
-         * @return a new size for the element, or null to use the template element size.
-         */
-        default @Nullable SizeI getElementSize(int index, Pane rowPane)
-        {
-            return null;
-        }
 
         /**
          * Override this to update the Panes for a given row.
