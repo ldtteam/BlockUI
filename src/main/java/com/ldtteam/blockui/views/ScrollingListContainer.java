@@ -3,8 +3,7 @@ package com.ldtteam.blockui.views;
 import com.ldtteam.blockui.Loader;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
-import com.ldtteam.blockui.util.records.SizeI;
-import org.jetbrains.annotations.Nullable;
+import com.ldtteam.blockui.mod.Log;
 
 /**
  * A Blockout pane that contains a scrolling line of other panes.
@@ -27,14 +26,23 @@ public class ScrollingListContainer extends ScrollingContainer
         int currentYpos = 0;
 
         final Pane template = Loader.createFromPaneParams(listNodeParams, null);
+        if (template == null)
+        {
+            Log.getLogger().error("Scrolling list template could not be loaded. Is there a reference to another layout in the list children?");
+            return;
+        }
+
+        final EventMutableSizeI event = new EventMutableSizeI();
 
         final int numElements = (dataProvider != null) ? dataProvider.getElementCount() : 0;
         if (dataProvider != null)
         {
             for (int i = 0; i < numElements; ++i)
             {
-                final @Nullable SizeI customElementSize = dataProvider.getElementSize(i, new SizeI(template.getWidth(), template.getHeight()));
-                final int elementHeight = customElementSize != null ? customElementSize.height() : template.getHeight();
+                event.reset(template.getWidth(), template.getHeight());
+                dataProvider.getElementSize(i, event);
+
+                final int elementHeight = event.height;
                 if (currentYpos + elementHeight >= scrollY && currentYpos <= scrollY + height)
                 {
                     final Pane child;
@@ -52,9 +60,9 @@ public class ScrollingListContainer extends ScrollingContainer
                     }
 
                     child.setPosition(0, currentYpos);
-                    if (customElementSize != null)
+                    if (event.modified)
                     {
-                        child.setSize(customElementSize.width(), customElementSize.height());
+                        child.setSize(event.width, event.height);
                     }
 
                     dataProvider.updateElement(i, child);
@@ -92,5 +100,102 @@ public class ScrollingListContainer extends ScrollingContainer
         }
 
         return getChildren().indexOf(parentPane);
+    }
+
+    /**
+     * Event class for modifying row item size.
+     */
+    public static class EventMutableSizeI
+    {
+        /**
+         * The width for the row item.
+         */
+        private int width;
+
+        /**
+         * The height for the row item.
+         */
+        private int height;
+
+        /**
+         * Whether the width/height was modified.
+         */
+        private boolean modified;
+
+        /**
+         * Get the current width of the row item.
+         *
+         * @return the width.
+         */
+        public int getWidth()
+        {
+            return width;
+        }
+
+        /**
+         * Set a new width for this row item.
+         *
+         * @param width the new width.
+         */
+        public void setWidth(int width)
+        {
+            setSize(width, this.height);
+        }
+
+        /**
+         * Get the current height of the row item.
+         *
+         * @return the height.
+         */
+        public int getHeight()
+        {
+            return height;
+        }
+
+        /**
+         * Set a new height for this row item.
+         *
+         * @param height the new height.
+         */
+        public void setHeight(int height)
+        {
+            setSize(this.width, height);
+        }
+
+        /**
+         * Adjust the existing size by a given offset.
+         *
+         * @param diffW the difference in width.
+         * @param diffH the difference in height.
+         */
+        public void adjustSize(int diffW, int diffH)
+        {
+            setSize(this.width + diffW, this.height + diffH);
+        }
+
+        /**
+         * Set a new width and height for this row item.
+         *
+         * @param height the new height.
+         */
+        public void setSize(int width, int height)
+        {
+            this.width = width;
+            this.height = height;
+            this.modified = true;
+        }
+
+        /**
+         * Resets the event back to initial state.
+         *
+         * @param width  the initial width.
+         * @param height the initial height.
+         */
+        void reset(final int width, final int height)
+        {
+            this.width = width;
+            this.height = height;
+            this.modified = false;
+        }
     }
 }

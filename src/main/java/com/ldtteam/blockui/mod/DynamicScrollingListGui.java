@@ -5,6 +5,7 @@ import com.ldtteam.blockui.controls.Text;
 import com.ldtteam.blockui.util.records.SizeI;
 import com.ldtteam.blockui.views.BOWindow;
 import com.ldtteam.blockui.views.ScrollingList;
+import com.ldtteam.blockui.views.ScrollingListContainer;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,9 +42,12 @@ public class DynamicScrollingListGui
             }
 
             @Override
-            public @Nullable SizeI getElementSize(final int index, final SizeI oldSize)
+            public void getElementSize(final int index, final ScrollingListContainer.EventMutableSizeI event)
             {
-                return index % 2 == 0 ? new SizeI(100, 40) : null;
+                if (index % 2 == 0)
+                {
+                    event.setSize(100, 40);
+                }
             }
 
             @Override
