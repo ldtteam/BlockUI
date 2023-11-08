@@ -2,12 +2,10 @@ package com.ldtteam.blockui.mod;
 
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.controls.Text;
-import com.ldtteam.blockui.util.records.SizeI;
 import com.ldtteam.blockui.views.BOWindow;
 import com.ldtteam.blockui.views.ScrollingList;
-import com.ldtteam.blockui.views.ScrollingListContainer;
+import com.ldtteam.blockui.views.ScrollingListContainer.EventMutableSizeI;
 import net.minecraft.network.chat.Component;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * Sets up gui for dynamic scrolling lists.
@@ -42,7 +40,7 @@ public class DynamicScrollingListGui
             }
 
             @Override
-            public void getElementSize(final int index, final ScrollingListContainer.EventMutableSizeI event)
+            public void getElementSize(final int index, final EventMutableSizeI event)
             {
                 if (index % 2 == 0)
                 {
