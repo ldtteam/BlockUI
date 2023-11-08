@@ -26,39 +26,41 @@ public class ScrollingListContainer extends ScrollingContainer
     {
         int currentYpos = 0;
 
+        final int templateHeight = Loader.createFromPaneParams(listNodeParams, null).getHeight();
+
         final int numElements = (dataProvider != null) ? dataProvider.getElementCount() : 0;
         if (dataProvider != null)
         {
             for (int i = 0; i < numElements; ++i)
             {
-                final Pane child;
-                if (i < children.size())
+                final @Nullable SizeI customElementSize = dataProvider.getElementSize(i);
+                final int elementHeight = customElementSize != null ? customElementSize.height() : templateHeight;
+                if (currentYpos + elementHeight >= scrollY && currentYpos <= scrollY + height)
                 {
-                    child = children.get(i);
-                }
-                else
-                {
-                    child = Loader.createFromPaneParams(listNodeParams, this);
-                    if (child == null)
+                    final Pane child;
+                    if (i < children.size())
                     {
-                        continue;
+                        child = children.get(i);
                     }
-                }
+                    else
+                    {
+                        child = Loader.createFromPaneParams(listNodeParams, this);
+                        if (child == null)
+                        {
+                            continue;
+                        }
+                    }
 
-                child.setPosition(0, currentYpos);
+                    child.setPosition(0, currentYpos);
+                    if (customElementSize != null)
+                    {
+                        child.setSize(customElementSize.width(), customElementSize.height());
+                    }
 
-                final @Nullable SizeI customElementSize = dataProvider.getElementSize(i, child);
-                if (customElementSize != null)
-                {
-                    child.setSize(customElementSize.width(), customElementSize.height());
-                }
-
-                if (currentYpos + child.getHeight() >= scrollY && currentYpos <= scrollY + height)
-                {
                     dataProvider.updateElement(i, child);
                 }
 
-                currentYpos += child.getHeight() + childSpacing;
+                currentYpos += elementHeight + childSpacing;
             }
         }
 

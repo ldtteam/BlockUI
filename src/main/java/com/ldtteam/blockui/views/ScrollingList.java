@@ -91,7 +91,7 @@ public class ScrollingList extends ScrollingView
         refreshElementPanes();
     }
 
-        @Override
+    @Override
     protected ScrollingContainer createScrollingContainer()
     {
         return new ScrollingListContainer(this);
@@ -137,11 +137,10 @@ public class ScrollingList extends ScrollingView
         /**
          * Override this to pick a custom size for this element. Tuple arguments are width and height, in that order.
          *
-         * @param index   the index of the row/list element
-         * @param rowPane the parent Pane for the row, containing the elements to update
+         * @param index the index of the row/list element
          * @return a new size for the element, or null to use the template element size.
          */
-        default @Nullable SizeI getElementSize(int index, Pane rowPane)
+        default @Nullable SizeI getElementSize(int index)
         {
             return null;
         }

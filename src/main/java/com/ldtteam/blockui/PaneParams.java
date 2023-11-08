@@ -58,6 +58,16 @@ public class PaneParams
         return parentView != null ? parentView.getInteriorHeight() : 0;
     }
 
+    public int getParentLeft()
+    {
+        return parentView != null ? parentView.x : 0;
+    }
+
+    public int getParentTop()
+    {
+        return parentView != null ? parentView.y : 0;
+    }
+
     public List<PaneParams> getChildren()
     {
         if (!children.isEmpty()) return children;

@@ -37,11 +37,11 @@ public class DynamicScrollingListGui
             @Override
             public int getElementCount()
             {
-                return 10;
+                return 20;
             }
 
             @Override
-            public @Nullable SizeI getElementSize(final int index, final Pane rowPane)
+            public @Nullable SizeI getElementSize(final int index)
             {
                 return index % 2 == 0 ? new SizeI(100, 40) : null;
             }
