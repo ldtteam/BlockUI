@@ -137,13 +137,12 @@ public class ScrollingList extends ScrollingView
         /**
          * Override this to pick a custom size for this element. Tuple arguments are width and height, in that order.
          *
-         * @param index   the index of the row/list element.
-         * @param oldSize the old size of the element.
-         * @return a new size for the element, or null to use the template element size.
+         * @param index the index of the row/list element.
+         * @param event the event used to modify the size.
          */
-        default @Nullable SizeI getElementSize(int index, final SizeI oldSize)
+        default void getElementSize(int index, final ScrollingListContainer.EventMutableSizeI event)
         {
-            return null;
+            // No implementation by default
         }
 
         /**
