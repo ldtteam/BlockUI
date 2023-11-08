@@ -135,7 +135,7 @@ public class ScrollingList extends ScrollingView
         int getElementCount();
 
         /**
-         * Override this to pick a custom size for this element. Tuple arguments are width and height, in that order.
+         * Override this to pick a custom size for this element. Event contains the logic to modify the old size.
          *
          * @param index the index of the row/list element.
          * @param event the event used to modify the size.
