@@ -90,6 +90,15 @@ public class ItemIcon extends Pane
     {
         clearDataAndScheduleTooltipUpdate();
         this.itemStack = itemStack;
+        onItemUpdate();
+    }
+
+    /**
+     * Called when itemStack was changed
+     */
+    protected void onItemUpdate()
+    {
+
     }
 
     /**
@@ -148,6 +157,7 @@ public class ItemIcon extends Pane
         {
             blockStateExtension.blockEntity().saveToItem(itemStack);
         }
+        onItemUpdate();
     }
 
     /**
@@ -159,9 +169,14 @@ public class ItemIcon extends Pane
         tooltipUpdateScheduled = true;
     }
 
-    public boolean isDataEmpty()
+    protected boolean isItemEmpty()
     {
         return itemStack == null || itemStack.isEmpty();
+    }
+
+    public boolean isDataEmpty()
+    {
+        return isItemEmpty();
     }
 
     protected void updateTooltipIfNeeded()
@@ -202,7 +217,7 @@ public class ItemIcon extends Pane
     @Override
     public void onUpdate()
     {
-        if (onHover == null && itemStack != null && !itemStack.isEmpty())
+        if (onHover == null && !isItemEmpty())
         {
             new AutomaticTooltipBuilder().hoverPane(this).build().setTextOld(getModifiedItemStackTooltip());
         }
