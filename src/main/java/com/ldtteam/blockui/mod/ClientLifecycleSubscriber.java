@@ -1,5 +1,6 @@
 package com.ldtteam.blockui.mod;
 
+import com.ldtteam.blockui.AtlasManager;
 import com.ldtteam.blockui.Loader;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.world.level.block.Blocks;
@@ -14,6 +15,7 @@ public class ClientLifecycleSubscriber
     public static void onRegisterReloadListeners(final RegisterClientReloadListenersEvent event)
     {
         event.registerReloadListener(Loader.INSTANCE);
+        AtlasManager.INSTANCE.addAtlas(event::registerReloadListener, BlockUI.MOD_ID);
     }
 
     @SubscribeEvent
