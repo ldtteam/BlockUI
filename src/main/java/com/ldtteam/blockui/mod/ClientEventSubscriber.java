@@ -3,7 +3,7 @@ package com.ldtteam.blockui.mod;
 import com.ldtteam.blockui.AtlasManager;
 import com.ldtteam.blockui.BOScreen;
 import com.ldtteam.blockui.controls.Button;
-import com.ldtteam.blockui.controls.ButtonVanilla;
+import com.ldtteam.blockui.controls.ButtonImage;
 import com.ldtteam.blockui.controls.Image;
 import com.ldtteam.blockui.hooks.HookManager;
 import com.ldtteam.blockui.hooks.HookRegistries;
@@ -71,7 +71,7 @@ public class ClientEventSubscriber
                 window.addChild(dumpAtlases);
                 window.addChild(createTestGuiButton(id++, "General All-in-one", new ResourceLocation(BlockUI.MOD_ID, "gui/test.xml"), parent -> {
                     parent.findPaneOfTypeByID("missing_out_of_jar", Image.class).setImage(OutOfJarResourceLocation.ofMinecraftFolder(BlockUI.MOD_ID, "missing_out_of_jar.png"), false);
-                    parent.findPaneOfTypeByID("working_out_of_jar", Image.class).setImage(OutOfJarResourceLocation.ofMinecraftFolder(BlockUI.MOD_ID, "../../src/test/resources/button.png"), false);
+                    parent.findPaneOfTypeByID("working_out_of_jar", Image.class).setImage(OutOfJarResourceLocation.ofMinecraftFolder(BlockUI.MOD_ID, "../../../src/test/resources/button.png"), false);
                 }));
                 window.addChild(createTestGuiButton(id++, "Tooltip Positioning", new ResourceLocation(BlockUI.MOD_ID, "gui/test2.xml")));
                 window.addChild(createTestGuiButton(id++, "ItemIcon To BlockState", new ResourceLocation(BlockUI.MOD_ID, "gui/test3.xml"), BlockStateTestGui::setup));
@@ -94,7 +94,7 @@ public class ClientEventSubscriber
         final ResourceLocation testGuiResLoc,
         final Consumer<BOWindow>... setups)
     {
-        final Button button = new ButtonVanilla();
+        final Button button = new ButtonImage();
         button.setPosition((order % 2) * (button.getWidth() + 20), (order / 2) * (button.getHeight() + 10));
         button.setText(Component.literal(name));
         button.setHandler(b -> {

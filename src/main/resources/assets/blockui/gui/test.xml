@@ -1,16 +1,17 @@
 <window xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="block_ui.xsd" size="1600 900" type="FIXED_VANILLA" pause="true" lightbox="true">
     <button id="bt" label="vanilla" size="100 100" pos="0 0" textscale="5"/>
-    <buttonimage id="bti" label="textured" size="100 100" pos="100 0" textscale="5" textoffset="18 18" textbox="64 64" source="blockui:textures/gui/button.png" cursor="blockui:textures/gui/test_cursor.png"/>
+    <buttonimage id="bti" label="textured" size="100 100" pos="100 0" textscale="5" textoffset="18 18" textbox="64 64" source="blockui:button" cursor="blockui:textures/gui/test_cursor.png"/>
     <text id="txt" size="600 250" pos="0 100" textcolor="yellow" tooltip="test tooltip" textscale="3.5" textalign="BOTTOM_RIGHT" text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut eros elit, tempus quis imperdiet iaculis, dignissim ac velit. Donec sed molestie sem. Fusce lacinia est nec nibh lobortis aliquet. Aliquam lorem est, vehicula sodales lorem ac, mollis faucibus felis. Fusce facilisis suscipit mi. Fusce luctus erat et magna rutrum ullamcorper. Phasellus placerat, nulla in mattis mattis, purus nunc elementum nisl, ac tristique risus neque in dolor. Nunc a sagittis ligula. Sed ut placerat elit, a ultricies purus. Nullam vel gravida ante.\nProin mattis lobortis tellus sit amet semper. Integer ut viverra nunc. Donec dictum tincidunt laoreet. Pellentesque ultrices dapibus ex, ut iaculis odio. Ut suscipit, nibh eu condimentum gravida, sapien neque blandit ipsum, eget laoreet ipsum erat id felis. Fusce tempor dui sit amet bibendum tristique. Curabitur sodales, leo sit amet blandit rhoncus, arcu est gravida nibh, vitae fringilla sapien nunc vel nisl. Praesent a tristique tortor. Nullam facilisis nisi at augue condimentum ornare. Aliquam vitae sem ipsum. Quisque varius ut dolor at sagittis. Suspendisse vehicula mattis massa vitae hendrerit. Nunc blandit suscipit enim."/>
     <itemicon item="minecraft:birch_log" size="16 16" pos="0 570"/>
     <itemicon item="minecraft:cobblestone" size="16 16" pos="16 570"/>
     <itemicon item="minecraft:netherite_upgrade_smithing_template" size="16 16" pos="32 570"/>
     <input id="txtin" size="400 100" pos="0 600"/>
-    <image id="vanilla_uv_test" pos="0 750" size="728 20" imageoffset="0 89" imagesize="182 5" source="minecraft:textures/gui/icons.png"/>
-    <image id="missing" pos="120 800" size="100 100" source="blockui:veryuglymissingtexture.png"/>
+    <!-- replace with sth where we can test this works
+        <image id="vanilla_uv_test" pos="0 750" size="728 20" imageoffset="0 89" imagesize="182 5" source="minecraft:textures/gui/icons.png"/>-->
+    <image id="missing" pos="120 800" size="100 100" source="blockui:veryuglymissingtexture"/>
     <image id="missing_out_of_jar" pos="240 800" size="100 100"/>
     <image id="working_out_of_jar" pos="360 800" size="100 100"/>
-    <image id="anim_test" pos="0 800" size="100 100" source="blockui:textures/gui/spritesheet_leaves.png"/>
+    <image id="anim_test" pos="0 800" size="100 100" source="blockui:spritesheet_leaves"/>
     <button id="unicodeTest" cursor="blockui:missingcursortexture" size="50 50" label="↥" pos="600 270"  textscale="3.5"/>
     <zoomdragview id="zdv" pos="800 0" size="800 900">
         <scrollgroup pos="0 0" size="108 900" childspacing="10">
@@ -25,7 +26,7 @@
             <button size="100 100" label="8" textscale="10"/>
             <button size="100 100" label="9" textscale="10"/>
             <dropdown size="100 20">
-                <image size="100 100" source="blockui:textures/gui/button.png"/>
+                <image size="100 100" source="blockui:button"/>
             </dropdown>
             <button size="100 100" label="10" textscale="10"/>
             <button size="100 100" label="11" textscale="10"/>
@@ -37,7 +38,7 @@
             <button size="100 100" label="17" textscale="10"/>
         </scrollgroup>
         <dropdown size="100 20" pos="150 0">
-            <image size="100 100" source="blockui:textures/gui/button.png"/>
+            <image size="100 100" source="blockui:button"/>
         </dropdown>
         <itemicon id="ii" item="minecraft:barrier" onHoverId="ii2" size="16 16" pos="0 400"/>
         <itemicon id="ii2" item="minecraft:diamond_pickaxe" pos="0 416" size="16 16"/>

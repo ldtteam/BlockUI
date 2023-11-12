@@ -310,7 +310,7 @@ public class DropDownList extends View implements ButtonHandler
     {
         int getElementCount();
 
-        @Deprecated
+        @Deprecated(forRemoval = true, since = "1.20.2")
         String getLabel(final int index);
 
         default MutableComponent getLabelNew(final int index)

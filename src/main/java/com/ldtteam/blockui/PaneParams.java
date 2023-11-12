@@ -154,9 +154,32 @@ public class PaneParams
      * @param def the default value to fallback to
      * @return the parsed resource location
      */
+    @Nullable
+    public ResourceLocation getResource(final String name)
+    {
+        return getProperty(name, Parsers.RESOURCE, null);
+    }
+
+    /**
+     * Get the resource location from the name
+     * @param name the attribute name
+     * @param def the default value to fallback to
+     * @return the parsed resource location
+     */
     public ResourceLocation getResource(final String name, final String def)
     {
         return getProperty(name, Parsers.RESOURCE, new ResourceLocation(def));
+    }
+
+    /**
+     * Get the resource location from the name
+     * @param name the attribute name
+     * @param def the default value to fallback to
+     * @return the parsed resource location
+     */
+    public ResourceLocation getResource(final String name, final ResourceLocation def)
+    {
+        return getProperty(name, Parsers.RESOURCE, def);
     }
 
     /**

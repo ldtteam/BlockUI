@@ -9,7 +9,6 @@ import net.minecraft.client.resources.metadata.gui.GuiMetadataSection;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.IOException;
@@ -42,7 +41,6 @@ public class AtlasManager
         });
     }
 
-    @Nullable
     public TextureAtlasSprite getSprite(final ResourceLocation resLoc)
     {
         final CustomGuiSpriteManager spriteManager = modAtlases.get(resLoc.getNamespace());
@@ -81,7 +79,7 @@ public class AtlasManager
         private CustomGuiSpriteManager(final TextureManager textureManager, final String modId)
         {
             super(textureManager,
-                new ResourceLocation("textures/atlas/" + modId + "_gui.png"),
+                new ResourceLocation(modId, "textures/atlas/" + modId + "_gui.png"),
                 new ResourceLocation(modId, modId + "_gui"),
                 GuiSpriteManager.METADATA_SECTIONS);
         }

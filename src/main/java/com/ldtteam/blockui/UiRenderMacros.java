@@ -8,14 +8,20 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 import com.mojang.math.Axis;
-import org.joml.Matrix4f;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
+import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling.NineSlice;
+import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling.Tile;
+import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling.Type;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.neoforged.fml.loading.FMLEnvironment;
+import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
 /**
@@ -370,11 +376,10 @@ public class UiRenderMacros
         RenderSystem.disableBlend();
     }
 
-    public static void blit(final PoseStack ps, final ResourceLocation rl, final int x, final int y, final int w, final int h)
-    {
-        blit(ps, rl, x, y, w, h, 0.0f, 0.0f, 1.0f, 1.0f);
-    }
-
+    /**
+     * @deprecated {@link #blit(PoseStack, ResourceLocation, int, int, int, int, float, float, float, float)}
+     */
+    @Deprecated(forRemoval = true, since = "1.20.2")
     public static void blit(final PoseStack ps,
         final ResourceLocation rl,
         final int x,
@@ -389,6 +394,10 @@ public class UiRenderMacros
         blit(ps, rl, x, y, w, h, (float) u / mapW, (float) v / mapH, (float) (u + w) / mapW, (float) (v + h) / mapH);
     }
 
+    /**
+     * @deprecated {@link #blit(PoseStack, ResourceLocation, int, int, int, int, float, float, float, float)}
+     */
+    @Deprecated(forRemoval = true, since = "1.20.2")
     public static void blit(final PoseStack ps,
         final ResourceLocation rl,
         final int x,
@@ -405,6 +414,72 @@ public class UiRenderMacros
         blit(ps, rl, x, y, w, h, (float) u / mapW, (float) v / mapH, (float) (u + uW) / mapW, (float) (v + vH) / mapH);
     }
 
+    public static void blitSprite(final PoseStack ps,
+        final TextureAtlasSprite sprite,
+        final GuiSpriteScaling guiScaling,
+        final int x,
+        final int y,
+        final int w,
+        final int h)
+    {
+        final ResourceLocation atlasLocation = sprite.atlasLocation();
+        final float u0 = sprite.getU0();
+        final float v0 = sprite.getV0();
+        final float u1 = sprite.getU1();
+        final float v1 = sprite.getV1();
+        if (guiScaling.type() == Type.STRETCH)
+        {
+            blit(ps, atlasLocation, x, y, w, h, u0, v0, u1, v1);
+        }
+        else if (guiScaling instanceof final NineSlice nineSlice)
+        {
+            final int rbW = nineSlice.width();
+            final int rbH = nineSlice.height();
+
+            if (rbW == w && rbH == h)
+            {
+                blit(ps, atlasLocation, x, y, w, h, u0, v0, u1, v1);
+            }
+            else
+            {
+                final int uR = nineSlice.border().left();
+                final int vR = nineSlice.border().top();
+                final int rW = rbW - uR - nineSlice.border().right();
+                final int rH = rbH - vR - nineSlice.border().bottom();
+                blitRepeatable(ps, atlasLocation, x, y, w, h, u0, v0, u1, v1, uR, vR, rW, rH, rbW, rbH);
+            }
+        }
+        else if (guiScaling instanceof final Tile tile)
+        {
+            final int tW = tile.width();
+            final int tH = tile.height();
+
+            if (tW == w && tH == h)
+            {
+                blit(ps, atlasLocation, x, y, w, h, u0, v0, u1, v1);
+            }
+            else
+            {
+                blitRepeatable(ps, atlasLocation, x, y, w, h, u0, v0, u1, v1, 0, 0, tW, tH, tW, tH);
+            }
+        }
+    }
+
+    public static void blitSprite(final PoseStack ps,
+        final TextureAtlasSprite sprite,
+        final int x,
+        final int y,
+        final int w,
+        final int h)
+    {
+        blit(ps, sprite.atlasLocation(), x, y, w, h, sprite.getU0(), sprite.getV0(), sprite.getU1(), sprite.getV1());
+    }
+
+    public static void blit(final PoseStack ps, final ResourceLocation rl, final int x, final int y, final int w, final int h)
+    {
+        blit(ps, rl, x, y, w, h, 0.0f, 0.0f, 1.0f, 1.0f);
+    }
+
     public static void blit(final PoseStack ps,
         final ResourceLocation rl,
         final int x,
@@ -416,7 +491,6 @@ public class UiRenderMacros
         final float uMax,
         final float vMax)
     {
-        Minecraft.getInstance().getTextureManager().bindForSetup(rl);
         RenderSystem.setShaderTexture(0, rl);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
 
@@ -450,7 +524,10 @@ public class UiRenderMacros
      * @param vRepeat       offset relative to u, v [texels], smaller than vHeight
      * @param repeatWidth   size of repeatable box in texture [texels], smaller than or equal uWidth - uRepeat
      * @param repeatHeight  size of repeatable box in texture [texels], smaller than or equal vHeight - vRepeat
+     * 
+     * @deprecated {@link #blitRepeatable(PoseStack, ResourceLocation, int, int, int, int, float, float, float, float, int, int, int, int, int, int)}
      */
+    @Deprecated(forRemoval = true, since = "1.20.2")
     protected static void blitRepeatable(final PoseStack ps,
         final ResourceLocation rl,
         final int x, final int y,
@@ -531,7 +608,113 @@ public class UiRenderMacros
         // bot left corner
         populateBlitTriangles(buffer, mat, xEnd, xEnd + uLeft, yEnd, yEnd + vLeft, restMinU, restMaxU, restMinV, restMaxV);
 
-        Minecraft.getInstance().getTextureManager().bindForSetup(rl);
+        RenderSystem.setShaderTexture(0, rl);
+        RenderSystem.setShader(GameRenderer::getPositionTexShader);
+
+        Tesselator.getInstance().end();
+    }
+
+    /**
+     * Draws texture without scaling so one texel is one pixel, using repeatable texture center.
+     * TODO: Nightenom - rework to better algoritm from pgr, also texture extensions?
+     *
+     * @param ps              MatrixStack
+     * @param rl              image ResLoc
+     * @param x               start target coords [pixels]
+     * @param y               start target coords [pixels]
+     * @param width           target rendering box [pixels]
+     * @param height          target rendering box [pixels]
+     * @param uMin            texture start offset [normalized texels]
+     * @param vMin            texture start offset [normalized texels]
+     * @param uMax            texture end offset [normalized texels]
+     * @param vMax            texture end offset [normalized texels]
+     * @param uRepeat         offset relative to u, v [texels], smaller than uWidth
+     * @param vRepeat         offset relative to u, v [texels], smaller than vHeight
+     * @param repeatWidth     size of repeatable part in texture [texels], smaller than or equal repeatBoxWidth - uRepeat
+     * @param repeatHeight    size of repeatable part in texture [texels], smaller than or equal repeatBoxHeight - vRepeat
+     * @param repeatBoxWidth  size of entire repeatable box (borders + repeat part) [texels]
+     * @param repeatBoxHeight size of entire repeatable box (borders + repeat part) [texels]
+     */
+    protected static void blitRepeatable(final PoseStack ps,
+        final ResourceLocation rl,
+        final int x, final int y,
+        final int width, final int height,
+        final float uMin, final float vMin,
+        final float uMax, final float vMax,
+        final int uRepeat, final int vRepeat,
+        final int repeatWidth, final int repeatHeight,
+        final int repeatBoxWidth, final int repeatBoxHeight)
+    {
+        if (uRepeat < 0 || vRepeat < 0 || uRepeat >= repeatBoxWidth || vRepeat >= repeatBoxHeight || repeatWidth < 1 || repeatHeight < 1
+            || repeatWidth > repeatBoxWidth - uRepeat || repeatHeight > repeatBoxHeight - vRepeat)
+        {
+            throw new IllegalArgumentException("Repeatable box is outside of texture box");
+        }
+
+        final int repeatCountX = Math.max(1, Math.max(0, width - (repeatBoxWidth - repeatWidth)) / repeatWidth);
+        final int repeatCountY = Math.max(1, Math.max(0, height - (repeatBoxHeight - repeatHeight)) / repeatHeight);
+        final float uTexelWidth = (uMax - uMin) / repeatBoxWidth;
+        final float vTexelHeight = (vMax - vMin) / repeatBoxHeight;
+
+        final Matrix4f mat = ps.last().pose();
+        final BufferBuilder buffer = Tesselator.getInstance().getBuilder();
+        buffer.begin(Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX);
+
+        // main
+        for (int i = 0; i < repeatCountX; i++)
+        {
+            final int uAdjust = i == 0 ? 0 : uRepeat;
+            final int xStart = x + uAdjust + i * repeatWidth;
+            final int w = Math.min(repeatWidth + uRepeat - uAdjust, width - (repeatBoxWidth - uRepeat - repeatWidth));
+            final float minU = uMin + uTexelWidth * uAdjust;
+            final float maxU = minU + uTexelWidth * w;
+
+            for (int j = 0; j < repeatCountY; j++)
+            {
+                final int vAdjust = j == 0 ? 0 : vRepeat;
+                final int yStart = y + vAdjust + j * repeatHeight;
+                final int h = Math.min(repeatHeight + vRepeat - vAdjust, height - (repeatBoxHeight - vRepeat - repeatHeight));
+                final float minV = vMin + vTexelHeight * vAdjust;
+                final float maxV = minV + vTexelHeight * h;
+
+                populateBlitTriangles(buffer, mat, xStart, xStart + w, yStart, yStart + h, minU, maxU, minV, maxV);
+            }
+        }
+
+        final int xEnd = x + Math.min(uRepeat + repeatCountX * repeatWidth, width - (repeatBoxWidth - uRepeat - repeatWidth));
+        final int yEnd = y + Math.min(vRepeat + repeatCountY * repeatHeight, height - (repeatBoxHeight - vRepeat - repeatHeight));
+        final int uLeft = width - (xEnd - x);
+        final int vBot = height - (yEnd - y);
+        final float restMinU = uMax - uLeft * uTexelWidth;
+        final float restMinV = vMax - vBot * vTexelHeight;
+
+        // bot border
+        for (int i = 0; i < repeatCountX; i++)
+        {
+            final int uAdjust = i == 0 ? 0 : uRepeat;
+            final int xStart = x + uAdjust + i * repeatWidth;
+            final int w = Math.min(repeatWidth + uRepeat - uAdjust, width - uLeft);
+            final float minU = uMin + uTexelWidth * uAdjust;
+            final float maxU = minU + uTexelWidth * w;
+
+            populateBlitTriangles(buffer, mat, xStart, xStart + w, yEnd, yEnd + vBot, minU, maxU, restMinV, vMax);
+        }
+
+        // left border
+        for (int j = 0; j < repeatCountY; j++)
+        {
+            final int vAdjust = j == 0 ? 0 : vRepeat;
+            final int yStart = y + vAdjust + j * repeatHeight;
+            final int h = Math.min(repeatHeight + vRepeat - vAdjust, height - vBot);
+            final float minV = vMin + vTexelHeight * vAdjust;
+            final float maxV = minV + vTexelHeight * h;
+
+            populateBlitTriangles(buffer, mat, xEnd, xEnd + uLeft, yStart, yStart + h, restMinU, uMax, minV, maxV);
+        }
+
+        // bot left corner
+        populateBlitTriangles(buffer, mat, xEnd, xEnd + uLeft, yEnd, yEnd + vBot, restMinU, uMax, restMinV, vMax);
+
         RenderSystem.setShaderTexture(0, rl);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
 
@@ -657,5 +840,74 @@ public class UiRenderMacros
         }
         poseStack.popPose();
         Lighting.setupFor3DItems();
+    }
+
+    /**
+     * @return   rendering lambda detached from sprite and guiScaling instances
+     * @implNote same as logic {@link #blitSprite(PoseStack, TextureAtlasSprite, GuiSpriteScaling, int, int, int, int)}
+     */
+    public static ResolvedBlit resolveSprite(final TextureAtlasSprite sprite, final GuiSpriteScaling guiScaling)
+    {
+        final ResourceLocation atlasLocation = sprite.atlasLocation();
+        final float u0 = sprite.getU0();
+        final float v0 = sprite.getV0();
+        final float u1 = sprite.getU1();
+        final float v1 = sprite.getV1();
+        if (guiScaling.type() == Type.STRETCH)
+        {
+            return (ps, x, y, w, h) -> blit(ps, atlasLocation, x, y, w, h, u0, v0, u1, v1);
+        }
+        else if (guiScaling instanceof final NineSlice nineSlice)
+        {
+            final int rbW = nineSlice.width();
+            final int rbH = nineSlice.height();
+            final int uR = nineSlice.border().left();
+            final int vR = nineSlice.border().top();
+            final int rW = rbW - uR - nineSlice.border().right();
+            final int rH = rbH - vR - nineSlice.border().bottom();
+
+            return (ps, x, y, w, h) -> {
+                if (rbW == w && rbH == h)
+                {
+                    blit(ps, atlasLocation, x, y, w, h, u0, v0, u1, v1);
+                }
+                else
+                {
+                    blitRepeatable(ps, atlasLocation, x, y, w, h, u0, v0, u1, v1, uR, vR, rW, rH, rbW, rbH);
+                }
+            };
+        }
+        else if (guiScaling instanceof final Tile tile)
+        {
+            final int tW = tile.width();
+            final int tH = tile.height();
+
+            return (ps, x, y, w, h) -> {
+                if (tW == w && tH == h)
+                {
+                    blit(ps, atlasLocation, x, y, w, h, u0, v0, u1, v1);
+                }
+                else
+                {
+                    blitRepeatable(ps, atlasLocation, x, y, w, h, u0, v0, u1, v1, 0, 0, tW, tH, tW, tH);
+                }
+            };
+        }
+        if (!FMLEnvironment.production)
+        {
+            throw new UnsupportedOperationException("Missing resolver for gui scaling: " + guiScaling.type());
+        }
+        return ResolvedBlit.EMPTY;
+    }
+
+    /**
+     * Used for precompiling math around rendering
+     */
+    @FunctionalInterface
+    public static interface ResolvedBlit
+    {
+        public static final ResolvedBlit EMPTY = (ps, x, y, w, h) -> {};
+
+        void blit(PoseStack ps, int x, int y, int w, int h);
     }
 }
