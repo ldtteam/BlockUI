@@ -139,7 +139,7 @@ public class ScrollingList extends ScrollingView
          * @param index the index of the row/list element.
          * @param event the event used to modify the size.
          */
-        default void getElementSize(int index, final EventMutableSizeI event)
+        default void modifyRowSize(int index, final EventMutableSizeI event)
         {
             // No implementation by default
         }
