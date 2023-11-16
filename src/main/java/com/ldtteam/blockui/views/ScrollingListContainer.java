@@ -3,51 +3,76 @@ package com.ldtteam.blockui.views;
 import com.ldtteam.blockui.Loader;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
-import com.ldtteam.blockui.mod.Log;
-import net.minecraftforge.fml.loading.FMLEnvironment;
+import com.ldtteam.blockui.util.SafeError;
+import com.ldtteam.blockui.util.records.SizeI;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * A Blockout pane that contains a scrolling line of other panes.
  */
 public class ScrollingListContainer extends ScrollingContainer
 {
+    /**
+     * The xml parameters for the row panes.
+     */
+    @Nullable
+    private PaneParams listNodeParams;
+
+    /**
+     * The template size for the rows.
+     */
+    private SizeI templateSize = new SizeI(0, 0);
+
     ScrollingListContainer(final ScrollingList owner)
     {
         super(owner);
     }
 
     /**
+     * Set the new xml parameters for the row panes.
+     *
+     * @param listNodeParams the new xml parameters.
+     */
+    public void setListNodeParams(final @NotNull PaneParams listNodeParams)
+    {
+        this.listNodeParams = listNodeParams;
+
+        final Pane template = Loader.createFromPaneParams(listNodeParams, null);
+        if (template == null)
+        {
+            SafeError.throwOrLog(new IllegalStateException("Scrolling list template could not be loaded. Is there a reference to another layout in the list children?"));
+            return;
+        }
+
+        this.templateSize = new SizeI(template.getWidth(), template.getHeight());
+    }
+
+    /**
      * Creates, deletes, and updates existing Panes for elements in the list based on the DataProvider.
      *
-     * @param dataProvider   data provider object, shouldn't be null.
-     * @param listNodeParams the xml parameters for this pane.
+     * @param dataProvider data provider object, shouldn't be null.
+     * @param height       the maximum height of the parent.
+     * @param childSpacing the spacing between each row.
      */
-    public void refreshElementPanes(final ScrollingList.DataProvider dataProvider, final PaneParams listNodeParams, final int height, final int childSpacing)
+    public void refreshElementPanes(final ScrollingList.DataProvider dataProvider, final int height, final int childSpacing)
     {
         int currentYpos = 0;
+
+        if (listNodeParams == null)
+        {
+            SafeError.throwOrLog(new IllegalStateException("Template size is not defined. Does the scrolling list have a child?"));
+            return;
+        }
 
         final int numElements = (dataProvider != null) ? dataProvider.getElementCount() : 0;
         if (numElements > 0)
         {
-            final Pane template = Loader.createFromPaneParams(listNodeParams, null);
-            if (template == null)
-            {
-                if (FMLEnvironment.production)
-                {
-                    Log.getLogger().error("Scrolling list template could not be loaded. Is there a reference to another layout in the list children?");
-                    return;
-                }
-                else
-                {
-                    throw new IllegalStateException("Scrolling list template could not be loaded. Is there a reference to another layout in the list children?");
-                }
-            }
-
             final EventMutableSizeI event = new EventMutableSizeI();
 
             for (int i = 0; i < numElements; ++i)
             {
-                event.reset(template.getWidth(), template.getHeight());
+                event.reset(templateSize.width(), templateSize.height());
                 dataProvider.modifyRowSize(i, event);
 
                 final int elementHeight = event.height;
