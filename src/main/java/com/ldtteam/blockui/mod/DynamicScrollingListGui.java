@@ -40,11 +40,11 @@ public class DynamicScrollingListGui
             }
 
             @Override
-            public void modifyRowSize(final int index, final RowSizeModifier event)
+            public void modifyRowSize(final int index, final RowSizeModifier modifier)
             {
                 if (index % 2 == 0)
                 {
-                    event.setSize(100, 40);
+                    modifier.setSize(100, 40);
                 }
             }
 

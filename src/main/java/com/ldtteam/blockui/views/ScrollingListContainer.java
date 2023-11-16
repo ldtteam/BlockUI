@@ -41,7 +41,7 @@ public class ScrollingListContainer extends ScrollingContainer
         final Pane template = Loader.createFromPaneParams(listNodeParams, null);
         if (template == null)
         {
-            SafeError.throwOrLog(new IllegalStateException("Scrolling list template could not be loaded. Is there a reference to another layout in the list children?"));
+            SafeError.throwInDev(new IllegalStateException("Scrolling list template could not be loaded. Is there a reference to another layout in the list children?"));
             return;
         }
 
@@ -61,7 +61,7 @@ public class ScrollingListContainer extends ScrollingContainer
 
         if (listNodeParams == null)
         {
-            SafeError.throwOrLog(new IllegalStateException("Template size is not defined. Does the scrolling list have a child?"));
+            SafeError.throwInDev(new IllegalStateException("Template size is not defined. Does the scrolling list have a child?"));
             return;
         }
 

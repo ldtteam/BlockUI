@@ -13,7 +13,7 @@ public class SafeError
      *
      * @param exception the exception instance.
      */
-    public static <T extends Exception> void throwOrLog(final T exception) throws T
+    public static void throwInDev(final RuntimeException exception)
     {
         if (FMLEnvironment.production)
         {
