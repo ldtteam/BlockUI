@@ -26,29 +26,29 @@ public class ScrollingListContainer extends ScrollingContainer
     {
         int currentYpos = 0;
 
-        final Pane template = Loader.createFromPaneParams(listNodeParams, null);
-        if (template == null)
-        {
-            if (FMLEnvironment.production)
-            {
-                Log.getLogger().error("Scrolling list template could not be loaded. Is there a reference to another layout in the list children?");
-                return;
-            }
-            else
-            {
-                throw new IllegalStateException("Scrolling list template could not be loaded. Is there a reference to another layout in the list children?");
-            }
-        }
-
-        final EventMutableSizeI event = new EventMutableSizeI();
-
         final int numElements = (dataProvider != null) ? dataProvider.getElementCount() : 0;
-        if (dataProvider != null)
+        if (numElements > 0)
         {
+            final Pane template = Loader.createFromPaneParams(listNodeParams, null);
+            if (template == null)
+            {
+                if (FMLEnvironment.production)
+                {
+                    Log.getLogger().error("Scrolling list template could not be loaded. Is there a reference to another layout in the list children?");
+                    return;
+                }
+                else
+                {
+                    throw new IllegalStateException("Scrolling list template could not be loaded. Is there a reference to another layout in the list children?");
+                }
+            }
+
+            final EventMutableSizeI event = new EventMutableSizeI();
+
             for (int i = 0; i < numElements; ++i)
             {
                 event.reset(template.getWidth(), template.getHeight());
-                dataProvider.getElementSize(i, event);
+                dataProvider.modifyRowSize(i, event);
 
                 final int elementHeight = event.height;
                 if (currentYpos + elementHeight >= scrollY && currentYpos <= scrollY + height)

@@ -40,7 +40,7 @@ public class DynamicScrollingListGui
             }
 
             @Override
-            public void getElementSize(final int index, final EventMutableSizeI event)
+            public void modifyRowSize(final int index, final EventMutableSizeI event)
             {
                 if (index % 2 == 0)
                 {
