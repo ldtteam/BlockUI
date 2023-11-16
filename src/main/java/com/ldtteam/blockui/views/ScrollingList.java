@@ -18,7 +18,6 @@ public class ScrollingList extends ScrollingView
     protected int          childSpacing = 0;
     // Runtime
     protected DataProvider dataProvider;
-    private   PaneParams   listNodeParams;
     private   int          maxHeight;
 
     /**
@@ -80,7 +79,7 @@ public class ScrollingList extends ScrollingView
      */
     public void refreshElementPanes()
     {
-        ((ScrollingListContainer) container).refreshElementPanes(dataProvider, listNodeParams, maxHeight, childSpacing);
+        ((ScrollingListContainer) container).refreshElementPanes(dataProvider, maxHeight, childSpacing);
     }
 
     @Override
@@ -107,7 +106,10 @@ public class ScrollingList extends ScrollingView
 
         // Get the PaneParams for this child, because we'll need it in the future
         // to create more nodes
-        listNodeParams = childNodes.get(0);
+        if (container instanceof ScrollingListContainer scrollingListContainer)
+        {
+            scrollingListContainer.setListNodeParams(childNodes.get(0));
+        }
     }
 
     /**
