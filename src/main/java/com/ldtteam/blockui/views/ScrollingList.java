@@ -2,6 +2,7 @@ package com.ldtteam.blockui.views;
 
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
+import com.ldtteam.blockui.views.ScrollingListContainer.RowSizeModifier;
 
 import java.util.List;
 import java.util.function.IntSupplier;
@@ -14,11 +15,10 @@ import java.util.function.IntSupplier;
  */
 public class ScrollingList extends ScrollingView
 {
-    protected int childSpacing = 0;
+    protected int          childSpacing = 0;
     // Runtime
     protected DataProvider dataProvider;
-    private PaneParams listNodeParams;
-    private int maxHeight;
+    private   int          maxHeight;
 
     /**
      * Default constructor required by Blockout.
@@ -42,6 +42,7 @@ public class ScrollingList extends ScrollingView
 
     /**
      * Max height setter.
+     *
      * @param maxHeight the height to set.
      */
     public void setMaxHeight(final int maxHeight)
@@ -78,7 +79,7 @@ public class ScrollingList extends ScrollingView
      */
     public void refreshElementPanes()
     {
-        ((ScrollingListContainer) container).refreshElementPanes(dataProvider, listNodeParams, maxHeight, childSpacing);
+        ((ScrollingListContainer) container).refreshElementPanes(dataProvider, maxHeight, childSpacing);
     }
 
     @Override
@@ -88,7 +89,7 @@ public class ScrollingList extends ScrollingView
         refreshElementPanes();
     }
 
-        @Override
+    @Override
     protected ScrollingContainer createScrollingContainer()
     {
         return new ScrollingListContainer(this);
@@ -105,7 +106,10 @@ public class ScrollingList extends ScrollingView
 
         // Get the PaneParams for this child, because we'll need it in the future
         // to create more nodes
-        listNodeParams = childNodes.get(0);
+        if (container instanceof ScrollingListContainer scrollingListContainer)
+        {
+            scrollingListContainer.setListNodeParams(childNodes.get(0));
+        }
     }
 
     /**
@@ -130,6 +134,17 @@ public class ScrollingList extends ScrollingView
          * @return number of rows in the list
          */
         int getElementCount();
+
+        /**
+         * Override this to pick a custom size for this element. Event contains the logic to modify the old size.
+         *
+         * @param index    the index of the row/list element.
+         * @param modifier the object used to modify the size.
+         */
+        default void modifyRowSize(int index, final RowSizeModifier modifier)
+        {
+            // No implementation by default
+        }
 
         /**
          * Override this to update the Panes for a given row.

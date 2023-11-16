@@ -33,29 +33,74 @@ public class PaneParams
         children = new ArrayList<>(node.getChildNodes().getLength());
     }
 
+    /**
+     * Get the node type.
+     *
+     * @return the name of the node.
+     */
     public String getType()
     {
         return node.getNodeName();
     }
 
+    /**
+     * Get the parent for this pane.
+     *
+     * @return the parent.
+     */
     public View getParentView()
     {
         return parentView;
     }
 
+    /**
+     * Set the parent for this pane.
+     *
+     * @param parent the new parent.
+     */
     public void setParentView(final View parent)
     {
         parentView = parent;
     }
 
+    /**
+     * Get the width of the parent, if any. Defaults to 0 if no parent has been set.
+     *
+     * @return the width.
+     */
     public int getParentWidth()
     {
         return parentView != null ? parentView.getInteriorWidth() : 0;
     }
 
+    /**
+     * Get the height of the parent, if any. Defaults to 0 if no parent has been set.
+     *
+     * @return the height.
+     */
     public int getParentHeight()
     {
         return parentView != null ? parentView.getInteriorHeight() : 0;
+    }
+
+    /**
+     * Get the left position of the parent, if any. Defaults to 0 if no parent has been set.
+     *
+     * @return the left position.
+     */
+    public int getParentLeft()
+    {
+        return parentView != null ? parentView.x : 0;
+    }
+
+    /**
+     * Get the top position of the parent, if any. Defaults to 0 if no parent has been set.
+     *
+     * @return the top position.
+     */
+    public int getParentTop()
+    {
+        return parentView != null ? parentView.y : 0;
     }
 
     public List<PaneParams> getChildren()
