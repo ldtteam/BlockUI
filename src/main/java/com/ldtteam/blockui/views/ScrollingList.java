@@ -2,8 +2,7 @@ package com.ldtteam.blockui.views;
 
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
-import com.ldtteam.blockui.util.records.SizeI;
-import org.jetbrains.annotations.Nullable;
+import com.ldtteam.blockui.views.ScrollingListContainer.RowSizeModifier;
 
 import java.util.List;
 import java.util.function.IntSupplier;
@@ -19,7 +18,6 @@ public class ScrollingList extends ScrollingView
     protected int          childSpacing = 0;
     // Runtime
     protected DataProvider dataProvider;
-    private   PaneParams   listNodeParams;
     private   int          maxHeight;
 
     /**
@@ -81,7 +79,7 @@ public class ScrollingList extends ScrollingView
      */
     public void refreshElementPanes()
     {
-        ((ScrollingListContainer) container).refreshElementPanes(dataProvider, listNodeParams, maxHeight, childSpacing);
+        ((ScrollingListContainer) container).refreshElementPanes(dataProvider, maxHeight, childSpacing);
     }
 
     @Override
@@ -91,7 +89,7 @@ public class ScrollingList extends ScrollingView
         refreshElementPanes();
     }
 
-        @Override
+    @Override
     protected ScrollingContainer createScrollingContainer()
     {
         return new ScrollingListContainer(this);
@@ -108,7 +106,10 @@ public class ScrollingList extends ScrollingView
 
         // Get the PaneParams for this child, because we'll need it in the future
         // to create more nodes
-        listNodeParams = childNodes.get(0);
+        if (container instanceof final ScrollingListContainer scrollingListContainer)
+        {
+            scrollingListContainer.setListNodeParams(childNodes.get(0));
+        }
     }
 
     /**
@@ -135,15 +136,14 @@ public class ScrollingList extends ScrollingView
         int getElementCount();
 
         /**
-         * Override this to pick a custom size for this element. Tuple arguments are width and height, in that order.
+         * Override this to pick a custom size for this element. Event contains the logic to modify the old size.
          *
-         * @param index   the index of the row/list element
-         * @param rowPane the parent Pane for the row, containing the elements to update
-         * @return a new size for the element, or null to use the template element size.
+         * @param index    the index of the row/list element.
+         * @param modifier the object used to modify the size.
          */
-        default @Nullable SizeI getElementSize(int index, Pane rowPane)
+        default void modifyRowSize(int index, final RowSizeModifier modifier)
         {
-            return null;
+            // No implementation by default
         }
 
         /**
