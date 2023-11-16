@@ -2,7 +2,7 @@ package com.ldtteam.blockui.views;
 
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
-import com.ldtteam.blockui.views.ScrollingListContainer.EventMutableSizeI;
+import com.ldtteam.blockui.views.ScrollingListContainer.RowSizeModifier;
 
 import java.util.List;
 import java.util.function.IntSupplier;
@@ -138,10 +138,10 @@ public class ScrollingList extends ScrollingView
         /**
          * Override this to pick a custom size for this element. Event contains the logic to modify the old size.
          *
-         * @param index the index of the row/list element.
-         * @param event the event used to modify the size.
+         * @param index    the index of the row/list element.
+         * @param modifier the object used to modify the size.
          */
-        default void modifyRowSize(int index, final EventMutableSizeI event)
+        default void modifyRowSize(int index, final RowSizeModifier modifier)
         {
             // No implementation by default
         }

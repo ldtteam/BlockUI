@@ -68,14 +68,14 @@ public class ScrollingListContainer extends ScrollingContainer
         final int numElements = (dataProvider != null) ? dataProvider.getElementCount() : 0;
         if (numElements > 0)
         {
-            final EventMutableSizeI event = new EventMutableSizeI();
+            final RowSizeModifier modifier = new RowSizeModifier();
 
             for (int i = 0; i < numElements; ++i)
             {
-                event.reset(templateSize.width(), templateSize.height());
-                dataProvider.modifyRowSize(i, event);
+                modifier.reset(templateSize.width(), templateSize.height());
+                dataProvider.modifyRowSize(i, modifier);
 
-                final int elementHeight = event.height;
+                final int elementHeight = modifier.height;
                 if (currentYpos + elementHeight >= scrollY && currentYpos <= scrollY + height)
                 {
                     final Pane child;
@@ -93,9 +93,9 @@ public class ScrollingListContainer extends ScrollingContainer
                     }
 
                     child.setPosition(0, currentYpos);
-                    if (event.modified)
+                    if (modifier.modified)
                     {
-                        child.setSize(event.width, event.height);
+                        child.setSize(modifier.width, modifier.height);
                     }
 
                     dataProvider.updateElement(i, child);
@@ -136,9 +136,9 @@ public class ScrollingListContainer extends ScrollingContainer
     }
 
     /**
-     * Event class for modifying row item size.
+     * Class for modifying row item size.
      */
-    public static class EventMutableSizeI
+    public static class RowSizeModifier
     {
         /**
          * The width for the row item.
@@ -219,7 +219,7 @@ public class ScrollingListContainer extends ScrollingContainer
         }
 
         /**
-         * Resets the event back to initial state.
+         * Resets the modifier back to initial state.
          *
          * @param width  the initial width.
          * @param height the initial height.

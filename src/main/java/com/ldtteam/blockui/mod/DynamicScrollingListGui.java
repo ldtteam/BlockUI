@@ -4,7 +4,7 @@ import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.controls.Text;
 import com.ldtteam.blockui.views.BOWindow;
 import com.ldtteam.blockui.views.ScrollingList;
-import com.ldtteam.blockui.views.ScrollingListContainer.EventMutableSizeI;
+import com.ldtteam.blockui.views.ScrollingListContainer.RowSizeModifier;
 import net.minecraft.network.chat.Component;
 
 /**
@@ -40,7 +40,7 @@ public class DynamicScrollingListGui
             }
 
             @Override
-            public void modifyRowSize(final int index, final EventMutableSizeI event)
+            public void modifyRowSize(final int index, final RowSizeModifier event)
             {
                 if (index % 2 == 0)
                 {
