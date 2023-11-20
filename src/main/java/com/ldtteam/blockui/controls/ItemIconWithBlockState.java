@@ -286,7 +286,7 @@ public class ItemIconWithBlockState extends ItemIcon
      */
     protected void readBlockStateFromCurrentItemStack()
     {
-        if (!(itemStack.getItem() instanceof final BlockItem blockItem))
+        if (itemStack == null || !(itemStack.getItem() instanceof final BlockItem blockItem))
         {
             return;
         }
