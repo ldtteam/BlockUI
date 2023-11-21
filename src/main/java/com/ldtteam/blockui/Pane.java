@@ -76,7 +76,7 @@ public class Pane extends UiRenderMacros
             height = a.get(1);
         });
 
-        params.getScaledInteger("pos", params.getParentView().x, params.getParentView().y, a -> {
+        params.getScaledInteger("pos", params.getParentLeft(), params.getParentTop(), a -> {
             x = a.get(0);
             y = a.get(1);
         });
