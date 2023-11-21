@@ -123,7 +123,7 @@ public class ClientEventSubscriber
     public static void onMouseScrollEvent(final MouseScrollingEvent event)
     {
         // cancel in-game scrolling when raytraced gui has scrolling list
-        event.setCanceled(HookManager.onScroll(0, event.getScrollDelta()));
+        event.setCanceled(HookManager.onScroll(event.getScrollDeltaX(), event.getScrollDeltaY()));
     }
 
     /**

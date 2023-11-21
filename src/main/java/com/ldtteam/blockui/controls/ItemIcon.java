@@ -15,6 +15,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -26,7 +27,6 @@ import net.minecraft.world.level.block.AirBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.CreativeModeTabRegistry;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 import java.util.Collections;
 import java.util.List;
@@ -71,7 +71,7 @@ public class ItemIcon extends Pane
         final String itemName = params.getString("item");
         if (itemName != null)
         {
-            final Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(itemName));
+            final Item item = BuiltInRegistries.ITEM.get(new ResourceLocation(itemName));
             if (item != null)
             {
                 setItem(item.getDefaultInstance());
@@ -261,10 +261,10 @@ public class ItemIcon extends Pane
         {
             // add tags
             final int nameoffset = nameOffset + 1;
-            ForgeRegistries.ITEMS.getHolder(itemStack.getItem())
-                .map(Holder::getTagKeys)
-                .ifPresent(tags -> tags.forEach(tag -> tooltipList.add(nameoffset,
-                    wrapShift(Component.literal("#" + tag.location()).withStyle(ChatFormatting.DARK_PURPLE)))));
+            BuiltInRegistries.ITEM.wrapAsHolder(itemStack.getItem())
+                .tags()
+                .forEach(tag -> tooltipList.add(nameoffset,
+                    wrapShift(Component.literal("#" + tag.location()).withStyle(ChatFormatting.DARK_PURPLE))));
 
             // add creative tabs
             int i = nameOffset + 1;

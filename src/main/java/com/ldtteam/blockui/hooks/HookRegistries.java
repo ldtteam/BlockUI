@@ -6,6 +6,7 @@ import com.ldtteam.blockui.hooks.TriggerMechanism.RayTraceTriggerMechanism;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -16,7 +17,6 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
-import net.neoforged.neoforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,7 +62,7 @@ public final class HookRegistries
     {
         private EntityReg()
         {
-            super(ForgeRegistries.ENTITY_TYPES);
+            super(BuiltInRegistries.ENTITY_TYPE);
         }
 
         /**
@@ -207,7 +207,7 @@ public final class HookRegistries
     {
         private BlockEntityReg()
         {
-            super(ForgeRegistries.BLOCK_ENTITY_TYPES);
+            super(BuiltInRegistries.BLOCK_ENTITY_TYPE);
         }
 
         /**

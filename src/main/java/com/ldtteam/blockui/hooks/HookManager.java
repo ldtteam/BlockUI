@@ -3,8 +3,8 @@ package com.ldtteam.blockui.hooks;
 import com.ldtteam.blockui.mod.Log;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.registries.IForgeRegistry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,9 +37,9 @@ public abstract class HookManager<T, U, K>
      */
     private final Map<K, WindowEntry> activeWindows = new HashMap<>();
 
-    private final IForgeRegistry<U> typeRegistryReference;
+    private final Registry<U> typeRegistryReference;
 
-    protected HookManager(final IForgeRegistry<U> typeRegistryReference)
+    protected HookManager(final Registry<U> typeRegistryReference)
     {
         this.typeRegistryReference = typeRegistryReference;
     }
