@@ -1,5 +1,7 @@
 package com.ldtteam.blockui.util.texture;
 
+import com.google.gson.JsonParseException;
+import com.ldtteam.blockui.util.SafeError;
 import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
 import com.mojang.blaze3d.platform.TextureUtil;
 import net.minecraft.client.renderer.texture.AbstractTexture;
@@ -112,9 +114,9 @@ public class SpriteTexture extends AbstractTexture implements Tickable
         {
             metadata = OutOfJarResourceLocation.getResourceHandle(resourceLocation, resourceManager).metadata();
         }
-        catch (final IOException e)
+        catch (final IOException | JsonParseException e)
         {
-            LOGGER.error("Parsing sprite metadata", e);
+            SafeError.throwInDev(new RuntimeException("Parsing sprite metadata failed for: " + resourceLocation, e), LOGGER);
             return null;
         }
 
