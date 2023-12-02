@@ -1,0 +1,6 @@
+{
+    "blockui.container_gui.client_side_only": "Содержимое контейнера видно только при игре на интегрированном сервере (одиночная игра, без локальной сети).",
+    "blockui.container_gui.empty": "Этот контейнер пуст.",
+    "blockui.tooltip.item_additional_info": "Удерживайте %s, чтобы отобразить дополнительную информацию.",
+    "blockui.tooltip.properties": "BlockState Настройки:"
+}
