@@ -14,7 +14,6 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FormattedCharSequence;
 import net.neoforged.neoforge.client.NeoForgeRenderTypes;
@@ -214,7 +213,7 @@ public abstract class AbstractTextElement extends Pane
             return toFormattedSequence(maxWidth, toggleable.data())
                 .map(formatted -> new FormattedToggleableCharSequence(toggleable.condition(), formatted));
         }
-        else if (textBlock.getContents() == ComponentContents.EMPTY && textBlock.getSiblings().isEmpty())
+        else if (textBlock.getContents() == Component.empty().getContents() && textBlock.getSiblings().isEmpty())
         {
             return Stream.of(textBlock.getVisualOrderText());
         }

@@ -6,6 +6,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ColorResolver;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
@@ -19,8 +20,9 @@ import javax.annotation.Nullable;
 /**
  * Small single blockstate level wrapper
  */
-public class SingleBlockGetter implements BlockGetter
+public class SingleBlockGetter implements LevelReader
 {
+    // TODO: stupid level class hierarchy
     public BlockState blockState = null;
     public BlockEntity blockEntity = null;
 

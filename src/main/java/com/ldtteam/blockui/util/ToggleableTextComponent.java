@@ -1,6 +1,11 @@
 package com.ldtteam.blockui.util;
 
+import com.ldtteam.blockui.mod.BlockUI;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.chat.ComponentContents;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.FormattedCharSink;
@@ -11,6 +16,12 @@ import java.util.function.BooleanSupplier;
  */
 public record ToggleableTextComponent(BooleanSupplier condition, MutableComponent data) implements ComponentContents
 {
+    private static final MapCodec<ToggleableTextComponent> CODEC = RecordCodecBuilder.mapCodec(instance -> instance
+        .group(ComponentSerialization.CODEC.fieldOf("data").forGetter(ToggleableTextComponent::data),
+            Codec.BOOL.fieldOf("condition").forGetter(comp -> comp.condition().getAsBoolean()))
+        .apply(instance, (data, conditionValue) -> new ToggleableTextComponent(() -> conditionValue, (MutableComponent) data)));
+    public static final ComponentContents.Type<ToggleableTextComponent> TYPE = new ComponentContents.Type<>(CODEC, BlockUI.MOD_ID + "_toggle");
+
     /**
      * @param condition if contidition returns true then data will get rendered
      * @param data what to render when condition returns true
@@ -32,6 +43,12 @@ public record ToggleableTextComponent(BooleanSupplier condition, MutableComponen
     public FormattedCharSequence getVisualOrderText()
     {
         return new FormattedToggleableCharSequence(condition, data.getVisualOrderText());
+    }
+
+    @Override
+    public Type<?> type()
+    {
+        return TYPE;
     }
 
     public record FormattedToggleableCharSequence(BooleanSupplier condition, FormattedCharSequence data) implements FormattedCharSequence

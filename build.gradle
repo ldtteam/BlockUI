@@ -1,3 +1,1 @@
-//apply from: 'https://raw.githubusercontent.com/ldtteam/OperaPublicaCreator/main/gradle/mod.gradle'
-apply from: 'opclessNG.gradle'
-//apply from: 'gradle/local.gradle'
+apply from: 'https://raw.githubusercontent.com/ldtteam/OperaPublicaCreator/ng7/gradle/mod.gradle'
