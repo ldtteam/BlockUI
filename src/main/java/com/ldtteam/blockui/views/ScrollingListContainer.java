@@ -3,7 +3,9 @@ package com.ldtteam.blockui.views;
 import com.ldtteam.blockui.Loader;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
+import com.ldtteam.blockui.controls.CheckBox;
 import com.ldtteam.blockui.util.records.SizeI;
+import com.ldtteam.blockui.views.ScrollingList.CheckListDataProvider;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -56,6 +58,15 @@ public class ScrollingListContainer extends ScrollingContainer
                 if (currentYpos + child.getHeight() >= scrollY && currentYpos <= scrollY + height)
                 {
                     dataProvider.updateElement(i, child);
+                }
+
+                if (dataProvider instanceof CheckListDataProvider checkListDataProvider)
+                {
+                    final CheckBox checkbox = child.findPaneOfTypeByID(checkListDataProvider.getCheckboxId(), CheckBox.class);
+                    checkbox.setChecked(checkListDataProvider.isChecked(i));
+
+                    final int index = i;
+                    checkbox.setHandler(button -> checkListDataProvider.setChecked(index, !checkListDataProvider.isChecked(index)));
                 }
 
                 currentYpos += child.getHeight() + childSpacing;
