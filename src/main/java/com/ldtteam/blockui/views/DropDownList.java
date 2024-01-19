@@ -2,12 +2,12 @@ package com.ldtteam.blockui.views;
 
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
-import com.ldtteam.blockui.Parsers;
 import com.ldtteam.blockui.controls.Button;
 import com.ldtteam.blockui.controls.ButtonHandler;
 import com.ldtteam.blockui.util.records.Pos2i;
-import net.minecraft.network.chat.Component;
+import com.ldtteam.blockui.Parsers;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Component;
 
 import java.util.function.Consumer;
 
@@ -33,7 +33,7 @@ public class DropDownList extends View implements ButtonHandler
     /**
      * date required to fill the list.
      */
-    protected DataProvider  dataProvider;
+    protected DataProvider dataProvider;
 
     /**
      * handler for the accept method.
@@ -286,7 +286,7 @@ public class DropDownList extends View implements ButtonHandler
         button.setEnabled(e);
         list.setEnabled(e);
     }
-    
+
     @Override
     public void parseChildren(PaneParams params)
     {

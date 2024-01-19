@@ -1,8 +1,6 @@
 package com.ldtteam.blockui.support;
 
 import com.ldtteam.blockui.views.ScrollingList.DataProvider;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 
 public class DataProviders
 {
@@ -34,21 +32,5 @@ public class DataProviders
          * @param checked whether the item is checked or not.
          */
         void setChecked(final int index, final boolean checked);
-    }
-
-    /**
-     * Interface for a data provider that updates pane scrolling list pane info.
-     */
-    public interface DropdownDataProvider
-    {
-        int getElementCount();
-
-        @Deprecated
-        String getLabel(final int index);
-
-        default MutableComponent getLabelNew(final int index)
-        {
-            return Component.literal(getLabel(index));
-        }
     }
 }
