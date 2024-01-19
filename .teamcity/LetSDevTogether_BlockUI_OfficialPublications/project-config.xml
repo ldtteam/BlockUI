@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" parent-id="LetSDevTogether_BlockUI" xsi:noNamespaceSchemaLocation="https://www.jetbrains.com/teamcity/schemas/2021.1/project-config.xsd">
-  <name>Official Publications</name>
-  <description>Holds projects and builds related to official publications</description>
-  <parameters />
-  <cleanup />
-</project>
-
