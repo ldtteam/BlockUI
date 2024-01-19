@@ -1,9 +1,8 @@
 package com.ldtteam.blockui.controls;
 
 import com.ldtteam.blockui.PaneParams;
-import com.ldtteam.blockui.support.ImageData;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.resources.ResourceLocation;
-import org.jetbrains.annotations.NotNull;
 
 /**
  * Checkbox used for toggling a checkmark on and off.
@@ -11,22 +10,9 @@ import org.jetbrains.annotations.NotNull;
 public class CheckBox extends ButtonImage
 {
     /**
-     * The image for the checked regular state.
+     * The image for the checkmark to render over the button.
      */
-    @NotNull
-    protected ImageData imageCheckedRegular = ImageData.MISSING;
-
-    /**
-     * The image for the checked hover state.
-     */
-    @NotNull
-    protected ImageData imageCheckedHover = ImageData.MISSING;
-
-    /**
-     * The image for the checked disabled state.
-     */
-    @NotNull
-    protected ImageData imageCheckedDisabled = ImageData.MISSING;
+    protected ResourceLocation checkmarkImage;
 
     /**
      * Whether the button is checked or not.
@@ -50,120 +36,38 @@ public class CheckBox extends ButtonImage
     {
         super(params);
 
-        imageCheckedRegular = loadImageInfo(params, "checked", "checked");
-        imageCheckedHover = loadImageInfo(params, "checkedhighlight", "checkedhighlight");
-        imageCheckedDisabled = loadImageInfo(params, "checkeddisabled", "checkeddisabled");
+        checkmarkImage = params.getResource("checkmark", img -> {});
     }
 
     /**
-     * Set the default image.
+     * Set the checkmark image.
      *
-     * @param loc     ResourceLocation for the image.
-     * @param offsetX image x offset.
-     * @param offsetY image y offset.
-     * @param w       image width.
-     * @param h       image height.
+     * @param loc ResourceLocation for the checkmark.
      */
-    public void setCheckedImage(final ResourceLocation loc, final int offsetX, final int offsetY, final int w, final int h)
+    public void setCheckmarkImage(final ResourceLocation loc)
     {
-        imageCheckedRegular = new ImageData(loc, offsetX, offsetY, w, h);
-    }
-
-    /**
-     * Set the default image.
-     *
-     * @param loc ResourceLocation for the image.
-     */
-    public void setCheckedImage(final ResourceLocation loc, final boolean keepUv)
-    {
-        if (keepUv && !imageCheckedRegular.equals(ImageData.MISSING))
-        {
-            imageCheckedRegular = new ImageData(loc, imageCheckedRegular.offsetX(), imageCheckedRegular.offsetY(), imageCheckedRegular.width(), imageCheckedRegular.height());
-        }
-        else
-        {
-            imageCheckedRegular = new ImageData(loc, 0, 0, 0, 0);
-        }
-    }
-
-    /**
-     * Set the hover image.
-     *
-     * @param loc     ResourceLocation for the image.
-     * @param offsetX image x offset.
-     * @param offsetY image y offset.
-     * @param w       image width.
-     * @param h       image height.
-     */
-    public void setImageCheckedHighlight(final ResourceLocation loc, final int offsetX, final int offsetY, final int w, final int h)
-    {
-        imageCheckedHover = new ImageData(loc, offsetX, offsetY, w, h);
-    }
-
-    /**
-     * Set the hover image.
-     *
-     * @param loc ResourceLocation for the image.
-     */
-    public void setImageCheckedHighlight(final ResourceLocation loc, final boolean keepUv)
-    {
-        if (keepUv && !imageCheckedHover.equals(ImageData.MISSING))
-        {
-            imageCheckedHover = new ImageData(loc, imageCheckedHover.offsetX(), imageCheckedHover.offsetY(), imageCheckedHover.width(), imageCheckedHover.height());
-        }
-        else
-        {
-            imageCheckedHover = new ImageData(loc, 0, 0, 0, 0);
-        }
-    }
-
-    /**
-     * Set the disabled image.
-     *
-     * @param loc     ResourceLocation for the image.
-     * @param offsetX image x offset.
-     * @param offsetY image y offset.
-     * @param w       image width.
-     * @param h       image height.
-     */
-    public void setImageCheckedDisabled(final ResourceLocation loc, final int offsetX, final int offsetY, final int w, final int h)
-    {
-        imageCheckedDisabled = new ImageData(loc, offsetX, offsetY, w, h);
-    }
-
-    /**
-     * Set the disabled image.
-     *
-     * @param loc ResourceLocation for the image.
-     */
-    public void setImageCheckedDisabled(final ResourceLocation loc, final boolean keepUv)
-    {
-        if (keepUv && !imageCheckedDisabled.equals(ImageData.MISSING))
-        {
-            imageCheckedDisabled = new ImageData(loc, imageCheckedDisabled.offsetX(), imageCheckedDisabled.offsetY(), imageCheckedDisabled.width(), imageCheckedDisabled.height());
-        }
-        else
-        {
-            imageCheckedDisabled = new ImageData(loc, 0, 0, 0, 0);
-        }
+        this.checkmarkImage = loc;
     }
 
     @Override
-    public ImageData getImageToDraw()
+    public void postDrawButton(
+      final PoseStack ms,
+      final ResourceLocation image,
+      final int x,
+      final int y,
+      final int width,
+      final int height,
+      final int u,
+      final int v,
+      final int w,
+      final int h,
+      final int mapWidth,
+      final int mapHeight)
     {
         if (checked)
         {
-            if (!enabled && !imageCheckedDisabled.equals(ImageData.MISSING))
-            {
-                return imageCheckedDisabled;
-            }
-            else if (wasCursorInPane && !imageCheckedHover.equals(ImageData.MISSING))
-            {
-                return imageCheckedHover;
-            }
-            return imageCheckedRegular;
+            blit(ms, checkmarkImage, x, y, width, height, u, v, w, h, mapWidth, mapHeight);
         }
-        return super.getImageToDraw();
     }
 
     /**

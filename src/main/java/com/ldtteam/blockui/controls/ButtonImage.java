@@ -4,17 +4,15 @@ import com.ldtteam.blockui.Alignment;
 import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.Parsers;
-import com.ldtteam.blockui.support.ImageData;
+import com.ldtteam.blockui.util.records.SizeI;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraftforge.fml.loading.FMLEnvironment;
-import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Clickable image.
@@ -25,24 +23,27 @@ public class ButtonImage extends Button
      * Default size is a small square button.
      */
     private static final int DEFAULT_BUTTON_SIZE = 20;
-
-    /**
-     * The image for the regular state.
-     */
-    @NotNull
-    protected ImageData imageRegular = ImageData.MISSING;
-
-    /**
-     * The image for the hover state.
-     */
-    @NotNull
-    protected ImageData imageHover = ImageData.MISSING;
-
-    /**
-     * The image for the disabled state.
-     */
-    @NotNull
-    protected ImageData imageDisabled = ImageData.MISSING;
+    protected ResourceLocation image;
+    protected ResourceLocation imageHighlight;
+    protected ResourceLocation imageDisabled;
+    protected int imageOffsetX = 0;
+    protected int imageOffsetY = 0;
+    protected int imageWidth = 0;
+    protected int imageHeight = 0;
+    protected int imageMapWidth = 0;
+    protected int imageMapHeight = 0;
+    protected int highlightOffsetX = 0;
+    protected int highlightOffsetY = 0;
+    protected int highlightWidth = 0;
+    protected int highlightHeight = 0;
+    protected int highlightMapWidth = 0;
+    protected int highlightMapHeight = 0;
+    protected int disabledOffsetX = 0;
+    protected int disabledOffsetY = 0;
+    protected int disabledWidth = 0;
+    protected int disabledHeight = 0;
+    protected int disabledMapWidth = 0;
+    protected int disabledMapHeight = 0;
 
     /**
      * Default constructor. Makes a small square button.
@@ -65,44 +66,71 @@ public class ButtonImage extends Button
     {
         super(params, Alignment.MIDDLE, DEFAULT_TEXT_COLOR, DEFAULT_TEXT_COLOR, DEFAULT_TEXT_COLOR, DEFAULT_TEXT_SHADOW, DEFAULT_TEXT_WRAP);
 
-        imageRegular = loadImageInfo(params, "source", "image");
-        imageHover = loadImageInfo(params, "highlight", "highlight");
-        imageDisabled = loadImageInfo(params, "disabled", "disabled");
+        loadImageInfo(params);
+        loadHighlightInfo(params);
+        loadDisabledInfo(params);
 
         loadTextInfo(params);
     }
 
     /**
-     * Loads the parameters for any of the images.
+     * Loads the parameters for the normal image.
      *
-     * @param params     PaneParams provided in the xml.
-     * @param source     the name of the source attribute
-     * @param propPrefix the prefix for other properties like size and offset.
+     * @param params PaneParams provided in the xml.
      */
-    protected ImageData loadImageInfo(final PaneParams params, final String source, final String propPrefix)
+    private void loadImageInfo(final PaneParams params)
     {
-        final ResourceLocation imageSource = params.getResource(source, MissingTextureAtlasSprite.getLocation().getPath());
-        if (imageSource.equals(MissingTextureAtlasSprite.getLocation()))
-        {
-            return ImageData.MISSING;
-        }
+        image = params.getResource("source", this::loadImageDimensions);
 
-        final AtomicInteger imageOffsetX = new AtomicInteger();
-        final AtomicInteger imageOffsetY = new AtomicInteger();
-        final AtomicInteger imageWidth = new AtomicInteger();
-        final AtomicInteger imageHeight = new AtomicInteger();
-
-        params.applyShorthand(propPrefix + "offset", Parsers.INT, 2, a -> {
-            imageOffsetX.set(a.get(0));
-            imageOffsetY.set(a.get(1));
+        params.applyShorthand("imageoffset", Parsers.INT, 2, a -> {
+            imageOffsetX = a.get(0);
+            imageOffsetY = a.get(1);
         });
 
-        params.applyShorthand(propPrefix + "size", Parsers.INT, 2, a -> {
-            imageWidth.set(a.get(0));
-            imageHeight.set(a.get(1));
+        params.applyShorthand("imagesize", Parsers.INT, 2, a -> {
+            imageWidth = a.get(0);
+            imageHeight = a.get(1);
+        });
+    }
+
+    /**
+     * Loads the parameters for the hover image.
+     *
+     * @param params PaneParams provided in the xml.
+     */
+    private void loadHighlightInfo(final PaneParams params)
+    {
+        imageHighlight = params.getResource("highlight", this::loadImageHighlightDimensions);
+
+        params.applyShorthand("highlightoffset", Parsers.INT, 2, a -> {
+            highlightOffsetX = a.get(0);
+            highlightOffsetY = a.get(1);
         });
 
-        return new ImageData(imageSource, imageOffsetX.get(), imageOffsetY.get(), imageWidth.get(), imageHeight.get());
+        params.applyShorthand("highlightsize", Parsers.INT, 2, a -> {
+            highlightWidth = a.get(0);
+            highlightHeight = a.get(1);
+        });
+    }
+
+    /**
+     * Loads the parameters for the disabled image.
+     *
+     * @param params PaneParams provided in the xml.
+     */
+    private void loadDisabledInfo(final PaneParams params)
+    {
+        imageDisabled = params.getResource("disabled", this::loadImageDisabledDimensions);
+
+        params.applyShorthand("disabledoffset", Parsers.INT, 2, a -> {
+            disabledOffsetX = a.get(0);
+            disabledOffsetY = a.get(1);
+        });
+
+        params.applyShorthand("disabledsize", Parsers.INT, 2, a -> {
+            disabledWidth = a.get(0);
+            disabledHeight = a.get(1);
+        });
     }
 
     /**
@@ -132,6 +160,36 @@ public class ButtonImage extends Button
     }
 
     /**
+     * Uses {@link Image#getImageDimensions(ResourceLocation)} to determine the dimensions of image texture.
+     */
+    private void loadImageDimensions(final ResourceLocation rl)
+    {
+        final SizeI dimensions = Image.getImageDimensions(rl);
+        imageMapWidth = dimensions.width();
+        imageMapHeight = dimensions.height();
+    }
+
+    /**
+     * Uses {@link Image#getImageDimensions(ResourceLocation)} to determine the dimensions of hover image texture.
+     */
+    private void loadImageHighlightDimensions(final ResourceLocation rl)
+    {
+        final SizeI dimensions = Image.getImageDimensions(rl);
+        highlightMapWidth = dimensions.width();
+        highlightMapHeight = dimensions.height();
+    }
+
+    /**
+     * Uses {@link Image#getImageDimensions(ResourceLocation)} to determine the dimensions of disabled image texture.
+     */
+    private void loadImageDisabledDimensions(final ResourceLocation rl)
+    {
+        final SizeI dimensions = Image.getImageDimensions(rl);
+        disabledMapWidth = dimensions.width();
+        disabledMapHeight = dimensions.height();
+    }
+
+    /**
      * Set the default image.
      *
      * @param loc     ResourceLocation for the image.
@@ -142,7 +200,16 @@ public class ButtonImage extends Button
      */
     public void setImage(final ResourceLocation loc, final int offsetX, final int offsetY, final int w, final int h)
     {
-        imageRegular = new ImageData(loc, offsetX, offsetY, w, h);
+        if (!Objects.equals(loc, image))
+        {
+            loadImageDimensions(loc);
+        }
+
+        image = loc;
+        imageOffsetX = offsetX;
+        imageOffsetY = offsetY;
+        imageHeight = w;
+        imageWidth = h;
     }
 
     /**
@@ -152,13 +219,19 @@ public class ButtonImage extends Button
      */
     public void setImage(final ResourceLocation loc, final boolean keepUv)
     {
-        if (keepUv && !imageRegular.equals(ImageData.MISSING))
+        if (!Objects.equals(loc, image))
         {
-            imageRegular = new ImageData(loc, imageRegular.offsetX(), imageRegular.offsetY(), imageRegular.width(), imageRegular.height());
+            loadImageDimensions(loc);
         }
-        else
+
+        image = loc;
+
+        if (!keepUv)
         {
-            imageRegular = new ImageData(loc, 0, 0, 0, 0);
+            imageOffsetX = 0;
+            imageOffsetY = 0;
+            imageHeight = 0;
+            imageWidth = 0;
         }
     }
 
@@ -173,7 +246,16 @@ public class ButtonImage extends Button
      */
     public void setImageHighlight(final ResourceLocation loc, final int offsetX, final int offsetY, final int w, final int h)
     {
-        imageHover = new ImageData(loc, offsetX, offsetY, w, h);
+        if (!Objects.equals(loc, imageHighlight))
+        {
+            loadImageHighlightDimensions(loc);
+        }
+
+        imageHighlight = loc;
+        highlightOffsetX = offsetX;
+        highlightOffsetY = offsetY;
+        highlightHeight = w;
+        highlightWidth = h;
     }
 
     /**
@@ -183,13 +265,42 @@ public class ButtonImage extends Button
      */
     public void setImageHighlight(final ResourceLocation loc, final boolean keepUv)
     {
-        if (keepUv && !imageHover.equals(ImageData.MISSING))
+        if (!Objects.equals(loc, imageHighlight))
         {
-            imageHover = new ImageData(loc, imageHover.offsetX(), imageHover.offsetY(), imageHover.width(), imageHover.height());
+            loadImageHighlightDimensions(loc);
         }
-        else
+
+        imageHighlight = loc;
+
+        if (!keepUv)
         {
-            imageHover = new ImageData(loc, 0, 0, 0, 0);
+            highlightOffsetX = 0;
+            highlightOffsetY = 0;
+            highlightHeight = 0;
+            highlightWidth = 0;
+        }
+    }
+
+    /**
+     * Set the disabled image.
+     *
+     * @param loc ResourceLocation for the image.
+     */
+    public void setImageDisabled(final ResourceLocation loc, final boolean keepUv)
+    {
+        if (!Objects.equals(loc, imageDisabled))
+        {
+            loadImageDisabledDimensions(loc);
+        }
+
+        imageDisabled = loc;
+
+        if (!keepUv)
+        {
+            disabledOffsetX = 0;
+            disabledOffsetY = 0;
+            disabledHeight = 0;
+            disabledWidth = 0;
         }
     }
 
@@ -204,57 +315,16 @@ public class ButtonImage extends Button
      */
     public void setImageDisabled(final ResourceLocation loc, final int offsetX, final int offsetY, final int w, final int h)
     {
-        imageDisabled = new ImageData(loc, offsetX, offsetY, w, h);
-    }
+        if (!Objects.equals(loc, imageDisabled))
+        {
+            loadImageDisabledDimensions(loc);
+        }
 
-    /**
-     * Set the disabled image.
-     *
-     * @param loc ResourceLocation for the image.
-     */
-    public void setImageDisabled(final ResourceLocation loc, final boolean keepUv)
-    {
-        if (keepUv && !imageDisabled.equals(ImageData.MISSING))
-        {
-            imageDisabled = new ImageData(loc, imageDisabled.offsetX(), imageDisabled.offsetY(), imageDisabled.width(), imageDisabled.height());
-        }
-        else
-        {
-            imageDisabled = new ImageData(loc, 0, 0, 0, 0);
-        }
-    }
-
-    /**
-     * Override to apply some special formatting to the image before drawing.
-     */
-    public void beforeDrawImage()
-    {
-        if (!enabled)
-        {
-            RenderSystem.setShaderColor(0.5F, 0.5F, 0.5F, 1.0F);
-        }
-        else if (wasCursorInPane)
-        {
-            RenderSystem.setShaderColor(1.1F, 1.1F, 1.1F, 1.0F);
-        }
-    }
-
-    /**
-     * Determine what image to render.
-     *
-     * @return the image data instance.
-     */
-    public ImageData getImageToDraw()
-    {
-        if (!enabled && !imageDisabled.equals(ImageData.MISSING))
-        {
-            return imageDisabled;
-        }
-        else if (wasCursorInPane && !imageHover.equals(ImageData.MISSING))
-        {
-            return imageHover;
-        }
-        return imageRegular;
+        imageDisabled = loc;
+        disabledOffsetX = offsetX;
+        disabledOffsetY = offsetY;
+        disabledHeight = w;
+        disabledWidth = h;
     }
 
     /**
@@ -269,35 +339,83 @@ public class ButtonImage extends Button
     {
         if (!FMLEnvironment.production)
         {
-            Objects.requireNonNull(imageRegular, () -> id + " | " + window.getXmlResourceLocation());
+            Objects.requireNonNull(image, () -> id + " | " + window.getXmlResourceLocation());
+        }
+        else if (image == null)
+        {
+            image = MissingTextureAtlasSprite.getLocation();
         }
 
         final PoseStack ms = target.pose();
 
-        ImageData imageData = getImageToDraw();
+        ResourceLocation bind = image;
+        int u = imageOffsetX;
+        int v = imageOffsetY;
+        int w = imageWidth == 0 ? imageMapWidth : imageWidth;
+        int h = imageHeight == 0 ? imageMapHeight : imageHeight;
+        int mapWidth = imageMapWidth;
+        int mapHeight = imageMapHeight;
 
-        beforeDrawImage();
+        if (!enabled)
+        {
+            if (imageDisabled != null)
+            {
+                bind = imageDisabled;
+                u = disabledOffsetX;
+                v = disabledOffsetY;
+                w = disabledWidth == 0 ? disabledMapWidth : disabledWidth;
+                h = disabledHeight == 0 ? disabledMapHeight : disabledHeight;
+                mapWidth = disabledMapWidth;
+                mapHeight = disabledMapHeight;
+            }
+            RenderSystem.setShaderColor(0.5F, 0.5F, 0.5F, 1.0F);
+        }
+        else if (wasCursorInPane)
+        {
+            if (imageHighlight != null)
+            {
+                bind = imageHighlight;
+                u = highlightOffsetX;
+                v = highlightOffsetY;
+                w = highlightWidth == 0 ? highlightMapWidth : highlightWidth;
+                h = highlightHeight == 0 ? highlightMapHeight : highlightHeight;
+                mapWidth = highlightMapWidth;
+                mapHeight = highlightMapHeight;
+            }
+            RenderSystem.setShaderColor(1.1F, 1.1F, 1.1F, 1.0F);
+        }
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
-        blit(ms,
-          imageData.image(),
-          x,
-          y,
-          width,
-          height,
-          imageData.offsetX(),
-          imageData.offsetY(),
-          imageData.getWidth(),
-          imageData.getHeight(),
-          imageData.mapWidth(),
-          imageData.mapHeight());
+        blit(ms, bind, x, y, width, height, u, v, w, h, mapWidth, mapHeight);
+
+        postDrawButton(ms, bind, x, y, width, height, u, v, w, h, mapWidth, mapHeight);
 
         RenderSystem.disableBlend();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         super.drawSelf(target, mx, my);
+    }
+
+    /**
+     * Called after drawing the button.
+     */
+    public void postDrawButton(
+      final PoseStack ms,
+      final ResourceLocation image,
+      final int x,
+      final int y,
+      final int width,
+      final int height,
+      final int u,
+      final int v,
+      final int w,
+      final int h,
+      final int mapWidth,
+      final int mapHeight)
+    {
+        // No-op
     }
 
     @Override

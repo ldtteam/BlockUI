@@ -8,13 +8,12 @@
     <list id="list3" size="160 240" pos="320 0">
         <view size="100% 20">
             <label size="100 20" align="TOP_LEFT"/>
-            <checkbox pos="100 0"
-                      size="60 20"
+            <checkbox pos="120 3"
+                      size="14 15"
                       id="checkbox"
                       source="blockui:textures/gui/button_mini.png"
                       disabled="blockui:textures/gui/button_mini_disabled.png"
-                      checked="blockui:textures/gui/button_mini_check.png"
-                      checkeddisabled="blockui:textures/gui/button_mini_disabled_check.png"/>
+                      checkmark="blockui:textures/gui/overlay_mini_check.png"/>
         </view>
     </list>
 </window>
