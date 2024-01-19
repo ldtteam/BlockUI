@@ -102,15 +102,15 @@ public class ScrollingListContainer extends ScrollingContainer
                     }
 
                     dataProvider.updateElement(i, child);
-                }
 
-                if (dataProvider instanceof CheckListDataProvider checkListDataProvider)
-                {
-                    final CheckBox checkbox = child.findPaneOfTypeByID(checkListDataProvider.getCheckboxId(), CheckBox.class);
-                    checkbox.setChecked(checkListDataProvider.isChecked(i));
+                    if (dataProvider instanceof CheckListDataProvider checkListDataProvider)
+                    {
+                        final CheckBox checkbox = child.findPaneOfTypeByID(checkListDataProvider.getCheckboxId(), CheckBox.class);
+                        checkbox.setChecked(checkListDataProvider.isChecked(i));
 
-                    final int index = i;
-                    checkbox.setHandler(button -> checkListDataProvider.setChecked(index, !checkListDataProvider.isChecked(index)));
+                        final int index = i;
+                        checkbox.setHandler(button -> checkListDataProvider.setChecked(index, !checkListDataProvider.isChecked(index)));
+                    }
                 }
 
                 currentYpos += elementHeight + childSpacing;
