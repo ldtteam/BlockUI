@@ -286,7 +286,7 @@ public class DropDownList extends View implements ButtonHandler
         button.setEnabled(e);
         list.setEnabled(e);
     }
-
+    
     @Override
     public void parseChildren(PaneParams params)
     {
