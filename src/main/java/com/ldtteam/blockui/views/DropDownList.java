@@ -5,9 +5,8 @@ import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.Parsers;
 import com.ldtteam.blockui.controls.Button;
 import com.ldtteam.blockui.controls.ButtonHandler;
-import com.ldtteam.blockui.support.DataProviders.DataProvider;
-import com.ldtteam.blockui.support.DataProviders.DropdownDataProvider;
 import com.ldtteam.blockui.util.records.Pos2i;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 
 import java.util.function.Consumer;
@@ -34,7 +33,7 @@ public class DropDownList extends View implements ButtonHandler
     /**
      * date required to fill the list.
      */
-    protected DropdownDataProvider  dataProvider;
+    protected DataProvider  dataProvider;
 
     /**
      * handler for the accept method.
@@ -234,10 +233,10 @@ public class DropDownList extends View implements ButtonHandler
      *
      * @param p is the data provider for the list.
      */
-    public void setDataProvider(final DropdownDataProvider p)
+    public void setDataProvider(final DataProvider p)
     {
         dataProvider = p;
-        list.setDataProvider(new DataProvider()
+        list.setDataProvider(new ScrollingList.DataProvider()
         {
             @Override
             public int getElementCount()
@@ -302,6 +301,22 @@ public class DropDownList extends View implements ButtonHandler
     public void setHandler(final Consumer<DropDownList> h)
     {
         handler = h;
+    }
+
+    /**
+     * Interface for a data provider that updates pane scrolling list pane info.
+     */
+    public interface DataProvider
+    {
+        int getElementCount();
+
+        @Deprecated
+        String getLabel(final int index);
+
+        default MutableComponent getLabelNew(final int index)
+        {
+            return Component.literal(getLabel(index));
+        }
     }
 
     @Override

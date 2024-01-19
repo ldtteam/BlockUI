@@ -4,7 +4,7 @@ import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.controls.CheckBox;
 import com.ldtteam.blockui.controls.Text;
 import com.ldtteam.blockui.support.DataProviders.CheckListDataProvider;
-import com.ldtteam.blockui.support.DataProviders.DataProvider;
+import com.ldtteam.blockui.views.ScrollingList.DataProvider;
 import com.ldtteam.blockui.util.records.SizeI;
 import com.ldtteam.blockui.views.BOWindow;
 import com.ldtteam.blockui.views.ScrollingList;
