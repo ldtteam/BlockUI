@@ -139,6 +139,7 @@
             <xs:element name="entityicon" type="entityIconType"/>
             <xs:element name="switch" type="switchType"/>
             <xs:element name="dropdown" type="dropdownType"/>
+            <xs:element name="checkbox" type="checkboxType"/>
         </xs:choice>
     </xs:group>
 
@@ -324,6 +325,23 @@
                 <xs:attribute name="zoomenabled" type="xs:boolean"/>
                 <xs:attribute name="minscale" type="xs:double"/>
                 <xs:attribute name="maxscale" type="xs:double"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <!-- <checkbox> -->
+    <xs:complexType name="checkboxType">
+        <xs:complexContent>
+            <xs:extension base="buttonImageType">
+                <xs:attribute name="checked" type="xs:string"/>
+                <xs:attribute name="checkedoffset" type="fixedSizePair"/>
+                <xs:attribute name="checkedsize" type="fixedSizePair"/>
+                <xs:attribute name="checkeddisabled" type="xs:string"/>
+                <xs:attribute name="checkeddisabledoffset" type="fixedSizePair"/>
+                <xs:attribute name="checkeddisabledsize" type="fixedSizePair"/>
+                <xs:attribute name="checkedhighlight" type="xs:string"/>
+                <xs:attribute name="checkedhighlightoffset" type="fixedSizePair"/>
+                <xs:attribute name="checkedhighlightsize" type="fixedSizePair"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

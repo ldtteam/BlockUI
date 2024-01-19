@@ -11,7 +11,7 @@ import com.ldtteam.blockui.mod.BlockUI;
 import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.views.BOWindow;
 import com.ldtteam.blockui.views.ScrollingList;
-import com.ldtteam.blockui.views.ScrollingList.DataProvider;
+import com.ldtteam.blockui.support.DataProviders.DataProvider;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.network.chat.Component;

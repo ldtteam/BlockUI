@@ -4,7 +4,7 @@ import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.controls.Text;
 import com.ldtteam.blockui.views.BOWindow;
 import com.ldtteam.blockui.views.ScrollingList;
-import com.ldtteam.blockui.views.ScrollingList.CheckListDataProvider;
+import com.ldtteam.blockui.support.DataProviders.CheckListDataProvider;
 import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;

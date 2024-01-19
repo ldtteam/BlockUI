@@ -4,8 +4,9 @@ import com.ldtteam.blockui.Loader;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.controls.CheckBox;
+import com.ldtteam.blockui.support.DataProviders.DataProvider;
 import com.ldtteam.blockui.util.records.SizeI;
-import com.ldtteam.blockui.views.ScrollingList.CheckListDataProvider;
+import com.ldtteam.blockui.support.DataProviders.CheckListDataProvider;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -24,7 +25,7 @@ public class ScrollingListContainer extends ScrollingContainer
      * @param dataProvider   data provider object, shouldn't be null.
      * @param listNodeParams the xml parameters for this pane.
      */
-    public void refreshElementPanes(final ScrollingList.DataProvider dataProvider, final PaneParams listNodeParams, final int height, final int childSpacing)
+    public void refreshElementPanes(final DataProvider dataProvider, final PaneParams listNodeParams, final int height, final int childSpacing)
     {
         int currentYpos = 0;
 
