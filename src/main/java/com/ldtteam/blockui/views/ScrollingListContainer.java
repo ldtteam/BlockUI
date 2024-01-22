@@ -109,7 +109,7 @@ public class ScrollingListContainer extends ScrollingContainer
                         checkbox.setChecked(checkListDataProvider.isChecked(i));
 
                         final int index = i;
-                        checkbox.setHandler(button -> checkListDataProvider.setChecked(index, !checkListDataProvider.isChecked(index)));
+                        checkbox.setOnCheckedChange(checked -> checkListDataProvider.setChecked(index, checked));
                     }
                 }
 

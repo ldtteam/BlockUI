@@ -3,13 +3,12 @@ package com.ldtteam.blockui.mod;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.controls.CheckBox;
 import com.ldtteam.blockui.controls.Text;
-import com.ldtteam.blockui.support.DataProviders.CheckListDataProvider;
-import com.ldtteam.blockui.views.ScrollingList.DataProvider;
-import com.ldtteam.blockui.util.records.SizeI;
+import com.ldtteam.blockui.support.DataProviders.ConsumerCheckListDataProvider;
 import com.ldtteam.blockui.views.BOWindow;
 import com.ldtteam.blockui.views.ScrollingList;
+import com.ldtteam.blockui.views.ScrollingList.DataProvider;
+import com.ldtteam.blockui.views.ScrollingListContainer.RowSizeModifier;
 import net.minecraft.network.chat.Component;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,9 +48,12 @@ public class ScrollingListsGui
             }
 
             @Override
-            public @Nullable SizeI getElementSize(final int index, final Pane rowPane)
+            public void modifyRowSize(final int index, final RowSizeModifier modifier)
             {
-                return index % 2 == 0 ? new SizeI(100, 40) : null;
+                if (index % 2 == 0)
+                {
+                    modifier.setSize(100, 40);
+                }
             }
 
             @Override
@@ -64,24 +66,12 @@ public class ScrollingListsGui
         // Case 3: A scrolling check list
         final List<Boolean> booleans = new ArrayList<>(List.of(false, false, false, false, false, false, true, false, false, false));
         final ScrollingList list3 = window.findPaneOfTypeByID("list3", ScrollingList.class);
-        list3.setDataProvider(new CheckListDataProvider()
+        list3.setDataProvider(new ConsumerCheckListDataProvider(booleans)
         {
             @Override
             public String getCheckboxId()
             {
                 return "checkbox";
-            }
-
-            @Override
-            public boolean isChecked(final int index)
-            {
-                return booleans.get(index);
-            }
-
-            @Override
-            public void setChecked(final int index, final boolean checked)
-            {
-                booleans.set(index, checked);
             }
 
             @Override
