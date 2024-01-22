@@ -3,12 +3,12 @@ package com.ldtteam.blockui.views;
 import com.ldtteam.blockui.Loader;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
-import com.ldtteam.blockui.util.SafeError;
 import com.ldtteam.blockui.controls.CheckBox;
-import com.ldtteam.blockui.views.ScrollingList.DataProvider;
-import com.ldtteam.blockui.util.records.SizeI;
-import org.jetbrains.annotations.NotNull;
 import com.ldtteam.blockui.support.DataProviders.CheckListDataProvider;
+import com.ldtteam.blockui.util.SafeError;
+import com.ldtteam.blockui.util.records.SizeI;
+import com.ldtteam.blockui.views.ScrollingList.DataProvider;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
@@ -109,7 +109,7 @@ public class ScrollingListContainer extends ScrollingContainer
                         checkbox.setChecked(checkListDataProvider.isChecked(i));
 
                         final int index = i;
-                        checkbox.setOnCheckedChange(checked -> checkListDataProvider.setChecked(index, checked));
+                        checkbox.setHandler(checked -> checkListDataProvider.setChecked(index, checkListDataProvider.isChecked(index)));
                     }
                 }
 

@@ -4,8 +4,6 @@ import com.ldtteam.blockui.PaneParams;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.resources.ResourceLocation;
 
-import java.util.function.Consumer;
-
 /**
  * Checkbox used for toggling a checkmark on and off.
  */
@@ -15,11 +13,6 @@ public class CheckBox extends ButtonImage
      * The image for the checkmark to render over the button.
      */
     protected ResourceLocation checkmarkImage;
-
-    /**
-     * Callback whenever the checked state changes.
-     */
-    private Consumer<Boolean> onCheckedChange;
 
     /**
      * Whether the button is checked or not.
@@ -32,7 +25,6 @@ public class CheckBox extends ButtonImage
     public CheckBox()
     {
         super();
-        super.setHandler(this::onButtonClick);
     }
 
     /**
@@ -45,20 +37,6 @@ public class CheckBox extends ButtonImage
         super(params);
 
         checkmarkImage = params.getResource("checkmark", img -> {});
-        super.setHandler(this::onButtonClick);
-    }
-
-    /**
-     * Internal handler for the button click.
-     */
-    private void onButtonClick(final Button button)
-    {
-        checked = !checked;
-        final Consumer<Boolean> handler = onCheckedChange;
-        if (handler != null)
-        {
-            handler.accept(checked);
-        }
     }
 
     /**
@@ -70,15 +48,12 @@ public class CheckBox extends ButtonImage
         // No-op, checkbox handler is explicit and may not be changed
     }
 
-    /**
-     * Set a callback handler for whenever the checked state changes.
-     * Note that this callback is not fired when a manual invocation to {@link CheckBox#setChecked(boolean)} is called, only when the button itself is clicked.
-     *
-     * @param onCheckedChange the callback handler.
-     */
-    public void setOnCheckedChange(final Consumer<Boolean> onCheckedChange)
+    @Override
+    public boolean handleClick(final double mx, final double my)
     {
-        this.onCheckedChange = onCheckedChange;
+        checked = !checked;
+        super.handleClick(mx, my);
+        return true;
     }
 
     /**
