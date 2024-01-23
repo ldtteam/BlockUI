@@ -30,7 +30,9 @@ import java.util.stream.Stream;
  */
 public abstract class AbstractTextElement extends Pane
 {
+    @Deprecated(forRemoval = true, since = "1.20.1")
     public static final int FILTERING_ROUNDING = 50;
+    public static final float FILTERING_MAX_SCALE = 2; // enable texture filtering when text is below this scale (in monitor pixels)
     public static final float FILTERING_THRESHOLD = 0.02f; // should be 1/FILTERING_ROUNDING
 
     public static final double DEFAULT_TEXT_SCALE = 1.0d;
@@ -304,30 +306,21 @@ public abstract class AbstractTextElement extends Pane
 
         ms.pushPose();
         ms.translate(x + offsetX, y + offsetY, 0.0d);
+        ms.scale((float) textScale, (float) textScale, 1.0f);
 
         final Matrix4f matrix4f = ms.last().pose();
 
+        // we want to see how big is one scaled pixel on monitor (using one texel)
+        final int fbW = window.getScreen().getFramebufferWidth(), fbH = window.getScreen().getFramebufferHeight();
         final Vector4f temp = new Vector4f(1, 1, 0, 0);
-        temp.transform(matrix4f);
-        final float oldScaleX = temp.x();
-        final float oldScaleY = temp.y();
-        final float newScaleX = (float) Math.round(oldScaleX * textScale * FILTERING_ROUNDING) / FILTERING_ROUNDING;
-        final float newScaleY = (float) Math.round(oldScaleY * textScale * FILTERING_ROUNDING) / FILTERING_ROUNDING;
+        matrix4f.transform(temp); // PVM
+        temp.w = 1; // vector -> point
+        temp.mulProject(RenderSystem.getProjectionMatrix()); // projection, perspective
+        temp.add(1, 1, 0, 0); // viewport, discard non (x,y)
+        temp.mul(fbW / 2.0f, fbH / 2.0f, 0, 0);
 
-        if (Math.abs((float) Math.round(newScaleX) - newScaleX) > FILTERING_THRESHOLD
-            || Math.abs((float) Math.round(newScaleY) - newScaleY) > FILTERING_THRESHOLD)
-        {
-            // smooth the texture
-            // if (newScaleX < window.getScreen().getVanillaGuiScale() || newScaleY < window.getScreen().getVanillaGuiScale())
-            // TODO: figure out how to not linear filter when mag filter is used, might just want to use direct ogl call
-            ForgeRenderTypes.enableTextTextureLinearFiltering = true;
-            ms.scale((float) textScale, (float) textScale, 1.0f);
-        }
-        else
-        {
-            // round scale if not smoothing
-            ms.scale(newScaleX / oldScaleX, newScaleY / oldScaleY, 1.0f);
-        }
+        final float scale = temp.distanceSquared(FILTERING_THRESHOLD, fbH - FILTERING_THRESHOLD, 0, 0);
+        ForgeRenderTypes.enableTextTextureLinearFiltering = Math.abs(temp.x - fbH + temp.y) > FILTERING_THRESHOLD || scale < FILTERING_MAX_SCALE * FILTERING_MAX_SCALE;
 
         final MultiBufferSource.BufferSource drawBuffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
         int lineShift = 0;
