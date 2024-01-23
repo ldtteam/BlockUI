@@ -65,13 +65,13 @@ public class ItemIconWithProperties extends ItemIcon
                     final CompoundTag child = tag.getCompound(itemKey);
                     final var itemOverrides = NBT_GENERIC_KEY.equals(itemKey) ? genericPropertyOverrides :
                         itemPropertyOverrides.computeIfAbsent(NBT_CURRENT_ITEM.equals(itemKey) ? itemStack.getItem() :
-                            ForgeRegistries.ITEMS.getValue(ResourceLocation.tryParse(itemKey)), i -> new HashMap<>());
+                            ForgeRegistries.ITEMS.getValue(new ResourceLocation(itemKey)), i -> new HashMap<>());
 
                     child.getAllKeys().forEach(key -> {
                         if (child.contains(key, Tag.TAG_ANY_NUMERIC))
                         {
                             final float value = child.getFloat(key); // intentionally ouf of lambda
-                            itemOverrides.put(ResourceLocation.tryParse(key), (itemStack, level, entity, seee) -> value);
+                            itemOverrides.put(new ResourceLocation(key), (itemStack, level, entity, seee) -> value);
                         }
                     });
                 }
@@ -79,16 +79,6 @@ public class ItemIconWithProperties extends ItemIcon
 
             onItemUpdate();
         }
-    }
-
-    protected static String getNextItemKey(final String str, final int startIndex)
-    {
-        return str.substring(startIndex, str.indexOf('(', startIndex)).trim();
-    }
-
-    protected static String getNextItemOverrides(final String str, final int startIndex)
-    {
-        return str.substring(startIndex, str.indexOf(')', startIndex));
     }
 
     /**
