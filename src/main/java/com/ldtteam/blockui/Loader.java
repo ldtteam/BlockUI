@@ -8,7 +8,6 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraftforge.fml.loading.FMLEnvironment;
-import org.apache.http.ParseException;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 import java.io.IOException;
@@ -61,7 +60,7 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
         {
             if (!FMLEnvironment.production && paneParams.hasAttribute(ItemIconWithProperties.PARAM_PROPERTIES))
             {
-                throw new ParseException("Must be one of '%s' or '%s'".formatted(ItemIconWithBlockState.PARAM_NBT, ItemIconWithProperties.PARAM_PROPERTIES));
+                throw new IllegalStateException("Must be one of '%s' or '%s'".formatted(ItemIconWithBlockState.PARAM_NBT, ItemIconWithProperties.PARAM_PROPERTIES));
             }
             return new ItemIconWithBlockState(paneParams);
         }
