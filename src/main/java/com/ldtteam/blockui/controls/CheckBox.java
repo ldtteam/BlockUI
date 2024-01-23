@@ -39,15 +39,6 @@ public class CheckBox extends ButtonImage
         checkmarkImage = params.getResource("checkmark");
     }
 
-    /**
-     * Do not call this method. Checkboxes may not have a different button click implementation.
-     */
-    @Override
-    public void setHandler(final ButtonHandler h)
-    {
-        // No-op, checkbox handler is explicit and may not be changed
-    }
-
     @Override
     public boolean handleClick(final double mx, final double my)
     {
