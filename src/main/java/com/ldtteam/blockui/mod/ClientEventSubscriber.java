@@ -73,7 +73,7 @@ public class ClientEventSubscriber
                 window.addChild(dumpAtlases);
                 window.addChild(createTestGuiButton(id++, "General All-in-one", new ResourceLocation(BlockUI.MOD_ID, "gui/test.xml"), parent -> {
                     parent.findPaneOfTypeByID("missing_out_of_jar", Image.class).setImage(OutOfJarResourceLocation.ofMinecraftFolder(BlockUI.MOD_ID, "missing_out_of_jar.png"), false);
-                    parent.findPaneOfTypeByID("working_out_of_jar", Image.class).setImage(OutOfJarResourceLocation.ofMinecraftFolder(BlockUI.MOD_ID, "../../../src/test/resources/button.png"), false);
+                    parent.findPaneOfTypeByID("working_out_of_jar", Image.class).setImage(OutOfJarResourceLocation.of(BlockUI.MOD_ID, Path.of("../../src/test/resources/button.png")), false);
                 }));
                 window.addChild(createTestGuiButton(id++, "Tooltip Positioning", new ResourceLocation(BlockUI.MOD_ID, "gui/test2.xml")));
                 window.addChild(createTestGuiButton(id++, "ItemIcon To BlockState", new ResourceLocation(BlockUI.MOD_ID, "gui/test3.xml"), BlockStateTestGui::setup));

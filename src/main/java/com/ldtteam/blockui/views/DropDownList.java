@@ -320,6 +320,6 @@ public class DropDownList extends View implements ButtonHandler
     @Override
     public boolean isPointInPane(final double mx, final double my)
     {
-        return super.isPointInPane(mx, my) || (overlay.isVisible() && list.isPointInPane(mx, my));
+        return super.isPointInPane(mx, my) || (overlay.shouldDraw() && list.isPointInPane(mx, my));
     }
 }
