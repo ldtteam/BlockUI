@@ -196,12 +196,35 @@ public class PaneParams
     /**
      * Get the resource location from the name
      * @param name the attribute name
-     * @param def the default value to fallback to
+     * @param def  the default value to fall back to
      * @return the parsed resource location
      */
+    public ResourceLocation getResource(final String name, final ResourceLocation def)
+    {
+        return getProperty(name, Parsers.RESOURCE, def);
+    }
+
+    /**
+     * Get the resource location from the name
+     * @param name the attribute name
+     * @param def  the default value to fall back to
+     * @return the parsed resource location
+     * @deprecated use {@link PaneParams#getResource(String, ResourceLocation)} instead.
+     */
+    @Deprecated(forRemoval = true, since = "1.20.1")
     public ResourceLocation getResource(final String name, final String def)
     {
-        return getProperty(name, Parsers.RESOURCE, new ResourceLocation(def));
+        return getResource(name, new ResourceLocation(def));
+    }
+
+    /**
+     * Get the resource location from the name
+     * @param name the attribute name
+     * @return the parsed resource location
+     */
+    public ResourceLocation getResource(final String name)
+    {
+        return getResource(name, (ResourceLocation) null);
     }
 
     /**
@@ -213,8 +236,8 @@ public class PaneParams
     @Nullable
     public ResourceLocation getResource(final String name, final Consumer<ResourceLocation> loader)
     {
-        ResourceLocation rl = getResource(name, "");
-        if (!rl.getPath().isEmpty())
+        final ResourceLocation rl = getResource(name);
+        if (rl != null && !rl.getPath().isEmpty())
         {
             loader.accept(rl);
             return rl;
@@ -244,7 +267,7 @@ public class PaneParams
     {
         return getProperty(name, Parsers.MULTILINE, def);
     }
-    
+
     /**
      * Get the localized String attribute from the name and revert to the default if not present.
      *

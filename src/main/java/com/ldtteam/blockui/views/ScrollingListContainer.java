@@ -5,6 +5,7 @@ import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.util.SafeError;
 import com.ldtteam.blockui.util.records.SizeI;
+import com.ldtteam.blockui.views.ScrollingList.DataProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -55,7 +56,7 @@ public class ScrollingListContainer extends ScrollingContainer
      * @param height       the maximum height of the parent.
      * @param childSpacing the spacing between each row.
      */
-    public void refreshElementPanes(final ScrollingList.DataProvider dataProvider, final int height, final int childSpacing)
+    public void refreshElementPanes(final DataProvider dataProvider, final int height, final int childSpacing)
     {
         int currentYpos = 0;
 
