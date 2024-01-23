@@ -3,7 +3,6 @@ package com.ldtteam.blockui.controls;
 import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.PaneParams;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.client.renderer.item.ClampedItemPropertyFunction;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.client.renderer.item.ItemPropertyFunction;
 import net.minecraft.nbt.CompoundTag;
@@ -84,7 +83,7 @@ public class ItemIconWithProperties extends ItemIcon
     /**
      * Short call for adding itemProperty to current item
      */
-    public void addPropertyForCurrentItem(final ResourceLocation propertyKey, final ClampedItemPropertyFunction property)
+    public void addPropertyForCurrentItem(final ResourceLocation propertyKey, final ItemPropertyFunction property)
     {
         itemPropertyOverrides
             .computeIfAbsent(Objects.requireNonNull(itemStack, "Call #setItem before this method").getItem(), item -> new HashMap<>())
