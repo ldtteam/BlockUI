@@ -35,6 +35,8 @@ import java.util.Objects;
 
 public class ItemIconWithBlockState extends ItemIcon
 {
+    public static final String PARAM_NBT = "nbt";
+
     /**
      * BlockState + BlockEntity ModelData override
      */
@@ -76,7 +78,7 @@ public class ItemIconWithBlockState extends ItemIcon
         final ItemStack newItemStack = itemStack;
         if (newItemStack != null)
         {
-            final String nbt = params.getString("nbt");
+            final String nbt = params.getString(PARAM_NBT);
             if (nbt != null)
             {
                 try

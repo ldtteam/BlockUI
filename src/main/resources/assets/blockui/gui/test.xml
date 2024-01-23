@@ -47,5 +47,7 @@
         <itemicon item="minecraft:oak_stairs" nbt="{BlockStateTag:{waterlogged:'true',facing:'south'}}" size="64 64" pos="440 50"/>
         <itemicon item="minecraft:oak_stairs" nbt="{BlockStateTag:{facing:'east'}}" size="64 64" pos="510 50"/>
         <itemicon item="minecraft:oak_stairs" size="64 64" pos="580 50"/>
+        <itemicon item="minecraft:clock" properties="{_item:{time:0.5}}" size="32 32" pos="650 50"/>
+        <itemicon item="minecraft:clock" size="32 32" pos="700 50"/>
     </zoomdragview>
 </window>
