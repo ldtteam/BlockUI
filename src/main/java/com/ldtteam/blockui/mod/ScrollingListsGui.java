@@ -87,13 +87,7 @@ public class ScrollingListsGui
             }
 
             @Override
-            public int getElementCount()
-            {
-                return booleans.size();
-            }
-
-            @Override
-            public void updateElement(final int index, final Pane rowPane)
+            public void updateElement(final int index, final Pane rowPane, final boolean checked)
             {
                 rowPane.findPaneByType(Text.class).setText(Component.literal("Hi " + index));
 
@@ -102,6 +96,12 @@ public class ScrollingListsGui
                 {
                     rowPane.findPaneOfTypeByID(getCheckboxId(), CheckBox.class).disable();
                 }
+            }
+
+            @Override
+            public int getElementCount()
+            {
+                return booleans.size();
             }
         });
     }

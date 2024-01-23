@@ -36,7 +36,7 @@ public class CheckBox extends ButtonImage
     {
         super(params);
 
-        checkmarkImage = params.getResource("checkmark", img -> {});
+        checkmarkImage = params.getResource("checkmark");
     }
 
     /**
@@ -67,7 +67,7 @@ public class CheckBox extends ButtonImage
     }
 
     @Override
-    public void postDrawButton(
+    public void postDrawBackground(
       final PoseStack ms,
       final ResourceLocation image,
       final int x,

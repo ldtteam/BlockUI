@@ -1,5 +1,7 @@
 package com.ldtteam.blockui.support;
 
+import com.ldtteam.blockui.Pane;
+import com.ldtteam.blockui.controls.CheckBox;
 import com.ldtteam.blockui.views.ScrollingList.DataProvider;
 
 /**
@@ -34,5 +36,28 @@ public class DataProviders
          * @param checked whether the item is checked or not.
          */
         void setChecked(final int index, final boolean checked);
+
+        @Override
+        default void updateElement(final int index, final Pane rowPane)
+        {
+            final CheckBox checkbox = rowPane.findPaneOfTypeByID(getCheckboxId(), CheckBox.class);
+            checkbox.setChecked(isChecked(index));
+
+            if (!checkbox.hasHandler())
+            {
+                checkbox.setHandler(checked -> setChecked(index, !isChecked(index)));
+            }
+
+            updateElement(index, rowPane, checkbox.isChecked());
+        }
+
+        /**
+         * Override this to update the Panes for a given row.
+         *
+         * @param index   the index of the row/list element
+         * @param rowPane the parent Pane for the row, containing the elements to update
+         * @param checked the current checked state for this row
+         */
+        void updateElement(final int index, final Pane rowPane, final boolean checked);
     }
 }

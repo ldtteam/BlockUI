@@ -3,8 +3,6 @@ package com.ldtteam.blockui.views;
 import com.ldtteam.blockui.Loader;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
-import com.ldtteam.blockui.controls.CheckBox;
-import com.ldtteam.blockui.support.DataProviders.CheckListDataProvider;
 import com.ldtteam.blockui.util.SafeError;
 import com.ldtteam.blockui.util.records.SizeI;
 import com.ldtteam.blockui.views.ScrollingList.DataProvider;
@@ -102,15 +100,6 @@ public class ScrollingListContainer extends ScrollingContainer
                     }
 
                     dataProvider.updateElement(i, child);
-
-                    if (dataProvider instanceof CheckListDataProvider checkListDataProvider)
-                    {
-                        final CheckBox checkbox = child.findPaneOfTypeByID(checkListDataProvider.getCheckboxId(), CheckBox.class);
-                        checkbox.setChecked(checkListDataProvider.isChecked(i));
-
-                        final int index = i;
-                        checkbox.setHandler(checked -> checkListDataProvider.setChecked(index, checkListDataProvider.isChecked(index)));
-                    }
                 }
 
                 currentYpos += elementHeight + childSpacing;

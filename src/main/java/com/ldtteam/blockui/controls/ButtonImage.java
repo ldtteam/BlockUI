@@ -389,8 +389,7 @@ public class ButtonImage extends Button
         RenderSystem.defaultBlendFunc();
 
         blit(ms, bind, x, y, width, height, u, v, w, h, mapWidth, mapHeight);
-
-        postDrawButton(ms, bind, x, y, width, height, u, v, w, h, mapWidth, mapHeight);
+        postDrawBackground(ms, bind, x, y, width, height, u, v, w, h, mapWidth, mapHeight);
 
         RenderSystem.disableBlend();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -401,7 +400,7 @@ public class ButtonImage extends Button
     /**
      * Called after drawing the button.
      */
-    public void postDrawButton(
+    public void postDrawBackground(
       final PoseStack ms,
       final ResourceLocation image,
       final int x,
