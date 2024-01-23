@@ -4,15 +4,14 @@ import com.ldtteam.blockui.Alignment;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.Parsers;
 import com.ldtteam.blockui.util.records.SizeI;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
-
-import java.util.Objects;
-
 import net.minecraft.util.Mth;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+
+import java.util.Objects;
 
 /**
  * Clickable image.
@@ -387,11 +386,32 @@ public class ButtonImage extends Button
         RenderSystem.defaultBlendFunc();
 
         blit(ms, bind, x, y, width, height, u, v, w, h, mapWidth, mapHeight);
+        postDrawBackground(ms, bind, x, y, width, height, u, v, w, h, mapWidth, mapHeight);
 
         RenderSystem.disableBlend();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         super.drawSelf(ms, mx, my);
+    }
+
+    /**
+     * Called after drawing the button.
+     */
+    public void postDrawBackground(
+      final PoseStack ms,
+      final ResourceLocation image,
+      final int x,
+      final int y,
+      final int width,
+      final int height,
+      final int u,
+      final int v,
+      final int w,
+      final int h,
+      final int mapWidth,
+      final int mapHeight)
+    {
+        // No-op
     }
 
     @Override
