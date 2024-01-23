@@ -9,14 +9,15 @@ import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * Utilities to load xml files.
@@ -49,6 +50,7 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
         register("overlay", OverlayView::new);
         register("gradient", Gradient::new);
         register("zoomdragview", ZoomDragView::new);
+        register("checkbox", CheckBox::new);
     }
 
     /**

@@ -77,6 +77,14 @@ public abstract class Button extends AbstractTextElement
     }
 
     /**
+     * @return true if any handler is present
+     */
+    public boolean hasHandler()
+    {
+        return handler != null;
+    }
+
+    /**
      * Play click sound and find the proper handler.
      *
      * @param mx mouse X coordinate, relative to Pane's top-left
