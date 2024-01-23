@@ -210,10 +210,14 @@
             <xs:extension base="paneType">
                 <xs:attribute name="item" type="xs:string"/>
                 <xs:attribute name="nbt" type="xs:string"/>
+                <xs:attribute name="properties" type="xs:string"/>
                 <xs:attribute name="renderItemDecorations" type="xs:boolean" default="true"/>
                 <xs:attribute name="alwaysAddBlockStateTooltip" type="xs:boolean" default="false"/>
             </xs:extension>
         </xs:complexContent>
+        <!-- TODO:
+            <xs:assert test="(@nbt and not(@properties)) or (not(@nbt) and @properties)"/>
+        -->
     </xs:complexType>
 
     <!-- <entityicon> -->
