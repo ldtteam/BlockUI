@@ -246,7 +246,7 @@ public class View extends Pane
         // copy to prevent CME during scrolling list updates, ctor uses fast array copy so it's cheap
         for (final Pane child : new ArrayList<>(children))
         {
-            if (child.isVisible())
+            if (child.shouldDraw())
             {
                 child.onUpdate();
             }
