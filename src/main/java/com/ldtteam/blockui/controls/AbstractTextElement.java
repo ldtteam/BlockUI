@@ -11,6 +11,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.math.Matrix4f;
+import com.mojang.math.Vector3f;
 import com.mojang.math.Vector4f;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
@@ -313,14 +314,16 @@ public abstract class AbstractTextElement extends Pane
         // we want to see how big is one scaled pixel on monitor (using one texel)
         final int fbW = window.getScreen().getFramebufferWidth(), fbH = window.getScreen().getFramebufferHeight();
         final Vector4f temp = new Vector4f(1, 1, 0, 0);
-        matrix4f.transform(temp); // PVM
-        temp.w = 1; // vector -> point
-        temp.mulProject(RenderSystem.getProjectionMatrix()); // projection, perspective
+        temp.transform(matrix4f); // PVM
+        temp.setW(1); // vector -> point
+        temp.transform(RenderSystem.getProjectionMatrix()); // projection, perspective
+        temp.perspectiveDivide();
         temp.add(1, 1, 0, 0); // viewport, discard non (x,y)
-        temp.mul(fbW / 2.0f, fbH / 2.0f, 0, 0);
+        temp.mul(new Vector3f(fbW / 2.0f, fbH / 2.0f, 0));
+        temp.setW(0);
 
-        final float scale = temp.distanceSquared(FILTERING_THRESHOLD, fbH - FILTERING_THRESHOLD, 0, 0);
-        ForgeRenderTypes.enableTextTextureLinearFiltering = Math.abs(temp.x - fbH + temp.y) > FILTERING_THRESHOLD || scale < FILTERING_MAX_SCALE * FILTERING_MAX_SCALE;
+        final float scale = distanceSquared(temp, FILTERING_THRESHOLD, fbH - FILTERING_THRESHOLD, 0, 0);
+        ForgeRenderTypes.enableTextTextureLinearFiltering = Math.abs(temp.x() - fbH + temp.y()) > FILTERING_THRESHOLD || scale < FILTERING_MAX_SCALE * FILTERING_MAX_SCALE;
 
         final MultiBufferSource.BufferSource drawBuffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
         int lineShift = 0;
@@ -579,5 +582,11 @@ public abstract class AbstractTextElement extends Pane
         textWidth = width;
         textHeight = height;
         recalcTextRendering();
+    }
+
+    private static float distanceSquared(final Vector4f vec, final float x, final float y, final float z, final float w)
+    {
+        final float dx = vec.x() - x, dy = vec.y() - y, dz = vec.z() - z, dw = vec.w() - w;
+        return Math.fma(dx, dx, Math.fma(dy, dy, Math.fma(dz, dz, dw * dw)));
     }
 }

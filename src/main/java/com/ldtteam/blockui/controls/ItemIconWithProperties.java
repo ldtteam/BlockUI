@@ -1,7 +1,7 @@
 package com.ldtteam.blockui.controls;
 
-import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.PaneParams;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.client.renderer.item.ItemPropertyFunction;
@@ -107,7 +107,7 @@ public class ItemIconWithProperties extends ItemIcon
     }
 
     @Override
-    public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
+    public void drawSelf(final PoseStack ms, final double mx, final double my)
     {
         if (isDataEmpty())
         {
@@ -115,7 +115,7 @@ public class ItemIconWithProperties extends ItemIcon
         }
         if (currentItemOverrides.isEmpty() && genericPropertyOverrides.isEmpty())
         {
-            super.drawSelf(target, mx, my);
+            super.drawSelf(ms, mx, my);
             return;
         }
         final Item item = itemStack.getItem();
@@ -136,7 +136,7 @@ public class ItemIconWithProperties extends ItemIcon
             ItemProperties.register(item, key, val);
         });
 
-        super.drawSelf(target, mx, my);
+        super.drawSelf(ms, mx, my);
 
         oldItemVals.forEach((key, val) -> ItemProperties.register(item, key, val));
         oldGenericVals.forEach((key, val) -> ItemProperties.registerGeneric(key, val));

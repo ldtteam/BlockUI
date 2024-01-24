@@ -109,7 +109,10 @@ public class SpriteTexture extends AbstractTexture implements Tickable
         }
         catch (final IOException | JsonParseException e)
         {
-            SafeError.throwInDev(new RuntimeException("Parsing sprite metadata failed for: " + resourceLocation, e), LOGGER);
+            if (!resourceLocation.getNamespace().equals("blockui"))
+            {
+                SafeError.throwInDev(new RuntimeException("Parsing sprite metadata failed for: " + resourceLocation, e), LOGGER);
+            }
             return null;
         }
 
