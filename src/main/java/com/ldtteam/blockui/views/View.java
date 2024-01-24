@@ -89,9 +89,22 @@ public class View extends Pane
             {
                 child.draw(target, drawX, drawY);
             }
+            else
+            {
+                child.drawHidden();
+            }
         }
 
         ms.popPose();
+    }
+
+    @Override
+    public void drawHidden()
+    {
+        for (final Pane child : children)
+        {
+            child.drawHidden();
+        }
     }
 
     @Override
