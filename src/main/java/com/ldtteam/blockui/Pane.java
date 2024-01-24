@@ -372,6 +372,16 @@ public class Pane extends UiRenderMacros
     }
 
     /**
+     * Called instead of normal draw() if it wasnt called during this frame.
+     */
+    public void drawHidden()
+    {
+        final boolean oldCursorInPane = wasCursorInPane;
+        wasCursorInPane = false;
+        handleHover(oldCursorInPane);
+    }
+
+    /**
      * Draw something after finishing drawing the GUI.
      *
      * @param mx mouse x.
