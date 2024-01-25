@@ -39,14 +39,10 @@ public class ScrollingListContainer extends ScrollingContainer
     {
         this.listNodeParams = listNodeParams;
 
-        final Pane template = Loader.createFromPaneParams(listNodeParams, null);
-        if (template == null)
-        {
-            SafeError.throwInDev(new IllegalStateException("Scrolling list template could not be loaded. Is there a reference to another layout in the list children?"));
-            return;
-        }
-
-        this.templateSize = new SizeI(template.getWidth(), template.getHeight());
+        listNodeParams.setParentView(this);
+        listNodeParams.getScaledInteger("size", listNodeParams.getParentWidth(), listNodeParams.getParentHeight(), a -> {
+            this.templateSize = new SizeI(a.get(0), a.get(1));
+        });
     }
 
     /**
