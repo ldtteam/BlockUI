@@ -1,6 +1,5 @@
 package com.ldtteam.blockui.controls;
 
-import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.Parsers;
 import net.minecraft.resources.ResourceLocation;
@@ -16,7 +15,7 @@ import java.util.stream.Collectors;
  * A Button pane for conveniently cycling through different states on click
  * with a shorthand to define different options quickly from the parameters.
  */
-public class ToggleButton extends Button
+public class ToggleButton extends ButtonImage
 {
     private static final Pattern SHORT_TRANSLATION = Pattern.compile("(\\$[({]\\S+)\\.\\S+([})])\\|(\\$\\.[^$|\\s]+)");
 
@@ -24,13 +23,9 @@ public class ToggleButton extends Button
     protected List<MutableComponent> states;
     protected int active = 0;
 
-    protected Button button;
-
     public ToggleButton(final PaneParams params)
     {
         super(params);
-        button = Button.construct(params);
-
         setStateList(params.getString("options", ""));
     }
 
@@ -38,9 +33,9 @@ public class ToggleButton extends Button
      * Creates a new toggleable vanilla button
      * @param options the available states as raw text strings
      */
+    @Deprecated(forRemoval = true, since = "1.20.1")
     public ToggleButton(String... options)
     {
-        button = new ButtonVanilla();
         setStateList(String.join("|", options));
     }
 
@@ -49,10 +44,10 @@ public class ToggleButton extends Button
      * @param image the image to set as the button's background
      * @param options the available states as raw text strings
      */
+    @Deprecated(forRemoval = true, since = "1.20.1")
     public ToggleButton(ResourceLocation image, String... options)
     {
-        button = new ButtonImage();
-        ((ButtonImage) button).setImage(image, false);
+        setImage(image, false);
         setStateList(String.join("|", options));
     }
 
@@ -74,11 +69,11 @@ public class ToggleButton extends Button
 
         if (!states.isEmpty())
         {
-            button.setText(states.get(active));
+            setText(states.get(active));
         }
         else
         {
-            button.clearText();
+            clearText();
         }
     }
 
@@ -133,12 +128,12 @@ public class ToggleButton extends Button
         if (index >= 0)
         {
             active = index;
-            button.setText(states.get(active));
+            setText(states.get(active));
             return true;
         }
         else
         {
-            button.clearText();
+            clearText();
             return false;
         }
     }
@@ -147,22 +142,16 @@ public class ToggleButton extends Button
      * Change the underlying button pane
      * @param button the new button pane to render
      */
+    @Deprecated(forRemoval = true, since = "1.20.1")
     public void setButton(Button button)
     {
-        this.button = button;
-        if (!states.isEmpty())
-        {
-            button.setText(states.get(active));
-        }
-        else
-        {
-            button.clearText();
-        }
+        // noop
     }
 
+    @Deprecated(forRemoval = true, since = "1.20.1")
     public Button getButton()
     {
-        return button;
+        return this;
     }
 
     @Override
@@ -171,21 +160,9 @@ public class ToggleButton extends Button
         if (!states.isEmpty())
         {
             active = (active + 1) % states.size();
-            button.setText(states.get(active));
+            setText(states.get(active));
         }
 
         return super.handleClick(mx, my);
-    }
-
-    @Override
-    public void drawSelf(final BOGuiGraphics ms, final double mx, final double my)
-    {
-        button.drawSelf(ms, mx, my);
-    }
-
-    @Override
-    public void drawSelfLast(final BOGuiGraphics ms, final double mx, final double my)
-    {
-        button.drawSelfLast(ms, mx, my);
     }
 }
