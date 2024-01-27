@@ -1,5 +1,6 @@
 package com.ldtteam.common.util;
 
+import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
 import com.ldtteam.common.fakelevel.FakeLevel;
 import com.ldtteam.common.fakelevel.IFakeLevelBlockGetter.SingleBlockFakeLevelGetter;
 import com.ldtteam.common.fakelevel.IFakeLevelLightProvider;
@@ -33,10 +34,11 @@ public class BlockToItemHelper
     private static FakeLevel<SingleBlockFakeLevelGetter> fakeLevel;
 
     /**
-     * Same as {@link #getItemStackUsingPlayerPick(BlockState, BlockEntity, Player)} but liquids return buckets, fires flint&steel, etc.
-     * This method is not thread safe!
+     * Mostly for use in UI where you dont have level instance (eg. player selects block, from xml, but not when displaying real world
+     * info - see {@link BlockStateRenderingData#of(Level, BlockPos, Player)}). NOT thread safe!
      * 
-     * @return result of enhanced simulatated middle mouse button click, empty if crashed or no pick result available
+     * @return result of player middle-mouse-button click with more sensible defaults (liquids -> buckets, fire -> flint&steel), might
+     *         be {@link ItemStack#isEmpty()} in case of error
      */
     public static ItemStack getItemStack(final BlockState blockState, final BlockEntity blockEntity, final Player player)
     {
@@ -59,10 +61,10 @@ public class BlockToItemHelper
     }
 
     /**
-     * Same as {@link #getItemStackUsingPlayerPick(BlockState, BlockEntity, Player)} but liquids return buckets, fires flint&steel, etc.
+     * Mostly for use by machines/entities when you dont have player instance - uses fake player.
      * 
-     * @param  serverLevel for fake player instance
-     * @return             result of enhanced simulatated middle mouse button click, empty if crashed or no pick result available
+     * @return result of player middle-mouse-button click with more sensible defaults (liquids -> buckets, fire -> flint&steel), might
+     *         be {@link ItemStack#isEmpty()} in case of error
      */
     public static ItemStack getItemStack(final ServerLevel serverLevel, final BlockPos pos)
     {
@@ -70,11 +72,10 @@ public class BlockToItemHelper
     }
 
     /**
-     * Same as {@link #getItemStackUsingPlayerPick(BlockState, BlockEntity, Player)} but liquids return buckets, fires flint&steel, etc.
+     * General method when you have everything block->item mapping needs, but you don't have hit result (ray trace from camera).
      * 
-     * @param  level for fake player instance
-     * @param pos 
-     * @return             result of enhanced simulatated middle mouse button click, empty if crashed or no pick result available
+     * @return result of player middle-mouse-button click with more sensible defaults (liquids -> buckets, fire -> flint&steel), might
+     *         be {@link ItemStack#isEmpty()} in case of error
      */
     public static ItemStack getItemStack(final Level level, final BlockPos pos, final Player player)
     {
@@ -82,7 +83,8 @@ public class BlockToItemHelper
     }
 
     /**
-     * @return result of simulatated middle mouse button click, empty if crashed or no pick result available
+     * @return result of player middle-mouse-button click with more sensible defaults (liquids -> buckets, fire -> flint&steel), might
+     *         be {@link ItemStack#isEmpty()} in case of error
      */
     public static ItemStack getItemStackUsingPlayerPick(final Level level, final BlockPos pos, final Player player, @Nullable HitResult hitResult)
     {

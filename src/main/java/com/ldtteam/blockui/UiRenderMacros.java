@@ -375,10 +375,6 @@ public class UiRenderMacros
         RenderSystem.disableBlend();
     }
 
-    /**
-     * @deprecated {@link #blit(PoseStack, ResourceLocation, int, int, int, int, float, float, float, float)}
-     */
-    @Deprecated(forRemoval = true, since = "1.20.2")
     public static void blit(final PoseStack ps,
         final ResourceLocation rl,
         final int x,
@@ -393,10 +389,6 @@ public class UiRenderMacros
         blit(ps, rl, x, y, w, h, (float) u / mapW, (float) v / mapH, (float) (u + w) / mapW, (float) (v + h) / mapH);
     }
 
-    /**
-     * @deprecated {@link #blit(PoseStack, ResourceLocation, int, int, int, int, float, float, float, float)}
-     */
-    @Deprecated(forRemoval = true, since = "1.20.2")
     public static void blit(final PoseStack ps,
         final ResourceLocation rl,
         final int x,

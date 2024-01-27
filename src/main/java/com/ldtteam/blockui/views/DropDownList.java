@@ -192,7 +192,7 @@ public class DropDownList extends View implements ButtonHandler
         }
         selectedIndex = index;
 
-        button.setText(dataProvider.getLabelNew(selectedIndex));
+        button.setText(dataProvider.getLabel(selectedIndex));
         if (handler != null)
         {
             handler.accept(this);
@@ -248,7 +248,7 @@ public class DropDownList extends View implements ButtonHandler
             @Override
             public void updateElement(final int index, final Pane rowPane)
             {
-                updateDropDownItem(rowPane, index, dataProvider.getLabelNew(index));
+                updateDropDownItem(rowPane, index, dataProvider.getLabel(index));
             }
         });
 
@@ -311,15 +311,9 @@ public class DropDownList extends View implements ButtonHandler
     {
         int getElementCount();
 
-        @Deprecated(forRemoval = true, since = "1.20.2")
-        default String getLabel(final int index)
+        default MutableComponent getLabel(final int index)
         {
-            return Integer.toString(index);
-        }
-
-        default MutableComponent getLabelNew(final int index)
-        {
-            return Component.literal(getLabel(index));
+            return Component.literal(Integer.toString(index));
         }
     }
 

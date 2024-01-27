@@ -24,9 +24,11 @@ public class SpriteTexture extends AbstractTexture implements Tickable
     private SpriteContents sprite;
     private SpriteTicker ticker;
 
+    /**
+     * intentionally out-of-jar ctor, for normal locations use vanilla atlases
+     */
     public SpriteTexture(final OutOfJarResourceLocation resourceLocation)
     {
-        // intentionally out-of-jar ctor, for normal locations use vanilla systems
         this.resourceLocation = resourceLocation;
     }
 
