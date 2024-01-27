@@ -118,8 +118,6 @@ public abstract class Button extends AbstractTextElement
     @Deprecated(forRemoval = true, since = "1.20.2")
     public static Button construct(PaneParams params)
     {
-        return params.hasAttribute("source")
-          ? new ButtonImage(params)
-          : new ButtonVanilla(params);
+        return new ButtonImage(params);
     }
 }

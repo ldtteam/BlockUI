@@ -1,6 +1,7 @@
 package com.ldtteam.blockui.mod.item;
 
 import com.ldtteam.blockui.mod.Log;
+import com.ldtteam.common.util.BlockToItemHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.block.model.BlockElement;
@@ -12,7 +13,9 @@ import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -45,9 +48,25 @@ public record BlockStateRenderingData(BlockState blockState,
             Lazy.of(() -> BlockToItemHelper.getItemStack(blockState, blockEntity, Minecraft.getInstance().player)));
     }
 
-    public BlockStateRenderingData(final BlockState blockState, final BlockEntity blockEntity, final ModelData modelData)
+    private BlockStateRenderingData(final BlockState blockState, final BlockEntity blockEntity, final ModelData modelData)
     {
         this(blockState, blockEntity, modelData, checkModelForYrotation(blockState));
+    }
+
+    /**
+     * @return captures blockstate in given level at given pos in current time (now)
+     */
+    public static BlockStateRenderingData of(final Level level, final BlockPos pos, final Player player)
+    {
+        final BlockState blockState = level.getBlockState(pos);
+        final BlockEntity blockEntity = level.getBlockEntity(pos);
+        final ItemStack itemStack = BlockToItemHelper.getItemStack(level, pos, player);
+
+        return new BlockStateRenderingData(blockState,
+            blockEntity,
+            getModelData(blockState, blockEntity),
+            checkModelForYrotation(blockState),
+            Lazy.of(() -> itemStack));
     }
 
     /**

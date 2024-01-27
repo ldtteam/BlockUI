@@ -126,10 +126,8 @@
             <xs:element name="scrollgroup" type="scrollViewType"/>
             <xs:element name="list" type="listType"/>
             <xs:element name="button" type="buttonType"/>
-            <xs:element name="buttonimage" type="buttonImageType"/>
             <xs:element name="toggle" type="toggleType"/>
             <xs:element name="text" type="textType"/>
-            <xs:element name="label" type="textType"/>
             <xs:element name="input" type="inputType"/>
             <xs:element name="image" type="imageType"/>
             <xs:element name="imagerepeat" type="imageRepeatType"/>
@@ -190,14 +188,8 @@
         <xs:complexContent>
             <xs:extension base="textElementType">
                 <xs:attribute name="source" type="xs:string"/>
-                <xs:attribute name="imageoffset" type="fixedSizePair"/>
-                <xs:attribute name="imagesize" type="fixedSizePair"/>
                 <xs:attribute name="highlight" type="xs:string"/>
-                <xs:attribute name="highlightoffset" type="fixedSizePair"/>
-                <xs:attribute name="highlightsize" type="fixedSizePair"/>
                 <xs:attribute name="disabled" type="xs:string"/>
-                <xs:attribute name="disabledoffset" type="fixedSizePair"/>
-                <xs:attribute name="disabledsize" type="fixedSizePair"/>
                 <xs:attribute name="textoffset" type="fixedSizePair"/>
                 <xs:attribute name="textbox" type="fixedSizePair"/>
             </xs:extension>
@@ -233,13 +225,6 @@
                 <xs:attribute name="pitch" type="xs:float"/>
                 <xs:attribute name="head" type="xs:float"/>
             </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <!-- <buttonimage> -->
-    <xs:complexType name="buttonImageType">
-        <xs:complexContent>
-            <xs:extension base="buttonType"/>
         </xs:complexContent>
     </xs:complexType>
 

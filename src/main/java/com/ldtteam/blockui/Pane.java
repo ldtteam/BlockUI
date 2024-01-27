@@ -339,7 +339,7 @@ public class Pane extends UiRenderMacros
 
         if (visible)
         {
-            if (wasCursorInPane && enabled)
+            if (wasCursorInPane && isEnabled())
             {
                 // intentional getter cuz overrides
                 target.setCursor(getCursor());
@@ -558,7 +558,7 @@ public class Pane extends UiRenderMacros
 
     public boolean isClickable()
     {
-        return visible && enabled;
+        return visible && isEnabled();
     }
 
     // ----------Mouse-------------//
@@ -642,7 +642,7 @@ public class Pane extends UiRenderMacros
      */
     public boolean canHandleClick(final double mx, final double my)
     {
-        return visible && enabled && isPointInPane(mx, my);
+        return isVisible() && isEnabled() && isPointInPane(mx, my);
     }
 
     /**

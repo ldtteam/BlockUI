@@ -123,8 +123,7 @@ public class BOGuiGraphics extends GuiGraphics
 
         pose().translate(-0.5F, -0.5F, -0.5F);
 
-        RenderSystem.getModelViewStack().pushPose();
-        applyPoseToShader();
+        pushMvApplyPose();
 
         if (data.modelNeedsRotationFix())
         {
@@ -156,11 +155,13 @@ public class BOGuiGraphics extends GuiGraphics
         }
         flush();
 
-        if (data.modelNeedsRotationFix()) // this might need shift before BER?
+        if (data.modelNeedsRotationFix())
         {
             pose().popPose();
             pose().translate(-0.5F, -0.5F, -0.5F);
-            applyPoseToShader();
+
+            RenderSystem.getModelViewStack().popPose();
+            pushMvApplyPose();
         }
 
         // render fluid
@@ -185,9 +186,9 @@ public class BOGuiGraphics extends GuiGraphics
         pose().popPose();
     }
 
-    public void applyPoseToShader()
+    public void pushMvApplyPose()
     {
-        RenderSystem.getModelViewStack().setIdentity();
+        RenderSystem.getModelViewStack().pushPose();
         RenderSystem.getModelViewStack().mulPoseMatrix(pose().last().pose());
         RenderSystem.applyModelViewMatrix();
     }

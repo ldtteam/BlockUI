@@ -49,9 +49,9 @@ import java.util.function.Supplier;
  */
 public class FakeChunk extends LevelChunk
 {
-    private final FakeLevel fakeLevel;
+    private final FakeLevel<?> fakeLevel;
 
-    public FakeChunk(final FakeLevel worldIn, final int x, final int z)
+    public FakeChunk(final FakeLevel<?> worldIn, final int x, final int z)
     {
         super(worldIn, new ChunkPos(x, z));
         this.fakeLevel = worldIn;

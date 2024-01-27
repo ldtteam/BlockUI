@@ -4,6 +4,7 @@ import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.controls.Button;
 import com.ldtteam.blockui.controls.ButtonHandler;
+import com.ldtteam.blockui.controls.ButtonImage;
 import com.ldtteam.blockui.util.records.Pos2i;
 import com.ldtteam.blockui.Parsers;
 import net.minecraft.network.chat.MutableComponent;
@@ -78,7 +79,7 @@ public class DropDownList extends View implements ButtonHandler
             dropDownHeight = a.get(1);
         });
 
-        button = Button.construct(params);
+        button = new ButtonImage(params);
         button.setPosition(0, 0);
         button.putInside(this);
 
@@ -311,7 +312,10 @@ public class DropDownList extends View implements ButtonHandler
         int getElementCount();
 
         @Deprecated(forRemoval = true, since = "1.20.2")
-        String getLabel(final int index);
+        default String getLabel(final int index)
+        {
+            return Integer.toString(index);
+        }
 
         default MutableComponent getLabelNew(final int index)
         {

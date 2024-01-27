@@ -13,6 +13,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
+import net.neoforged.neoforge.client.ClientHooks;
 import net.neoforged.neoforge.client.NeoForgeRenderTypes;
 import org.lwjgl.glfw.GLFW;
 
@@ -81,10 +82,13 @@ public class BOScreen extends Screen
         // replace vanilla projection
         final PoseStack shaderPs = RenderSystem.getModelViewStack();
         final Matrix4f oldProjection = RenderSystem.getProjectionMatrix();
-        RenderSystem.setProjectionMatrix(new Matrix4f().setOrtho(0.0F, framebufferWidth, framebufferHeight, 0.0F, -10000.0F, 50000.0F),
+        RenderSystem.setProjectionMatrix(
+            new Matrix4f().setOrtho(0.0F, framebufferWidth, framebufferHeight, 0.0F, 1000.0F, ClientHooks.getGuiFarPlane()),
             VertexSorting.ORTHOGRAPHIC_Z);
         shaderPs.pushPose();
         shaderPs.setIdentity();
+        shaderPs.translate(0.0D, 0.0D, 10000F - net.neoforged.neoforge.client.ClientHooks.getGuiFarPlane());
+        RenderSystem.applyModelViewMatrix();
 
         final PoseStack newMs = new PoseStack();
         newMs.translate(x, y, ms.pose().last().pose().m32());

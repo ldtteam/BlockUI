@@ -34,7 +34,7 @@ public class EntityIcon extends Pane
         super();
     }
 
-    public EntityIcon(@NotNull PaneParams params)
+    public EntityIcon(final PaneParams params)
     {
         super(params);
 

@@ -21,12 +21,7 @@ import net.neoforged.fml.loading.FMLEnvironment;
  */
 public class ButtonImage extends Button
 {
-    /**
-     * TODO: replace with {@link AbstractButton#SPRITES} once https://github.com/neoforged/NeoForge/issues/265
-     */
-    public static final WidgetSprites VANILLA_BUTTON = new WidgetSprites(new ResourceLocation("widget/button"),
-        new ResourceLocation("widget/button_disabled"),
-        new ResourceLocation("widget/button_highlighted"));
+    public static final WidgetSprites VANILLA_BUTTON = AbstractButton.SPRITES;
 
     /**
      * Default size is a vanilla button.
@@ -47,7 +42,7 @@ public class ButtonImage extends Button
     {
         super(Alignment.MIDDLE, DEFAULT_TEXT_COLOR, DEFAULT_TEXT_COLOR, DEFAULT_TEXT_COLOR, DEFAULT_TEXT_SHADOW, DEFAULT_TEXT_WRAP);
 
-        setupVanillaButton();
+        setVanillaButton();
         recalcTextRendering();
     }
 
@@ -69,13 +64,13 @@ public class ButtonImage extends Button
         }
         else
         {
-            setupVanillaButton();
+            setVanillaButton();
         }
 
         loadTextInfo(params);
     }
 
-    private void setupVanillaButton()
+    public void setVanillaButton()
     {
         if (width == 0)
         {
@@ -85,6 +80,7 @@ public class ButtonImage extends Button
         {
             height = DEFAULT_BUTTON_HEIGHT;
         }
+        textures = VANILLA_BUTTON;
         textColor = DEFAULT_ENABLED_COLOR;
         textHoverColor = DEFAULT_HOVER_COLOR;
         textDisabledColor = DEFAULT_DISABLED_COLOR;
@@ -313,7 +309,7 @@ public class ButtonImage extends Button
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
-        resolvedTextures.getAndPrepare(enabled, wasCursorInPane).blit(target.pose(), x, y, width, height);
+        resolvedTextures.getAndPrepare(isEnabled(), wasCursorInPane).blit(target.pose(), x, y, width, height);
 
         RenderSystem.disableBlend();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);

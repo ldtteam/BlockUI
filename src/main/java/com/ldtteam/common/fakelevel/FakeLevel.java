@@ -6,39 +6,24 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.BlockPos.MutableBlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.protocol.Packet;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.AbortableIterationConsumer.Continuation;
-import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.Difficulty;
-import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageSources;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.crafting.RecipeManager;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.ClipBlockStateContext;
-import net.minecraft.world.level.ClipContext;
-import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.ExplosionDamageCalculator;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
@@ -46,7 +31,6 @@ import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.TickingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
@@ -64,21 +48,11 @@ import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
-import net.minecraft.world.level.storage.LevelData;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.CollisionContext;
-import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.ticks.BlackholeTickAccess;
 import net.minecraft.world.ticks.LevelTickAccess;
-import net.minecraft.world.ticks.TickPriority;
-import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.capabilities.BlockCapability;
-import net.neoforged.neoforge.client.model.data.ModelDataManager.Active;
-import net.neoforged.neoforge.common.world.AuxiliaryLightManager;
-import net.neoforged.neoforge.entity.PartEntity;
 import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -86,15 +60,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
+import java.util.Objects;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 /**
- * As much as general fake client-like level. Features:
+ * As much as general fake level. Features:
  * <ul>
  * <li>static access to given data</li>
  * <li>immutability - disables all external changes (but levelSource can be mutable)</li>
@@ -114,11 +84,10 @@ import java.util.stream.Stream;
  * <li>comment last method section</li>
  * </ol>
  * <p>
- * TODO: extend from client level
  */
-public class FakeLevel extends Level
+public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
 {
-    protected IFakeLevelBlockGetter levelSource;
+    protected SOURCE levelSource;
     protected final IFakeLevelLightProvider lightProvider;
     protected Level realLevel;
     protected final Scoreboard scoreboard;
@@ -145,7 +114,7 @@ public class FakeLevel extends Level
      * @see                   #setEntities(Collection) only way to add entities into fake level
      * @see                   #setRealLevel(Level) if you want to reuse this instance
      */
-    public FakeLevel(final IFakeLevelBlockGetter levelSource,
+    public FakeLevel(final SOURCE levelSource,
         final IFakeLevelLightProvider lightProvider,
         final Level realLevel,
         @Nullable final Scoreboard scoreboard,
@@ -157,7 +126,7 @@ public class FakeLevel extends Level
         this.levelSource = levelSource;
         this.lightProvider = lightProvider;
         this.realLevel = realLevel;
-        this.scoreboard = scoreboard == null ? realLevel().getScoreboard() : scoreboard;
+        this.scoreboard = scoreboard;
         this.overrideBeLevel = overrideBeLevel;
         this.chunkSource = new FakeChunkSource(this);
 
@@ -170,6 +139,11 @@ public class FakeLevel extends Level
 
     public void setRealLevel(final Level realLevel)
     {
+        if (Objects.equals(this.realLevel, realLevel))
+        {
+            return;
+        }
+
         this.realLevel = realLevel;
         ((FakeLevelData) this.getLevelData()).vanillaLevelData = realLevel.getLevelData();
     }
@@ -182,7 +156,7 @@ public class FakeLevel extends Level
     /**
      * @param levelSource new data source
      */
-    public void setLevelSource(final IFakeLevelBlockGetter levelSource)
+    public void setLevelSource(final SOURCE levelSource)
     {
         this.levelSource = levelSource;
     }
@@ -190,7 +164,7 @@ public class FakeLevel extends Level
     /**
      * @return current data source
      */
-    public IFakeLevelBlockGetter getLevelSource()
+    public SOURCE getLevelSource()
     {
         return levelSource;
     }
@@ -355,7 +329,7 @@ public class FakeLevel extends Level
     @Override
     public Scoreboard getScoreboard()
     {
-        return scoreboard;
+        return scoreboard == null ? realLevel().getScoreboard() : scoreboard;
     }
 
     @Override
@@ -491,8 +465,7 @@ public class FakeLevel extends Level
     @Override
     public TickRateManager tickRateManager()
     {
-        // TODO Auto-generated method stub
-        return null;
+        return realLevel().tickRateManager();
     }
 
     // ========================================
@@ -821,6 +794,7 @@ public class FakeLevel extends Level
     // ======== SUPER IS FINE METHODS =========
     // ========================================
 
+    /*
     @Override
     public void removeBlockEntity(BlockPos p_46748_)
     {
@@ -2018,4 +1992,5 @@ public class FakeLevel extends Level
     {
         return super.setData(type, data);
     }
+    */
 }

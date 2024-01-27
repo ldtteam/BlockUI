@@ -55,7 +55,7 @@ public class BlockStateTestGui
                 blockIcon.setPosition(x, rowY);
                 blockIcon.setSize(16, 16);
                 blockIcon.setAlwaysAddBlockStateTooltip(true);
-                blockIcon.setBlockState(blockState, null);
+                blockIcon.setBlockState(BlockStateRenderingData.of(blockState));
 
                 if (pickIcon.isDataEmpty() && blockIcon.getBlockState() != null)
                 {

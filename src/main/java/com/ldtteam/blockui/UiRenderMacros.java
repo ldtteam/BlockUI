@@ -26,7 +26,6 @@ import org.joml.Quaternionf;
 
 /**
  * Our replacement for GuiComponent.
- * TODO: move to shared lib
  */
 public class UiRenderMacros
 {

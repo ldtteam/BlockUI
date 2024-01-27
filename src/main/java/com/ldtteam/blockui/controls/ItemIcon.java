@@ -14,7 +14,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
-import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -24,8 +23,6 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.block.AirBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import org.jetbrains.annotations.Nullable;
 import java.util.Collections;
@@ -116,16 +113,6 @@ public class ItemIcon extends Pane
     public boolean renderItemDecorations()
     {
         return renderItemDecorations;
-    }
-
-    /**
-     * Sets itemStack from blockState.
-     * 
-     * @see #setItem(ItemStack) equivalent of setItem(ItemStack)
-     */
-    public void setItemFromBlockState(final BlockState blockState, @Nullable final BlockEntity blockEntity)
-    {
-        setItemFromBlockState(BlockStateRenderingData.of(blockState, blockEntity));
     }
 
     /**

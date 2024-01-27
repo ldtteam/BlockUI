@@ -243,14 +243,6 @@ public class ItemIconWithBlockState extends ItemIcon
     /**
      * Overrides itemStack rendering with custom blockState. Sets itemStack from blockState
      */
-    public void setBlockState(final BlockState blockState, @Nullable final BlockEntity blockEntity)
-    {
-        setBlockState(BlockStateRenderingData.of(blockState, blockEntity));
-    }
-
-    /**
-     * Overrides itemStack rendering with custom blockState. Sets itemStack from blockState
-     */
     public void setBlockState(final BlockStateRenderingData blockStateExtension)
     {
         setItemFromBlockState(blockStateExtension);

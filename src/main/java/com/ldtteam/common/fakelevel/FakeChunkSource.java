@@ -12,15 +12,15 @@ import java.util.function.BooleanSupplier;
  */
 public class FakeChunkSource extends ChunkSource
 {
-    private final FakeLevel fakeLevel;
+    private final FakeLevel<?> fakeLevel;
 
-    protected FakeChunkSource(final FakeLevel fakeLevel)
+    protected FakeChunkSource(final FakeLevel<?> fakeLevel)
     {
         this.fakeLevel = fakeLevel;
     }
 
     @Override
-    public FakeLevel getLevel()
+    public FakeLevel<?> getLevel()
     {
         return fakeLevel;
     }

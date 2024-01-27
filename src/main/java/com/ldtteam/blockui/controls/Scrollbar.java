@@ -196,4 +196,10 @@ public class Scrollbar extends Pane
     {
         return true;
     }
+
+    @Override
+    public boolean isEnabled()
+    {
+        return enabled && getContentHeightDiff() > 0;
+    }
 }

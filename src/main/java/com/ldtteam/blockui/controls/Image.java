@@ -229,7 +229,7 @@ public class Image extends Pane
      * @param vHeight in texels
      * @return resolved blit - with precomputed values and detached from all possible instances
      */
-    public static ResolvedBlit resolveBlit(final ResourceLocation resLoc, final int u, final int v, final int uWidth,final  int vHeight)
+    public static ResolvedBlit resolveBlit(final ResourceLocation resLoc, final int u, final int v, final int uWidth, final int vHeight)
     {
         // if bad input skip resolving
         if (resLoc == null || resLoc == MissingTextureAtlasSprite.getLocation())
@@ -245,7 +245,7 @@ public class Image extends Pane
             return resolveSprite(atlasSprite, AtlasManager.getSpriteScaling(atlasSprite));
         }
         
-        // if out sprite or full blit do normal blit
+        // if our sprite or full blit do normal blit
         final AbstractTexture texture = OutOfJarTexture.assertLoadedDefaultManagers(resLoc);
         if (texture instanceof SpriteTexture || (u == 0 && v == 0 && uWidth == 0 && vHeight == 0))
         {

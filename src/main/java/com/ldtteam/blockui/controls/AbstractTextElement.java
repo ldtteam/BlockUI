@@ -282,7 +282,7 @@ public abstract class AbstractTextElement extends Pane
     {
         final PoseStack ms = target.pose();
 
-        final int color = enabled ? (wasCursorInPane ? textHoverColor : textColor) : textDisabledColor;
+        final int color = isEnabled() ? (wasCursorInPane ? textHoverColor : textColor) : textDisabledColor;
 
         int offsetX = textOffsetX;
         int offsetY = textOffsetY;

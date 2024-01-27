@@ -62,7 +62,7 @@ public class ClientEventSubscriber
             {
                 final BOWindow window = new BOWindow();
                 int id = 0;
-                final Button dumpAtlases = createTestGuiButton(id++, "Dump mod specific atlases to run folder", null);
+                final Button dumpAtlases = createTestGuiButton(id++, "Dump mod atlases to run folder", null);
                 dumpAtlases.setHandler(b -> {
                     final Path dumpingFolder = Path.of("atlas_dump").toAbsolutePath().normalize();
                     Minecraft.getInstance().player.sendSystemMessage(Component.literal("Dumping atlases into: " + dumpingFolder.toString()));
