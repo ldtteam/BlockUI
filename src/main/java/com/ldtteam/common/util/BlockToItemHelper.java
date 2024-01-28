@@ -33,6 +33,15 @@ public class BlockToItemHelper
     private static final HitResult ZERO_POS_HIT_RESULT = new BlockHitResult(Vec3.atCenterOf(BlockPos.ZERO), Direction.NORTH, BlockPos.ZERO, true);
     private static FakeLevel<SingleBlockFakeLevelGetter> fakeLevel;
 
+    public static void releaseFakeLevelInstance()
+    {
+        if (fakeLevel != null)
+        {
+            fakeLevel.setRealLevel(null);
+            fakeLevel = null;
+        }
+    }
+
     /**
      * Mostly for use in UI where you dont have level instance (eg. player selects block, from xml, but not when displaying real world
      * info - see {@link BlockStateRenderingData#of(Level, BlockPos, Player)}). NOT thread safe!

@@ -145,7 +145,7 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
         }
 
         this.realLevel = realLevel;
-        ((FakeLevelData) this.getLevelData()).vanillaLevelData = realLevel.getLevelData();
+        ((FakeLevelData) this.getLevelData()).vanillaLevelData = realLevel == null ? null : realLevel.getLevelData();
     }
 
     public Level realLevel()
@@ -760,7 +760,7 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
 
     @Override
     @Nullable
-    public <T, C> @Nullable T getCapability(BlockCapability<T, C> cap, BlockPos pos, C context)
+    public <T, C> T getCapability(BlockCapability<T, C> cap, BlockPos pos, C context)
     {
         // Noop
         return null;
@@ -768,7 +768,7 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
 
     @Override
     @Nullable
-    public <T, C> @Nullable T getCapability(BlockCapability<T, C> cap,
+    public <T, C> T getCapability(BlockCapability<T, C> cap,
         BlockPos pos,
         @Nullable BlockState state,
         @Nullable BlockEntity blockEntity,
