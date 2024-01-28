@@ -9,11 +9,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,7 +34,7 @@ public class EntityIcon extends Pane
         super();
     }
 
-    public EntityIcon(@NotNull PaneParams params)
+    public EntityIcon(final PaneParams params)
     {
         super(params);
 
@@ -52,7 +52,7 @@ public class EntityIcon extends Pane
 
     public void setEntity(@NotNull ResourceLocation entityId)
     {
-        final EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(entityId);
+        final EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(entityId);
         if (entityType != null)
         {
             setEntity(entityType);

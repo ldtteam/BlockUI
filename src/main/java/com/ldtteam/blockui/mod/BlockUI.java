@@ -1,17 +1,25 @@
 package com.ldtteam.blockui.mod;
 
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.common.Mod;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.javafmlmod.FMLModContainer;
+import net.neoforged.neoforge.common.NeoForge;
 
 @Mod(BlockUI.MOD_ID)
 public class BlockUI
 {
     public static final String MOD_ID = "blockui";
 
-    public BlockUI()
+    public BlockUI(final FMLModContainer modContainer, final Dist dist)
     {
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> Mod.EventBusSubscriber.Bus.MOD.bus().get().register(ClientLifecycleSubscriber.class));
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> Mod.EventBusSubscriber.Bus.FORGE.bus().get().register(ClientEventSubscriber.class));
+        final IEventBus modBus = modContainer.getEventBus();
+        final IEventBus forgeBus = NeoForge.EVENT_BUS;
+
+        if (dist.isClient())
+        {
+            modBus.register(ClientLifecycleSubscriber.class);
+            forgeBus.register(ClientEventSubscriber.class);
+        }
     }
 }

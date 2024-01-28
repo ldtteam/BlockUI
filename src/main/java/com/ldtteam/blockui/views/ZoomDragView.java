@@ -241,16 +241,16 @@ public class ZoomDragView extends View
     }
 
     @Override
-    public boolean scrollInput(final double wheel, final double mx, final double my)
+    public boolean scrollInput(final double horizontalWheel, final double verticalWheel, final double mx, final double my)
     {
-        final boolean childResult = super.scrollInput(wheel, mx, my);
+        final boolean childResult = super.scrollInput(horizontalWheel, verticalWheel, mx, my);
         if (!childResult && zoomEnabled)
         {
             final double childX = mx - x;
             final double childY = my - y;
             final double oldX = (childX + scrollX) / scale;
             final double oldY = (childY + scrollY) / scale;
-            scale = wheel < 0 ? scale / zoomFactor : scale * zoomFactor;
+            scale = verticalWheel < 0 ? scale / zoomFactor : scale * zoomFactor;
 
             // try to round if around whole number (cuz of text texture)
             final double rounded = Math.rint(scale);

@@ -9,11 +9,12 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.contents.LiteralContents;
+import net.minecraft.network.chat.contents.PlainTextContents.LiteralContents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -25,7 +26,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Objects;
@@ -154,7 +154,7 @@ public class ItemIconWithBlockState extends ItemIcon
     {
         if (blockStateExtension != null)
         {
-            final ResourceLocation key = ForgeRegistries.BLOCKS.getKey(blockStateExtension.blockState().getBlock());
+            final ResourceLocation key = BuiltInRegistries.BLOCK.getKey(blockStateExtension.blockState().getBlock());
             final String nameTKey = Util.makeDescriptionId("block", key);
             final MutableComponent name = Component.translatable(nameTKey);
             final MutableComponent nameKey = Component.literal(key.toString()).withStyle(ChatFormatting.DARK_GRAY);
@@ -238,14 +238,6 @@ public class ItemIconWithBlockState extends ItemIcon
     public boolean shouldAlwaysAddBlockStateTooltip()
     {
         return alwaysAddBlockStateTooltip;
-    }
-
-    /**
-     * Overrides itemStack rendering with custom blockState. Sets itemStack from blockState
-     */
-    public void setBlockState(final BlockState blockState, @Nullable final BlockEntity blockEntity)
-    {
-        setBlockState(BlockStateRenderingData.of(blockState, blockEntity));
     }
 
     /**

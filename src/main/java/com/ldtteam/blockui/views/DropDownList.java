@@ -4,6 +4,7 @@ import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.controls.Button;
 import com.ldtteam.blockui.controls.ButtonHandler;
+import com.ldtteam.blockui.controls.ButtonImage;
 import com.ldtteam.blockui.util.records.Pos2i;
 import com.ldtteam.blockui.Parsers;
 import net.minecraft.network.chat.MutableComponent;
@@ -78,7 +79,7 @@ public class DropDownList extends View implements ButtonHandler
             dropDownHeight = a.get(1);
         });
 
-        button = Button.construct(params);
+        button = new ButtonImage(params);
         button.setPosition(0, 0);
         button.putInside(this);
 
@@ -191,7 +192,7 @@ public class DropDownList extends View implements ButtonHandler
         }
         selectedIndex = index;
 
-        button.setText(dataProvider.getLabelNew(selectedIndex));
+        button.setText(dataProvider.getLabel(selectedIndex));
         if (handler != null)
         {
             handler.accept(this);
@@ -247,7 +248,7 @@ public class DropDownList extends View implements ButtonHandler
             @Override
             public void updateElement(final int index, final Pane rowPane)
             {
-                updateDropDownItem(rowPane, index, dataProvider.getLabelNew(index));
+                updateDropDownItem(rowPane, index, dataProvider.getLabel(index));
             }
         });
 
@@ -310,12 +311,9 @@ public class DropDownList extends View implements ButtonHandler
     {
         int getElementCount();
 
-        @Deprecated
-        String getLabel(final int index);
-
-        default MutableComponent getLabelNew(final int index)
+        default MutableComponent getLabel(final int index)
         {
-            return Component.literal(getLabel(index));
+            return Component.literal(Integer.toString(index));
         }
     }
 

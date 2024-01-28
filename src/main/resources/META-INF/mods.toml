@@ -14,15 +14,15 @@ UI Library mod, use ctrl+alt+shift+x to open a test-ui
 '''
 
 [[dependencies.blockui]]
-    modId="forge"
-    mandatory=true
+    modId="neoforge"
+    type="required"
     versionRange="${forge_range}"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.blockui]]
     modId="minecraft"
-    mandatory=true
+    type="required"
     versionRange="${minecraft_range}"
     ordering="NONE"
     side="BOTH"

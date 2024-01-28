@@ -122,7 +122,7 @@ public class Tooltip extends AbstractTextElement
     {
         final PoseStack ms = target.pose();
 
-        if (!preparedText.isEmpty() && enabled)
+        if (!preparedText.isEmpty() && isEnabled())
         {
             recalcPreparedTextBox();
             if (autoWidth)

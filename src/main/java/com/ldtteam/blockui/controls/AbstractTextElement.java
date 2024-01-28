@@ -14,10 +14,9 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraftforge.client.ForgeRenderTypes;
+import net.neoforged.neoforge.client.NeoForgeRenderTypes;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
@@ -214,7 +213,7 @@ public abstract class AbstractTextElement extends Pane
             return toFormattedSequence(maxWidth, toggleable.data())
                 .map(formatted -> new FormattedToggleableCharSequence(toggleable.condition(), formatted));
         }
-        else if (textBlock.getContents() == ComponentContents.EMPTY && textBlock.getSiblings().isEmpty())
+        else if (textBlock.getContents() == Component.empty().getContents() && textBlock.getSiblings().isEmpty())
         {
             return Stream.of(textBlock.getVisualOrderText());
         }
@@ -283,7 +282,7 @@ public abstract class AbstractTextElement extends Pane
     {
         final PoseStack ms = target.pose();
 
-        final int color = enabled ? (wasCursorInPane ? textHoverColor : textColor) : textDisabledColor;
+        final int color = isEnabled() ? (wasCursorInPane ? textHoverColor : textColor) : textDisabledColor;
 
         int offsetX = textOffsetX;
         int offsetY = textOffsetY;
@@ -324,7 +323,7 @@ public abstract class AbstractTextElement extends Pane
             // smooth the texture
             // if (newScaleX < window.getScreen().getVanillaGuiScale() || newScaleY < window.getScreen().getVanillaGuiScale())
             // TODO: figure out how to not linear filter when mag filter is used, might just want to use direct ogl call
-            ForgeRenderTypes.enableTextTextureLinearFiltering = true;
+            NeoForgeRenderTypes.enableTextTextureLinearFiltering = true;
             ms.scale((float) textScale, (float) textScale, 1.0f);
         }
         else
@@ -376,7 +375,7 @@ public abstract class AbstractTextElement extends Pane
         }
         drawBuffer.endBatch();
 
-        ForgeRenderTypes.enableTextTextureLinearFiltering = false;
+        NeoForgeRenderTypes.enableTextTextureLinearFiltering = false;
         RenderSystem.disableBlend();
 
         ms.popPose();

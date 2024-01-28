@@ -339,7 +339,7 @@ public class Pane extends UiRenderMacros
 
         if (visible)
         {
-            if (wasCursorInPane && enabled)
+            if (wasCursorInPane && isEnabled())
             {
                 // intentional getter cuz overrides
                 target.setCursor(getCursor());
@@ -558,7 +558,7 @@ public class Pane extends UiRenderMacros
 
     public boolean isClickable()
     {
-        return visible && enabled;
+        return visible && isEnabled();
     }
 
     // ----------Mouse-------------//
@@ -642,7 +642,7 @@ public class Pane extends UiRenderMacros
      */
     public boolean canHandleClick(final double mx, final double my)
     {
-        return visible && enabled && isPointInPane(mx, my);
+        return isVisible() && isEnabled() && isPointInPane(mx, my);
     }
 
     /**
@@ -769,12 +769,13 @@ public class Pane extends UiRenderMacros
     /**
      * Wheel input.
      *
-     * @param wheel minus for down, plus for up.
-     * @param mx    mouse x
-     * @param my    mouse y
-     * @return true if event was used or propagation needs to be stopped
+     * @param  horizontalWheel x-axis scrolling, minus for down, plus for up.
+     * @param  verticalWheel   y-axis scrolling, minus for down, plus for up.
+     * @param  mx              mouse x
+     * @param  my              mouse y
+     * @return                 true if event was used or propagation needs to be stopped
      */
-    public boolean scrollInput(final double wheel, final double mx, final double my)
+    public boolean scrollInput(final double horizontalWheel, final double verticalWheel, final double mx, final double my)
     {
         // Can be overwritten by child classes
         return false;

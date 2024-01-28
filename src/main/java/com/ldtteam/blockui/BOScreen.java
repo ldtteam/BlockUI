@@ -13,7 +13,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.client.ForgeRenderTypes;
+import net.neoforged.neoforge.client.ClientHooks;
+import net.neoforged.neoforge.client.NeoForgeRenderTypes;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.Objects;
@@ -61,8 +62,8 @@ public class BOScreen extends Screen
         final int guiWidth = Math.max(framebufferWidth, 320);
         final int guiHeight = Math.max(framebufferHeight, 240);
 
-        final boolean oldFilteringValue = ForgeRenderTypes.enableTextTextureLinearFiltering;
-        ForgeRenderTypes.enableTextTextureLinearFiltering = false;
+        final boolean oldFilteringValue = NeoForgeRenderTypes.enableTextTextureLinearFiltering;
+        NeoForgeRenderTypes.enableTextTextureLinearFiltering = false;
 
         mcScale = ms.minecraft.getWindow().getGuiScale();
         renderScale = window.getRenderType().calcRenderScale(ms.minecraft.getWindow(), window);
@@ -81,10 +82,13 @@ public class BOScreen extends Screen
         // replace vanilla projection
         final PoseStack shaderPs = RenderSystem.getModelViewStack();
         final Matrix4f oldProjection = RenderSystem.getProjectionMatrix();
-        RenderSystem.setProjectionMatrix(new Matrix4f().setOrtho(0.0F, framebufferWidth, framebufferHeight, 0.0F, -10000.0F, 50000.0F),
+        RenderSystem.setProjectionMatrix(
+            new Matrix4f().setOrtho(0.0F, framebufferWidth, framebufferHeight, 0.0F, 1000.0F, ClientHooks.getGuiFarPlane()),
             VertexSorting.ORTHOGRAPHIC_Z);
         shaderPs.pushPose();
         shaderPs.setIdentity();
+        shaderPs.translate(0.0D, 0.0D, 10000F - net.neoforged.neoforge.client.ClientHooks.getGuiFarPlane());
+        RenderSystem.applyModelViewMatrix();
 
         final PoseStack newMs = new PoseStack();
         newMs.translate(x, y, ms.pose().last().pose().m32());
@@ -124,7 +128,7 @@ public class BOScreen extends Screen
             RenderSystem.setProjectionMatrix(oldProjection, VertexSorting.ORTHOGRAPHIC_Z);
             RenderSystem.applyModelViewMatrix();
 
-            ForgeRenderTypes.enableTextTextureLinearFiltering = oldFilteringValue;
+            NeoForgeRenderTypes.enableTextTextureLinearFiltering = oldFilteringValue;
         }
     }
 
@@ -197,20 +201,20 @@ public class BOScreen extends Screen
     }
 
     @Override
-    public boolean mouseScrolled(final double mx, final double my, final double scrollDiff)
+    public boolean mouseScrolled(final double mx, final double my, final double scrollHorizontalDiff, final double scrollVerticalDiff)
     {
-        if (scrollDiff != 0)
+        if (scrollVerticalDiff != 0)
         {
             try
             {
-                return window.scrollInput(scrollDiff * 10, calcRelativeX(mx), calcRelativeY(my));
+                return window.scrollInput(scrollHorizontalDiff * 10, scrollVerticalDiff * 10, calcRelativeX(mx), calcRelativeY(my));
             }
             catch (final Exception e)
             {
                 final CrashReport crashReport = CrashReport.forThrowable(e, "MouseScroll event for BO screen");
                 final CrashReportCategory category = crashReport.addCategory("BO screen scroll event details");
                 category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
-                category.setDetail("Scroll value", () -> Double.toString(scrollDiff));
+                category.setDetail("Scroll value", () -> Double.toString(scrollVerticalDiff));
                 throw new ReportedException(crashReport);
             }
         }

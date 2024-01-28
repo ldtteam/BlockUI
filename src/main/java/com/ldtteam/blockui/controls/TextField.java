@@ -231,6 +231,14 @@ public class TextField extends Pane
             case GLFW.GLFW_KEY_TAB:
                 return handleTab();
 
+            case GLFW.GLFW_KEY_ESCAPE:
+                if (selectionEnd != cursorPosition)
+                {
+                    setSelectionEnd(cursorPosition);
+                    return true;
+                }
+                // else fall-through
+
             default:
                 return handleChar(c);
         }
@@ -330,7 +338,7 @@ public class TextField extends Pane
     @Override
     public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
-        final int color = enabled ? textColor : textColorDisabled;
+        final int color = isEnabled() ? textColor : textColorDisabled;
         final int drawWidth = getInternalWidth();
         final int drawX = x;
         final int drawY = y;

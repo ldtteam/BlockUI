@@ -14,6 +14,9 @@ import com.ldtteam.blockui.views.ScrollingList;
 import com.ldtteam.blockui.views.ScrollingList.DataProvider;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.server.IntegratedServer;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
@@ -21,14 +24,13 @@ import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraftforge.registries.ForgeRegistries;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 public class ContainerHook
 {
-    public static TagKey<BlockEntityType<?>> CONTAINER_TAG = ForgeRegistries.BLOCK_ENTITY_TYPES.tags().createTagKey(new ResourceLocation(BlockUI.MOD_ID, "container_gui"));
+    public static TagKey<BlockEntityType<?>> CONTAINER_TAG = TagKey.create(Registries.BLOCK_ENTITY_TYPE, new ResourceLocation(BlockUI.MOD_ID, "container_gui"));
 
     public static void init()
     {
@@ -39,9 +41,9 @@ public class ContainerHook
 
         final ResourceLocation gui_loc = new ResourceLocation(BlockUI.MOD_ID, "gui/container.xml");
         // TODO: properly support tag reloading
-        for (final BlockEntityType<?> beType : ForgeRegistries.BLOCK_ENTITY_TYPES.tags().getTag(CONTAINER_TAG))
+        for (final Holder<BlockEntityType<?>> beType : BuiltInRegistries.BLOCK_ENTITY_TYPE.getTagOrEmpty(CONTAINER_TAG))
         {
-            HookRegistries.BLOCK_ENTITY_HOOKS.register(beType,
+            HookRegistries.BLOCK_ENTITY_HOOKS.register(beType.value(),
                 gui_loc,
                 TriggerMechanism.getRayTrace(),
                 (thing, type) -> true,
@@ -76,7 +78,7 @@ public class ContainerHook
                 HookRegistries.BLOCK_ENTITY_HOOKS.unregister(thing.getType(), triggerType);
                 Log.getLogger()
                     .error("Removing container gui for type \"{}\" because it's not instance of Container class.",
-                        ForgeRegistries.BLOCK_ENTITY_TYPES.getKey(thing.getType()));
+                        BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(thing.getType()));
             }
 
             final ContainerInfo containerInfo = new ContainerInfo(container);
@@ -160,7 +162,7 @@ public class ContainerHook
                     final Set<String> filterSet = Set.of(filter.split(" "));
                     filteredItems = allItems.stream()
                         .filter(info -> Set.of(info.is.getHoverName().getString().split(" ")).containsAll(filterSet)
-                            || Set.of(ForgeRegistries.ITEMS.getKey(info.is.getItem()).getPath().split(" _")).containsAll(filterSet))
+                            || Set.of(BuiltInRegistries.ITEM.getKey(info.is.getItem()).getPath().split(" _")).containsAll(filterSet))
                         .toList();
                 }
             }

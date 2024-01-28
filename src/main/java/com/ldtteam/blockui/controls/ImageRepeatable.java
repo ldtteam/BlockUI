@@ -10,7 +10,10 @@ import net.minecraft.resources.ResourceLocation;
 
 /**
  * Image element with repeatable middle part.
+ * 
+ * @deprecated use normal {@link Image} and move texture into atlas
  */
+@Deprecated(forRemoval = true, since = "1.20.2")
 public class ImageRepeatable extends Pane
 {
     public static final int MINECRAFT_DEFAULT_TEXTURE_IMAGE_SIZE = 256;

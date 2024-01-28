@@ -85,7 +85,7 @@ public abstract class Button extends AbstractTextElement
     @Override
     public boolean handleClick(final double mx, final double my)
     {
-        mc.getSoundManager().play(SimpleSoundInstance.forMusic(SoundEvents.UI_BUTTON_CLICK.get()));
+        mc.getSoundManager().play(SimpleSoundInstance.forMusic(SoundEvents.UI_BUTTON_CLICK.value()));
 
         ButtonHandler delegatedHandler = handler;
 
@@ -113,11 +113,11 @@ public abstract class Button extends AbstractTextElement
      * Selects and constructs a Button type based on its parameters
      * @param params the patameters
      * @return a freshly constructed Button
+     * @deprecated use {@link ButtonImage}
      */
+    @Deprecated(forRemoval = true, since = "1.20.2")
     public static Button construct(PaneParams params)
     {
-        return params.hasAttribute("source")
-          ? new ButtonImage(params)
-          : new ButtonVanilla(params);
+        return new ButtonImage(params);
     }
 }

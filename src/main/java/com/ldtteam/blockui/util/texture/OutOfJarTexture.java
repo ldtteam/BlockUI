@@ -14,9 +14,7 @@ import net.minecraft.client.resources.metadata.texture.TextureMetadataSection;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraftforge.fml.loading.FMLEnvironment;
-import org.jetbrains.annotations.Nullable;
-
+import net.neoforged.fml.loading.FMLEnvironment;
 import java.io.IOException;
 
 /**
@@ -89,10 +87,8 @@ public class OutOfJarTexture extends AbstractTexture
         final AbstractTexture current = textureManager.getTexture(resLoc, null);
         if (!(resLoc instanceof final OutOfJarResourceLocation outOfJarResLoc))
         {
-            // it it's outOfJar then bottom of this method will redirect to sprite if needed
-            @Nullable
-            final SpriteTexture sprite = SpriteTexture.checkLoaded(resLoc, textureManager, resourceManager);
-            return sprite == null ? current : sprite;
+            // if not out-of-jar use normal vanilla systems
+            return current;
         }
 
         if (IsOurTexture.isOur(current))

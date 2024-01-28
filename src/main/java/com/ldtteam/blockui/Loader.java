@@ -36,10 +36,8 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
         register("scrollgroup", ScrollingGroup::new);
         register("list", ScrollingList::new);
         register("text", Text::new);
-        register("button", Button::construct);
-        register("buttonimage", Button::construct); // TODO: remove, but we don't want to deal with xml changes now
+        register("button", ButtonImage::new);
         register("toggle", ToggleButton::new);
-        register("label", Text::new); // TODO: remove, but we don't want to deal with xml changes now
         register("input", TextFieldVanilla::new);
         register("image", Image::new);
         register("imagerepeat", ImageRepeatable::new);
@@ -143,31 +141,7 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
      * @param resource xml as a {@link ResourceLocation}.
      * @param parent   parent view.
      */
-    public static void createFromXMLFile(final ResourceLocation resource, final View parent)
-    {
-        if (INSTANCE.xmlCache.containsKey(resource))
-        {
-            try
-            {
-                createFromPaneParams(INSTANCE.xmlCache.get(resource), parent);
-            }
-            catch (Exception e)
-            {
-                throw new RuntimeException("Can't parse xml at: " + resource.toString(), e);
-            }
-        }
-        else
-        {
-            throw new RuntimeException("Gui at \"" + resource.toString() + "\" was not found!");
-            // TODO: create "missing gui" gui and don't crash?
-        }
-    }
-
-    /**
-     * TODO: breaks bin compat, merge with old on vanilla major
-     */
-    @Deprecated(forRemoval = true, since = "1.20.1")
-    public static Pane createFromXMLFile2(final ResourceLocation resource, final View parent)
+    public static Pane createFromXMLFile(final ResourceLocation resource, final View parent)
     {
         if (INSTANCE.xmlCache.containsKey(resource))
         {

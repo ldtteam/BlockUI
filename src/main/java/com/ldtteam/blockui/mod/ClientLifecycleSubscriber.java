@@ -1,11 +1,13 @@
 package com.ldtteam.blockui.mod;
 
+import com.ldtteam.blockui.AtlasManager;
 import com.ldtteam.blockui.Loader;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraftforge.client.event.RegisterClientReloadListenersEvent;
-import net.minecraftforge.client.event.RegisterColorHandlersEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.event.ModMismatchEvent;
 
 public class ClientLifecycleSubscriber
 {
@@ -13,6 +15,7 @@ public class ClientLifecycleSubscriber
     public static void onRegisterReloadListeners(final RegisterClientReloadListenersEvent event)
     {
         event.registerReloadListener(Loader.INSTANCE);
+        AtlasManager.INSTANCE.addAtlas(event::registerReloadListener, BlockUI.MOD_ID);
     }
 
     @SubscribeEvent
@@ -22,5 +25,12 @@ public class ClientLifecycleSubscriber
         event.register(
             (state, level, pos, tintIndex) -> level != null && pos != null ? BiomeColors.getAverageWaterColor(level, pos) : 0x638fe9,
             Blocks.WATER_CAULDRON);
+    }
+
+    @SubscribeEvent
+    public static void onModMismatch(final ModMismatchEvent event)
+    {
+        // there are no world data and rest is mod compat anyway
+        event.markResolved(BlockUI.MOD_ID);
     }
 }
