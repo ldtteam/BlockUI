@@ -149,7 +149,7 @@ public class Tooltip extends AbstractTextElement
             if (absoluteY > maxAbsoluteMy)
             {
                 // but we don't flip here but just move upwards
-                y -= (absoluteY - maxAbsoluteMy) / 2;
+                y -= (absoluteY - maxAbsoluteMy) / renderScale;
             }
 
             // modified INLINE: vanilla Screen#renderTooltip(MatrixStack, List<? extends IReorderingProcessor>, int, int, FontRenderer)
