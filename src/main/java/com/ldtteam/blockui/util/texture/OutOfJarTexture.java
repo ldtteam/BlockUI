@@ -84,7 +84,7 @@ public class OutOfJarTexture extends AbstractTexture
      */
     public static AbstractTexture assertLoaded(final ResourceLocation resLoc, final TextureManager textureManager, final ResourceManager resourceManager)
     {
-        final AbstractTexture current = textureManager.getTexture(resLoc, null);
+        final AbstractTexture current = textureManager.getTexture(resLoc);
         if (!(resLoc instanceof final OutOfJarResourceLocation outOfJarResLoc))
         {
             // if not out-of-jar use normal vanilla systems

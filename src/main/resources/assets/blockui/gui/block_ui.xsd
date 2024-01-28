@@ -317,7 +317,7 @@
     <!-- <checkbox> -->
     <xs:complexType name="checkboxType">
         <xs:complexContent>
-            <xs:extension base="buttonImageType">
+            <xs:extension base="buttonType">
                 <xs:attribute name="checkmark" type="xs:string"/>
             </xs:extension>
         </xs:complexContent>

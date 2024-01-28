@@ -1,8 +1,10 @@
 package com.ldtteam.blockui.controls;
 
+import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.PaneParams;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.fml.loading.FMLEnvironment;
+import java.util.Objects;
 
 /**
  * Checkbox used for toggling a checkmark on and off.
@@ -13,6 +15,7 @@ public class CheckBox extends ButtonImage
      * The image for the checkmark to render over the button.
      */
     protected ResourceLocation checkmarkImage;
+    protected ResolvedBlit resolvedCheckmarkImage;
 
     /**
      * Whether the button is checked or not.
@@ -57,25 +60,30 @@ public class CheckBox extends ButtonImage
         this.checkmarkImage = loc;
     }
 
-    @Override
-    public void postDrawBackground(
-      final PoseStack ms,
-      final ResourceLocation image,
-      final int x,
-      final int y,
-      final int width,
-      final int height,
-      final int u,
-      final int v,
-      final int w,
-      final int h,
-      final int mapWidth,
-      final int mapHeight)
+    public ResourceLocation getCheckmarkImage()
     {
-        if (checked)
+        return checkmarkImage;
+    }
+
+    @Override
+    public void postDrawBackground(final BOGuiGraphics target, final double mx, final double my)
+    {
+        if (!FMLEnvironment.production)
         {
-            blit(ms, checkmarkImage, x, y, width, height, u, v, w, h, mapWidth, mapHeight);
+            Objects.requireNonNull(checkmarkImage, () -> "Missing checkmark source: " + id + " | " + window.getXmlResourceLocation());
         }
+
+        if (!checked)
+        {
+            return;
+        }
+
+        if (resolvedCheckmarkImage == null)
+        {
+            resolvedCheckmarkImage = Image.resolveBlit(checkmarkImage);
+        }
+
+        resolvedCheckmarkImage.blit(target.pose(), x, y, width, height);
     }
 
     /**

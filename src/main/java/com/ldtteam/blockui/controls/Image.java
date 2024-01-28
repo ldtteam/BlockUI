@@ -185,31 +185,20 @@ public class Image extends Pane
     @Override
     public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
+        if (!FMLEnvironment.production)
+        {
+            Objects.requireNonNull(resourceLocation, () -> "Missing image source: " + id + " | " + window.getXmlResourceLocation());
+        }
+
         if (resolvedBlit == null)
         {
-            resolveBlit();
+            resolvedBlit = resolveBlit(resourceLocation, u, v, uWidth, vHeight);
         }
 
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
         resolvedBlit.blit(target.pose(), x, y, width, height);
         RenderSystem.disableBlend();
-    }
-
-    /**
-     * Resolves current image settings
-     */
-    protected void resolveBlit()
-    {
-        if (!FMLEnvironment.production)
-        {
-            Objects.requireNonNull(resourceLocation, () -> id + " | " + window.getXmlResourceLocation());
-        }
-        else if (resourceLocation == null)
-        {
-            resourceLocation = MissingTextureAtlasSprite.getLocation();
-        }
-        resolvedBlit = resolveBlit(resourceLocation, u, v, uWidth, vHeight);
     }
     
     /**

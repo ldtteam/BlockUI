@@ -311,7 +311,7 @@ public class ButtonImage extends Button
         RenderSystem.defaultBlendFunc();
 
         resolvedTextures.getAndPrepare(isEnabled(), wasCursorInPane).blit(target.pose(), x, y, width, height);
-        postDrawBackground(ms, bind, x, y, width, height, u, v, w, h, mapWidth, mapHeight);
+        postDrawBackground(target, mx, my);
 
         RenderSystem.disableBlend();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -320,21 +320,10 @@ public class ButtonImage extends Button
     }
 
     /**
-     * Called after drawing the button.
+     * Called after drawing the button background. {@link RenderSystem#setShaderColor(float, float, float, float)} might be applied
+     * according to rendering of the actuall button background.
      */
-    public void postDrawBackground(
-      final PoseStack ms,
-      final ResourceLocation image,
-      final int x,
-      final int y,
-      final int width,
-      final int height,
-      final int u,
-      final int v,
-      final int w,
-      final int h,
-      final int mapWidth,
-      final int mapHeight)
+    public void postDrawBackground(final BOGuiGraphics target, final double mx, final double my)
     {
         // No-op
     }
