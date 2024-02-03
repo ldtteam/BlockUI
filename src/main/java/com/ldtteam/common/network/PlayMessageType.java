@@ -97,7 +97,7 @@ public record PlayMessageType<T extends AbstractUnsidedPlayMessage>(ResourceLoca
     {
         return new RuntimeException("Invalid packet received for - " + payload.getClass().getName() +
             " player: " +
-            (player == null ? "MISSING" : player.getGameProfile().getName()) +
+            (player == null ? "MISSING" : player.getClass().getName()) +
             " protocol: " +
             context.protocol() +
             " logical-side: " +
