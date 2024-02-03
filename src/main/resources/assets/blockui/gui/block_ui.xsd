@@ -279,7 +279,7 @@
     <xs:complexType name="inputType">
         <xs:complexContent>
             <xs:extension base="paneType">
-                <xs:attribute name="text" type="xs:string"/>
+                <xs:attribute name="textContent" type="xs:string"/>
                 <xs:attribute name="maxlength" type="xs:integer"/>
                 <xs:attribute name="color" type="xs:string"/>
                 <xs:attribute name="colordisabled" type="xs:string"/>
