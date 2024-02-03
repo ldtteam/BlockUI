@@ -8,12 +8,24 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.PacketDistributor.TargetPoint;
+import java.util.Collection;
 
 /**
  * List of possible network targets when sending from server to client.
  */
 public interface IClientboundDistributor extends CustomPacketPayload
 {
+    /**
+     * @see #sendToPlayer(ServerPlayer)
+     */
+    public default void sendToPlayer(final Collection<ServerPlayer> players)
+    {
+        for (final ServerPlayer serverPlayer : players)
+        {
+            sendToPlayer(serverPlayer);
+        }
+    }
+
     public default void sendToPlayer(final ServerPlayer player)
     {
         PacketDistributor.PLAYER.with(player).send(this);
