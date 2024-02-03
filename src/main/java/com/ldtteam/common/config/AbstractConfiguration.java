@@ -148,6 +148,13 @@ public abstract class AbstractConfiguration
         return buildBase(key, null).defineList(key, defaultValue, elementValidator);
     }
 
+    protected <T> ConfigValue<List<? extends T>> defineListAllowEmpty(final String key,
+        final List<? extends T> defaultValue,
+        final Predicate<Object> elementValidator)
+    {
+        return buildBase(key, null).defineListAllowEmpty(key, defaultValue, elementValidator);
+    }
+
     protected <V extends Enum<V>> EnumValue<V> defineEnum(final String key, final V defaultValue)
     {
         return buildBase(key,
