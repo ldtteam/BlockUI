@@ -1,9 +1,9 @@
 package com.ldtteam.common.network;
 
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.fml.LogicalSide;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.neoforged.neoforge.network.handling.PlayPayloadContext;
 
 /**
  * Bidirectional message
@@ -12,27 +12,23 @@ public abstract class AbstractPlayMessage extends AbstractUnsidedPlayMessage imp
     IClientboundDistributor,
     IServerboundDistributor
 {
-    @Override
-    protected LogicalSide getExecutionSide()
+    /**
+     * @param type message type
+     */
+    public AbstractPlayMessage(final PlayMessageType<?> type)
     {
-        return null;
+        super(type);
     }
 
-    @Override
-    protected void onExecute(final IPayloadContext context, final Player player)
+    /**
+     * In this constructor you deserialize received network payload. Formerly known as <code>#fromBytes(FriendlyByteBuf)</code>
+     *
+     * @param buf received network payload
+     * @param type message type
+     */
+    public AbstractPlayMessage(final FriendlyByteBuf buf, final PlayMessageType<?> type)
     {
-        if (context.flow().getReceptionSide() == LogicalSide.SERVER)
-        {
-            if (!(player instanceof final ServerPlayer serverPlayer))
-            {
-                throw new RuntimeException("Server side message but player is not ServerPlayer? " + baseExceptionString(context, player));
-            }
-            onServerExecute(context, serverPlayer);
-        }
-        else
-        {
-            onClientExecute(context, player);
-        }
+        super(type);
     }
 
     /**
@@ -41,7 +37,7 @@ public abstract class AbstractPlayMessage extends AbstractUnsidedPlayMessage imp
      * @param context network context
      * @param player  client player which is receiving this packet
      */
-    protected abstract void onClientExecute(IPayloadContext context, Player player);
+    protected abstract void onClientExecute(final PlayPayloadContext context, final Player player);
 
     /**
      * Executes message action on main thread.
@@ -49,5 +45,5 @@ public abstract class AbstractPlayMessage extends AbstractUnsidedPlayMessage imp
      * @param context network context
      * @param player  server player which is receiving this packet
      */
-    protected abstract void onServerExecute(IPayloadContext context, ServerPlayer player);
+    protected abstract void onServerExecute(final PlayPayloadContext context, final ServerPlayer player);
 }

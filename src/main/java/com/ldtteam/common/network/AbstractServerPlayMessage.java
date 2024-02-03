@@ -1,29 +1,31 @@
 package com.ldtteam.common.network;
 
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
-import net.neoforged.fml.LogicalSide;
-import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.neoforged.neoforge.network.handling.PlayPayloadContext;
 
 /**
  * Client (sender) -> Server (receiver) message
  */
 public abstract class AbstractServerPlayMessage extends AbstractUnsidedPlayMessage implements IServerboundDistributor
 {
-    @Override
-    protected LogicalSide getExecutionSide()
+    /**
+     * @param type message type
+     */
+    public AbstractServerPlayMessage(final PlayMessageType<?> type)
     {
-        return LogicalSide.SERVER;
+        super(type);
     }
 
-    @Override
-    protected void onExecute(final IPayloadContext context, final Player player)
+    /**
+     * In this constructor you deserialize received network payload. Formerly known as <code>#fromBytes(FriendlyByteBuf)</code>
+     *
+     * @param buf received network payload
+     * @param type message type
+     */
+    public AbstractServerPlayMessage(final FriendlyByteBuf buf, final PlayMessageType<?> type)
     {
-        if (!(player instanceof final ServerPlayer serverPlayer))
-        {
-            throw new RuntimeException("Server side message but player is not ServerPlayer? " + baseExceptionString(context, player));
-        }
-        onExecute(context, serverPlayer);
+        super(type);
     }
 
     /**
@@ -32,5 +34,5 @@ public abstract class AbstractServerPlayMessage extends AbstractUnsidedPlayMessa
      * @param context network context
      * @param player  server player which is receiving this packet
      */
-    protected abstract void onExecute(IPayloadContext context, ServerPlayer player);
+    protected abstract void onExecute(final PlayPayloadContext context, final ServerPlayer player);
 }
