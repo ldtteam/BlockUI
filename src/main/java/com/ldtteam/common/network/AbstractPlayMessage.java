@@ -1,89 +1,41 @@
 package com.ldtteam.common.network;
 
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.fml.LogicalSide;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
-import org.jetbrains.annotations.Nullable;
 
 /**
- * Root class of message hierarchy serving as bouncer to vanilla networking
+ * Bidirectional message
  */
-public abstract class AbstractPlayMessage<T extends Player> implements CustomPacketPayload
+public abstract class AbstractPlayMessage extends AbstractUnsidedPlayMessage implements
+    IClientboundDistributor,
+    IServerboundDistributor
 {
-    public AbstractPlayMessage()
-    {}
-
-    /**
-     * In this method you deserialize received network payload. Formerly known as <code>#fromBytes(FriendlyByteBuf)</code>
-     *
-     * @param buf received network payload
-     */
-    public AbstractPlayMessage(final FriendlyByteBuf buf)
-    {}
-
-    // Bouncer to reduce porting
     @Override
-    public void write(final FriendlyByteBuf buf)
+    protected LogicalSide getExecutionSide()
     {
-        toBytes(buf);
+        return null;
     }
 
-    /**
-     * Writes message data to buffer.
-     *
-     * @param buf fresh network payload
-     */
-    protected abstract void toBytes(final FriendlyByteBuf buf);
-
-    /**
-     * Which sides is message able to be executed at.
-     *
-     * @return CLIENT or SERVER or null (for both)
-     */
-    @Nullable
-    protected abstract LogicalSide getExecutionSide();
-
-    public void handle(final IPayloadContext context)
+    @Override
+    protected void onExecute(final IPayloadContext context, final Player player)
     {
-        final T player = castPlayer(context.player().orElse(null));
-
-        if (player == null || !context.protocol().isPlay() || (getExecutionSide() != null && context.flow().getReceptionSide() != getExecutionSide()))
+        if (context.flow().getReceptionSide() == LogicalSide.SERVER)
         {
-            throw new RuntimeException("Invalid packet received for - " + this.getClass().getName() +
-                " player: " +
-                (player == null ?
-                    (context.player().isEmpty() ? "MISSING" : "WRONG CLASS (" + context.player().get().getClass().getName() + ")") :
-                    player.getGameProfile().getName()) +
-                " protocol: " +
-                context.protocol() +
-                " logical-side: " +
-                context.flow().getReceptionSide());
+            if (!(player instanceof final ServerPlayer serverPlayer))
+            {
+                throw new RuntimeException("Server side message but player is not ServerPlayer? " + baseExceptionString(context, player));
+            }
+            onServerExecute(context, serverPlayer);
         }
-
-        final boolean isLogicalServer = context.flow().getReceptionSide() == LogicalSide.SERVER;
-        context.workHandler().execute(() -> onExecute(player, isLogicalServer));
-    }
-
-    @SuppressWarnings("unchecked")
-    private T castPlayer(final Player player)
-    {
-        try
+        else
         {
-            return (T) player;
-        }
-        catch (final ClassCastException e)
-        {
-            return null;
+            onClientExecute(context, player);
         }
     }
 
-    /**
-     * Executes message action on main thread.
-     *
-     * @param player          client/server player which is receiving this packet
-     * @param isLogicalServer whether message arrived at logical server side
-     */
-    protected abstract void onExecute(final T player, final boolean isLogicalServer);
+    protected abstract void onClientExecute(IPayloadContext context, Player player);
+
+    protected abstract void onServerExecute(IPayloadContext context, ServerPlayer player);
 }

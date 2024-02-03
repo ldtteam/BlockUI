@@ -1,36 +1,93 @@
 package com.ldtteam.common.network;
 
-import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.fml.LogicalSide;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+import org.jetbrains.annotations.Nullable;
 
 /**
- * Bidirectional message
+ * Root class of message hierarchy serving as bouncer to vanilla networking.
+ * 
+ * <pre>
+ * public static void onNetworkRegistry(final RegisterPayloadHandlerEvent event)
+ * {
+ *     final String modVersion = ModList.get().getModContainerById(Constants.MOD_ID).get().getModInfo().getVersion().toString();
+ *     final IPayloadRegistrar registry = event.registrar(Constants.MOD_ID).versioned(modVersion);
+ * 
+ *     // MyMessage extends one of AbstractPlayMessage, AbstractClientPlayMessage, AbstractServerPlayMessage
+ *     registry.play(MyMessage.ID, MyMessage::new, MyMessage::handle);
+ * }
+ * </pre>
  */
-public abstract class AbstractUnsidedPlayMessage extends AbstractPlayMessage<Player> implements
-    IClientboundDistributor,
-    IServerboundDistributor
+abstract class AbstractUnsidedPlayMessage implements CustomPacketPayload
 {
+    public AbstractUnsidedPlayMessage()
+    {}
+
+    /**
+     * In this method you deserialize received network payload. Formerly known as <code>#fromBytes(FriendlyByteBuf)</code>
+     *
+     * @param buf received network payload
+     */
+    public AbstractUnsidedPlayMessage(final FriendlyByteBuf buf)
+    {}
+
+    // Bouncer to reduce porting
     @Override
-    protected LogicalSide getExecutionSide()
+    public void write(final FriendlyByteBuf buf)
     {
-        return null;
+        toBytes(buf);
     }
 
-    @Override
-    protected void onExecute(final Player player, final boolean isLogicalServer)
+    /**
+     * Writes message data to buffer.
+     *
+     * @param buf fresh network payload
+     */
+    protected abstract void toBytes(final FriendlyByteBuf buf);
+
+    /**
+     * Which sides is message able to be executed at.
+     *
+     * @return CLIENT or SERVER or null (for both)
+     */
+    @Nullable
+    protected abstract LogicalSide getExecutionSide();
+
+    /**
+     * Used by registry method.
+     */
+    public void handle(final IPayloadContext context)
     {
-        if (isLogicalServer)
+        final Player player = context.player().orElse(null);
+
+        if (player == null || !context.protocol().isPlay() ||
+            (getExecutionSide() != null && context.flow().getReceptionSide() != getExecutionSide()))
         {
-            onServerExecute((ServerPlayer) player);
+            throw new RuntimeException(baseExceptionString(context, player));
         }
-        else 
-        {
-            onClientExecute(player);
-        }
+
+        context.workHandler().execute(() -> onExecute(context, player));
     }
 
-    protected abstract void onClientExecute(Player player);
+    protected String baseExceptionString(final IPayloadContext context, final Player player)
+    {
+        return "Invalid packet received for - " + this.getClass().getName() +
+            " player: " +
+            (player == null ? "MISSING" : player.getGameProfile().getName()) +
+            " protocol: " +
+            context.protocol() +
+            " logical-side: " +
+            context.flow().getReceptionSide();
+    }
 
-    protected abstract void onServerExecute(ServerPlayer player);
+    /**
+     * Executes message action on main thread.
+     *
+     * @param context network context
+     * @param player  client/server player which is receiving this packet
+     */
+    protected abstract void onExecute(final IPayloadContext context, final Player player);
 }
