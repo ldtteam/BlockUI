@@ -35,7 +35,19 @@ public abstract class AbstractPlayMessage extends AbstractUnsidedPlayMessage imp
         }
     }
 
+    /**
+     * Executes message action on main thread.
+     *
+     * @param context network context
+     * @param player  client player which is receiving this packet
+     */
     protected abstract void onClientExecute(IPayloadContext context, Player player);
 
+    /**
+     * Executes message action on main thread.
+     *
+     * @param context network context
+     * @param player  server player which is receiving this packet
+     */
     protected abstract void onServerExecute(IPayloadContext context, ServerPlayer player);
 }
