@@ -6,7 +6,6 @@ license="GPL3"
 modId="blockui"
 version="${version}"
 displayName="UI Library Mod"
-logoFile=""
 credits="LDT Team"
 authors="LDT Team"
 description='''
