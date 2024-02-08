@@ -13,6 +13,8 @@ public abstract class AbstractPlayMessage extends AbstractUnsidedPlayMessage imp
     IServerboundDistributor
 {
     /**
+     * This constructor should be called from message call site, ie. the code where you instantiate the message to send it to the other side
+     *
      * @param type message type
      */
     public AbstractPlayMessage(final PlayMessageType<?> type)
@@ -25,8 +27,9 @@ public abstract class AbstractPlayMessage extends AbstractUnsidedPlayMessage imp
      *
      * @param buf received network payload
      * @param type message type
+     * @apiNote you can keep this protected to reduce visibility
      */
-    public AbstractPlayMessage(final FriendlyByteBuf buf, final PlayMessageType<?> type)
+    protected AbstractPlayMessage(final FriendlyByteBuf buf, final PlayMessageType<?> type)
     {
         super(type);
     }

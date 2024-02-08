@@ -10,6 +10,8 @@ import net.neoforged.neoforge.network.handling.PlayPayloadContext;
 public abstract class AbstractServerPlayMessage extends AbstractUnsidedPlayMessage implements IServerboundDistributor
 {
     /**
+     * This constructor should be called from message call site, ie. the code where you instantiate the message to send it to server
+     *
      * @param type message type
      */
     public AbstractServerPlayMessage(final PlayMessageType<?> type)
@@ -22,8 +24,9 @@ public abstract class AbstractServerPlayMessage extends AbstractUnsidedPlayMessa
      *
      * @param buf received network payload
      * @param type message type
+     * @apiNote you can keep this protected to reduce visibility
      */
-    public AbstractServerPlayMessage(final FriendlyByteBuf buf, final PlayMessageType<?> type)
+    protected AbstractServerPlayMessage(final FriendlyByteBuf buf, final PlayMessageType<?> type)
     {
         super(type);
     }
