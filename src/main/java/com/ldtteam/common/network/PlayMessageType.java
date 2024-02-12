@@ -9,13 +9,14 @@ import net.neoforged.neoforge.network.handling.PlayPayloadContext;
 import net.neoforged.neoforge.network.registration.IDirectionAwarePayloadHandlerBuilder;
 import net.neoforged.neoforge.network.registration.IPayloadRegistrar;
 import org.jetbrains.annotations.Nullable;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
 /**
  * Class to connect message type with proper sided registration.
  */
 public record PlayMessageType<T extends AbstractUnsidedPlayMessage>(ResourceLocation id,
-    FriendlyByteBuf.Reader<T> messageFactory,
+    BiFunction<FriendlyByteBuf, PlayMessageType<T>, T> messageFactory,
     @Nullable Consumer<IDirectionAwarePayloadHandlerBuilder<T, IPlayPayloadHandler<T>>> payloadHandler)
 {
     /**
@@ -23,7 +24,7 @@ public record PlayMessageType<T extends AbstractUnsidedPlayMessage>(ResourceLoca
      */
     public static <T extends AbstractClientPlayMessage> PlayMessageType<T> forClient(final String modId,
         final String messageName,
-        final FriendlyByteBuf.Reader<T> messageFactory)
+        final BiFunction<FriendlyByteBuf, PlayMessageType<T>, T> messageFactory)
     {
         return new PlayMessageType<T>(new ResourceLocation(modId, messageName), messageFactory, handlers -> {
             handlers.client((payload, context) -> payload.onExecute(context, ensureClientPlayer(context, payload)));
@@ -35,7 +36,7 @@ public record PlayMessageType<T extends AbstractUnsidedPlayMessage>(ResourceLoca
      */
     public static <T extends AbstractServerPlayMessage> PlayMessageType<T> forServer(final String modId,
         final String messageName,
-        final FriendlyByteBuf.Reader<T> messageFactory)
+        final BiFunction<FriendlyByteBuf, PlayMessageType<T>, T> messageFactory)
     {
         return new PlayMessageType<T>(new ResourceLocation(modId, messageName), messageFactory, handlers -> {
             handlers.server((payload, context) -> payload.onExecute(context, ensureServerPlayer(context, payload)));
@@ -47,13 +48,55 @@ public record PlayMessageType<T extends AbstractUnsidedPlayMessage>(ResourceLoca
      */
     public static <T extends AbstractPlayMessage> PlayMessageType<T> forBothSides(final String modId,
         final String messageName,
-        final FriendlyByteBuf.Reader<T> messageFactory)
+        final BiFunction<FriendlyByteBuf, PlayMessageType<T>, T> messageFactory)
     {
         return new PlayMessageType<T>(new ResourceLocation(modId, messageName), messageFactory, handlers -> {
             handlers.client((payload, context) -> {
                 payload.onClientExecute(context, ensureClientPlayer(context, payload));
             }).server((payload, context) -> {
                 payload.onServerExecute(context, ensureServerPlayer(context, payload));
+            });
+        });
+    }
+    /**
+     * Creates type for Server (sender) -> Client (receiver) message.
+     * Allows null player argument
+     */
+    public static <T extends AbstractClientPlayMessage> PlayMessageType<T> forClientAllowNullPlayer(final String modId,
+        final String messageName,
+        final BiFunction<FriendlyByteBuf, PlayMessageType<T>, T> messageFactory)
+    {
+        return new PlayMessageType<T>(new ResourceLocation(modId, messageName), messageFactory, handlers -> {
+            handlers.client((payload, context) -> payload.onExecute(context, context.player().orElse(null)));
+        });
+    }
+
+    /**
+     * Creates type for Client (sender) -> Server (receiver) message.
+     * Allows null player argument
+     */
+    public static <T extends AbstractServerPlayMessage> PlayMessageType<T> forServerAllowNullPlayer(final String modId,
+        final String messageName,
+        final BiFunction<FriendlyByteBuf, PlayMessageType<T>, T> messageFactory)
+    {
+        return new PlayMessageType<T>(new ResourceLocation(modId, messageName), messageFactory, handlers -> {
+            handlers.server((payload, context) -> payload.onExecute(context, getServerPlayer(context)));
+        });
+    }
+
+    /**
+     * Creates type for bidirectional message.
+     * Allows null player argument
+     */
+    public static <T extends AbstractPlayMessage> PlayMessageType<T> forBothSidesAllowNullPlayer(final String modId,
+        final String messageName,
+        final BiFunction<FriendlyByteBuf, PlayMessageType<T>, T> messageFactory)
+    {
+        return new PlayMessageType<T>(new ResourceLocation(modId, messageName), messageFactory, handlers -> {
+            handlers.client((payload, context) -> {
+                payload.onClientExecute(context, context.player().orElse(null));
+            }).server((payload, context) -> {
+                payload.onServerExecute(context, getServerPlayer(context));
             });
         });
     }
@@ -76,7 +119,7 @@ public record PlayMessageType<T extends AbstractUnsidedPlayMessage>(ResourceLoca
      */
     public void register(final IPayloadRegistrar registry)
     {
-        registry.play(id, messageFactory, payloadHandler);
+        registry.play(id, buf -> messageFactory.apply(buf, this), payloadHandler);
     }
 
     private static Player ensureClientPlayer(final PlayPayloadContext context, final AbstractUnsidedPlayMessage payload)
@@ -89,6 +132,11 @@ public record PlayMessageType<T extends AbstractUnsidedPlayMessage>(ResourceLoca
         return context.player()
             .map(player -> player instanceof final ServerPlayer serverPlayer ? serverPlayer : null)
             .orElseThrow(() -> wrongPlayerException(context, context.player().orElse(null), payload));
+    }
+
+    private static ServerPlayer getServerPlayer(final PlayPayloadContext context)
+    {
+        return context.player().map(player -> player instanceof final ServerPlayer serverPlayer ? serverPlayer : null).orElse(null);
     }
 
     private static RuntimeException wrongPlayerException(final PlayPayloadContext context,
