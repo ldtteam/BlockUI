@@ -1,23 +1,24 @@
 package com.ldtteam.common.network;
 
+import com.mojang.logging.LogUtils;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.neoforge.network.handling.IPlayPayloadHandler;
 import net.neoforged.neoforge.network.handling.PlayPayloadContext;
-import net.neoforged.neoforge.network.registration.IDirectionAwarePayloadHandlerBuilder;
 import net.neoforged.neoforge.network.registration.IPayloadRegistrar;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 
 /**
  * Class to connect message type with proper sided registration.
  */
 public record PlayMessageType<T extends AbstractUnsidedPlayMessage>(ResourceLocation id,
     BiFunction<FriendlyByteBuf, PlayMessageType<T>, T> messageFactory,
-    @Nullable Consumer<IDirectionAwarePayloadHandlerBuilder<T, IPlayPayloadHandler<T>>> payloadHandler)
+    boolean allowNullPlayer,
+    @Nullable PayloadAction<T, Player> client,
+    @Nullable PayloadAction<T, ServerPlayer> server)
 {
     /**
      * Creates type for Server (sender) -> Client (receiver) message
@@ -26,9 +27,7 @@ public record PlayMessageType<T extends AbstractUnsidedPlayMessage>(ResourceLoca
         final String messageName,
         final BiFunction<FriendlyByteBuf, PlayMessageType<T>, T> messageFactory)
     {
-        return new PlayMessageType<T>(new ResourceLocation(modId, messageName), messageFactory, handlers -> {
-            handlers.client((payload, context) -> payload.onExecute(context, ensureClientPlayer(context, payload)));
-        });
+        return forClient(modId, messageName, messageFactory, false, false);
     }
 
     /**
@@ -38,9 +37,7 @@ public record PlayMessageType<T extends AbstractUnsidedPlayMessage>(ResourceLoca
         final String messageName,
         final BiFunction<FriendlyByteBuf, PlayMessageType<T>, T> messageFactory)
     {
-        return new PlayMessageType<T>(new ResourceLocation(modId, messageName), messageFactory, handlers -> {
-            handlers.server((payload, context) -> payload.onExecute(context, ensureServerPlayer(context, payload)));
-        });
+        return forServer(modId, messageName, messageFactory, false, false);
     }
 
     /**
@@ -50,55 +47,64 @@ public record PlayMessageType<T extends AbstractUnsidedPlayMessage>(ResourceLoca
         final String messageName,
         final BiFunction<FriendlyByteBuf, PlayMessageType<T>, T> messageFactory)
     {
-        return new PlayMessageType<T>(new ResourceLocation(modId, messageName), messageFactory, handlers -> {
-            handlers.client((payload, context) -> {
-                payload.onClientExecute(context, ensureClientPlayer(context, payload));
-            }).server((payload, context) -> {
-                payload.onServerExecute(context, ensureServerPlayer(context, payload));
-            });
-        });
-    }
-    /**
-     * Creates type for Server (sender) -> Client (receiver) message.
-     * Allows null player argument
-     */
-    public static <T extends AbstractClientPlayMessage> PlayMessageType<T> forClientAllowNullPlayer(final String modId,
-        final String messageName,
-        final BiFunction<FriendlyByteBuf, PlayMessageType<T>, T> messageFactory)
-    {
-        return new PlayMessageType<T>(new ResourceLocation(modId, messageName), messageFactory, handlers -> {
-            handlers.client((payload, context) -> payload.onExecute(context, context.player().orElse(null)));
-        });
+        return forBothSides(modId, messageName, messageFactory, false, false);
     }
 
     /**
-     * Creates type for Client (sender) -> Server (receiver) message.
-     * Allows null player argument
+     * Creates type for Server (sender) -> Client (receiver) message
+     *
+     * @param playerNullable         if false then message wont execute without player
+     * @param executeOnNetworkThread if true will execute on logical side main thread
      */
-    public static <T extends AbstractServerPlayMessage> PlayMessageType<T> forServerAllowNullPlayer(final String modId,
+    public static <T extends AbstractClientPlayMessage> PlayMessageType<T> forClient(final String modId,
         final String messageName,
-        final BiFunction<FriendlyByteBuf, PlayMessageType<T>, T> messageFactory)
+        final BiFunction<FriendlyByteBuf, PlayMessageType<T>, T> messageFactory,
+        final boolean playerNullable,
+        final boolean executeOnNetworkThread)
     {
-        return new PlayMessageType<T>(new ResourceLocation(modId, messageName), messageFactory, handlers -> {
-            handlers.server((payload, context) -> payload.onExecute(context, getServerPlayer(context)));
-        });
+        return new PlayMessageType<T>(new ResourceLocation(modId, messageName),
+            messageFactory,
+            playerNullable,
+            threadRedirect(AbstractClientPlayMessage::onExecute, executeOnNetworkThread),
+            null);
     }
 
     /**
-     * Creates type for bidirectional message.
-     * Allows null player argument
+     * Creates type for Client (sender) -> Server (receiver) message
+     *
+     * @param playerNullable         if false then message wont execute without player
+     * @param executeOnNetworkThread if true will execute on logical side main thread
      */
-    public static <T extends AbstractPlayMessage> PlayMessageType<T> forBothSidesAllowNullPlayer(final String modId,
+    public static <T extends AbstractServerPlayMessage> PlayMessageType<T> forServer(final String modId,
         final String messageName,
-        final BiFunction<FriendlyByteBuf, PlayMessageType<T>, T> messageFactory)
+        final BiFunction<FriendlyByteBuf, PlayMessageType<T>, T> messageFactory,
+        final boolean playerNullable,
+        final boolean executeOnNetworkThread)
     {
-        return new PlayMessageType<T>(new ResourceLocation(modId, messageName), messageFactory, handlers -> {
-            handlers.client((payload, context) -> {
-                payload.onClientExecute(context, context.player().orElse(null));
-            }).server((payload, context) -> {
-                payload.onServerExecute(context, getServerPlayer(context));
-            });
-        });
+        return new PlayMessageType<T>(new ResourceLocation(modId, messageName),
+            messageFactory,
+            playerNullable,
+            null,
+            threadRedirect(AbstractServerPlayMessage::onExecute, executeOnNetworkThread));
+    }
+
+    /**
+     * Creates type for bidirectional message
+     *
+     * @param playerNullable         if false then message wont execute without player
+     * @param executeOnNetworkThread if true will execute on logical side main thread
+     */
+    public static <T extends AbstractPlayMessage> PlayMessageType<T> forBothSides(final String modId,
+        final String messageName,
+        final BiFunction<FriendlyByteBuf, PlayMessageType<T>, T> messageFactory,
+        final boolean playerNullable,
+        final boolean executeOnNetworkThread)
+    {
+        return new PlayMessageType<T>(new ResourceLocation(modId, messageName),
+            messageFactory,
+            playerNullable,
+            threadRedirect(AbstractPlayMessage::onClientExecute, executeOnNetworkThread),
+            threadRedirect(AbstractPlayMessage::onServerExecute, executeOnNetworkThread));
     }
 
     /**
@@ -119,34 +125,61 @@ public record PlayMessageType<T extends AbstractUnsidedPlayMessage>(ResourceLoca
      */
     public void register(final IPayloadRegistrar registry)
     {
-        registry.play(id, buf -> messageFactory.apply(buf, this), payloadHandler);
+        registry.play(id, buf -> messageFactory.apply(buf, this), handlers -> {
+            // intentionally don't call the registry method if we do not have the handler
+            if (client != null)
+            {
+                handlers.client(this::onClient);
+            }
+            if (server != null)
+            {
+                handlers.server(this::onServer);
+            }
+        });
     }
 
-    private static Player ensureClientPlayer(final PlayPayloadContext context, final AbstractUnsidedPlayMessage payload)
+    private void onClient(final T payload, final PlayPayloadContext context)
     {
-        return context.player().orElseThrow(() -> wrongPlayerException(context, null, payload));
+        final Player player = context.player().orElse(null);
+        if (!allowNullPlayer && player == null)
+        {
+            wrongPlayerException(context, payload);
+            return;
+        }
+        client.handle(payload, context, player);
     }
 
-    private static ServerPlayer ensureServerPlayer(final PlayPayloadContext context, final AbstractUnsidedPlayMessage payload)
+    private void onServer(final T payload, final PlayPayloadContext context)
     {
-        return context.player()
-            .map(player -> player instanceof final ServerPlayer serverPlayer ? serverPlayer : null)
-            .orElseThrow(() -> wrongPlayerException(context, context.player().orElse(null), payload));
+        final Player player = context.player().orElse(null);
+        if ((!allowNullPlayer && player == null) || !(player instanceof final ServerPlayer serverPlayer))
+        {
+            wrongPlayerException(context, payload);
+            return;
+        }
+        server.handle(payload, context, serverPlayer);
     }
 
-    private static ServerPlayer getServerPlayer(final PlayPayloadContext context)
+    private static <T extends AbstractUnsidedPlayMessage, U extends Player> PayloadAction<T, U> threadRedirect(final PayloadAction<T, U> payloadAction, final boolean executeOnNetworkThread)
     {
-        return context.player().map(player -> player instanceof final ServerPlayer serverPlayer ? serverPlayer : null).orElse(null);
+        return executeOnNetworkThread ? payloadAction : (payload, context, player) -> context.workHandler().execute(() -> payloadAction.handle(payload, context, player));
     }
 
-    private static RuntimeException wrongPlayerException(final PlayPayloadContext context,
-        final Player player,
-        final AbstractUnsidedPlayMessage payload)
+    private static final Logger LOGGER = LogUtils.getLogger();
+
+    private static void wrongPlayerException(final PlayPayloadContext context, final AbstractUnsidedPlayMessage payload)
     {
-        return new RuntimeException("Invalid packet received for - " + payload.getClass().getName() +
+        final Player player = context.player().orElse(null);
+        LOGGER.warn("Invalid packet received for - " + payload.getClass().getName() +
             " player: " +
             (player == null ? "MISSING" : player.getClass().getName()) +
             " logical-side: " +
             context.flow().getReceptionSide());
+    }
+
+    @FunctionalInterface
+    private interface PayloadAction<T, U>
+    {
+        void handle(T payload, PlayPayloadContext context, U player);
     }
 }
