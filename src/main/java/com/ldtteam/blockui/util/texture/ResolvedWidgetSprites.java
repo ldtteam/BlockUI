@@ -62,8 +62,7 @@ public record ResolvedWidgetSprites(ResolvedBlit enabled,
         {
             if (isFocused)
             {
-                ifSameShaderColor(disabled, disabledFocused, FOCUSED_MODULATOR);
-                ifSameShaderColor(enabled, disabledFocused, DISABLED_FOCUSED_MODULATOR);
+                ifSameShaderColor(enabled, disabledFocused, DISABLED_MODULATOR);
                 return disabledFocused;
             }
             else

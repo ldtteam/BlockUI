@@ -135,6 +135,16 @@ public class ButtonImage extends Button
         return textures;
     }
 
+    private boolean replacedVanillaButton(final ResourceLocation loc)
+    {
+        if (textures == VANILLA_BUTTON)
+        {
+            setTextures(new WidgetSprites(loc, loc, loc, loc));
+            return true;
+        }
+        return false;
+    }
+
     /**
      * Set the default image.
      *
@@ -142,7 +152,7 @@ public class ButtonImage extends Button
      */
     public void setImage(final ResourceLocation loc)
     {
-        if (!Objects.equals(loc, textures.enabled()))
+        if (!replacedVanillaButton(loc) && !Objects.equals(loc, textures.enabled()))
         {
             if (Objects.equals(textures.enabled(), textures.enabledFocused()))
             {
@@ -190,7 +200,7 @@ public class ButtonImage extends Button
      */
     public void setImageHighlight(final ResourceLocation loc)
     {
-        if (!Objects.equals(loc, textures.enabledFocused()))
+        if (!replacedVanillaButton(loc) && !Objects.equals(loc, textures.enabledFocused()))
         {
             setTextures(new WidgetSprites(textures.enabled(), textures.disabled(), loc, textures.disabledFocused()));
         }
@@ -233,7 +243,7 @@ public class ButtonImage extends Button
      */
     public void setImageDisabled(final ResourceLocation loc)
     {
-        if (!Objects.equals(loc, textures.disabled()))
+        if (!replacedVanillaButton(loc) && !Objects.equals(loc, textures.disabled()))
         {
             if (Objects.equals(textures.disabled(), textures.disabledFocused()))
             {
@@ -251,7 +261,7 @@ public class ButtonImage extends Button
      */
     public void setImageHighlightDisabled(final ResourceLocation loc)
     {
-        if (!Objects.equals(loc, textures.disabledFocused()))
+        if (!replacedVanillaButton(loc) && !Objects.equals(loc, textures.disabledFocused()))
         {
             setTextures(new WidgetSprites(textures.enabled(), textures.disabled(), textures.enabledFocused(), loc));
         }
