@@ -84,13 +84,13 @@ public class OutOfJarTexture extends AbstractTexture
      */
     public static AbstractTexture assertLoaded(final ResourceLocation resLoc, final TextureManager textureManager, final ResourceManager resourceManager)
     {
-        final AbstractTexture current = textureManager.getTexture(resLoc);
         if (!(resLoc instanceof final OutOfJarResourceLocation outOfJarResLoc))
         {
             // if not out-of-jar use normal vanilla systems
-            return current;
+            return textureManager.getTexture(resLoc);
         }
 
+        final AbstractTexture current = textureManager.getTexture(resLoc, null);
         if (IsOurTexture.isOur(current))
         {
             return current;
@@ -109,15 +109,12 @@ public class OutOfJarTexture extends AbstractTexture
         final OutOfJarTexture outOfJarTexture = new OutOfJarTexture(outOfJarResLoc);
         textureManager.register(outOfJarResLoc, outOfJarTexture); // this causes texture to load
 
-        if (!outOfJarTexture.redirectToSprite)
+        if (outOfJarTexture.redirectToSprite)
         {
-            return outOfJarTexture;
+            textureManager.register(outOfJarResLoc, new SpriteTexture(outOfJarResLoc));
         }
-        else
-        {
-            final SpriteTexture spriteTexture = new SpriteTexture(outOfJarResLoc);
-            textureManager.register(outOfJarResLoc, spriteTexture);
-            return spriteTexture;
-        }
+
+        // do recursive resolution - cant overflow because manager is aware of path now
+        return assertLoaded(outOfJarResLoc, textureManager, resourceManager);
     }
 }
