@@ -9,4 +9,5 @@
     <itemicon item="minecraft:diamond_pickaxe" pos="256 0" size="64 64"/>
     <itemicon item="minecraft:diamond_pickaxe" pos="256 192" size="64 64"/>
     <itemicon item="minecraft:brush" pos="128 128" size="64 64"/>
+    <text pos="64 64" size="300 20" textscale="1.4" text="1.4 textscale normal gui test"/>
 </window>

@@ -106,7 +106,17 @@ public class BOScreen extends Screen
 
             if (ms.minecraft.screen == this)
             {
-                target.applyCursor();
+                int debugX = (int) (-x / renderScale) + 3;
+                if (Pane.debugging)
+                {
+                    debugX = target.drawString(
+                        "XML: %s Scaling: %s (vanilla: %.2f our: %.2f) "
+                            .formatted(window.getXmlResourceLocation(), window.getRenderType().name(), mcScale, renderScale),
+                        debugX,
+                        -minecraft.font.lineHeight,
+                        Color.getByName("white"));
+                }
+                target.applyCursor(debugX);
             }
 
             window.drawLast(target, calcRelativeX(mx), calcRelativeY(my));
