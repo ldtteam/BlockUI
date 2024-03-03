@@ -151,8 +151,8 @@ public record PlayMessageType<T extends AbstractUnsidedPlayMessage>(ResourceLoca
 
     private void onServer(final T payload, final PlayPayloadContext context)
     {
-        final Player player = context.player().orElse(null);
-        if ((!allowNullPlayer && player == null) || !(player instanceof final ServerPlayer serverPlayer))
+        final ServerPlayer serverPlayer = context.player().orElse(null) instanceof final ServerPlayer sp ? sp : null;
+        if ((!allowNullPlayer && serverPlayer == null))
         {
             wrongPlayerException(context, payload);
             return;
