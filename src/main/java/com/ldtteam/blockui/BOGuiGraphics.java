@@ -82,13 +82,16 @@ public class BOGuiGraphics extends GuiGraphics
         }
     }
 
-    public void applyCursor()
+    /**
+     * @param debugXoffset debug string x offset
+     */
+    public void applyCursor(final int debugXoffset)
     {
         selectedCursor.apply();
 
         if (Pane.debugging)
         {
-            drawString(selectedCursor.toString(), 0, -minecraft.font.lineHeight, Color.getByName("white"));
+            drawString(selectedCursor.toString(), debugXoffset, -minecraft.font.lineHeight, Color.getByName("white"));
         }
     }
 
