@@ -1,6 +1,7 @@
 package com.ldtteam.blockui.mod;
 
 import com.ldtteam.blockui.Pane;
+import com.ldtteam.blockui.controls.Button;
 import com.ldtteam.blockui.controls.CheckBox;
 import com.ldtteam.blockui.controls.Text;
 import com.ldtteam.blockui.support.DataProviders.CheckListDataProvider;
@@ -12,6 +13,7 @@ import net.minecraft.network.chat.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Sets up gui for dynamic scrolling lists.
@@ -104,5 +106,26 @@ public class ScrollingListsGui
                 return booleans.size();
             }
         });
+
+        // Case 4: Empty list with empty texts
+        final AtomicInteger renderAmount = new AtomicInteger();
+        final ScrollingList list4 = window.findPaneOfTypeByID("list4", ScrollingList.class);
+        list4.setDataProvider(new DataProvider()
+        {
+            @Override
+            public int getElementCount()
+            {
+                return renderAmount.get();
+            }
+
+            @Override
+            public void updateElement(final int index, final Pane rowPane)
+            {
+                rowPane.findPaneByType(Text.class).setText(Component.literal("Hi " + index));
+            }
+        });
+
+        window.findPaneOfTypeByID("list4add", Button.class).setHandler(button -> renderAmount.getAndAdd(2));
+        window.findPaneOfTypeByID("list4remove", Button.class).setHandler(button -> renderAmount.getAndAdd(-2));
     }
 }
