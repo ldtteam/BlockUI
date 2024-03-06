@@ -115,7 +115,10 @@ public class ScrollingListContainer extends ScrollingContainer
         final int numElements = (dataProvider != null) ? dataProvider.getElementCount() : 0;
         if (numElements > 0)
         {
-            removeChild(emptyTextComponent);
+            if (emptyTextComponent.getParent() != null)
+            {
+                removeChild(emptyTextComponent);
+            }
 
             final RowSizeModifier modifier = new RowSizeModifier();
 
