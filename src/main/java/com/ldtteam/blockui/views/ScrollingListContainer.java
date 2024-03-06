@@ -107,7 +107,10 @@ public class ScrollingListContainer extends ScrollingContainer
             return;
         }
 
-        emptyTextComponent.setSize(this.width, this.height);
+        if (this.width != emptyTextComponent.getWidth() || this.height != emptyTextComponent.getHeight())
+        {
+            emptyTextComponent.setSize(this.width, this.height);
+        }
 
         final int numElements = (dataProvider != null) ? dataProvider.getElementCount() : 0;
         if (numElements > 0)
