@@ -45,8 +45,8 @@ public class ScrollingList extends ScrollingView
         childSpacing = params.getInteger("childspacing", childSpacing);
         this.setMaxHeight(height);
 
-        setEmptyText(params.getMultilineText("emptytext"));
         setEmptyTextColor(params.getColor("emptycolor", DEFAULT_TEXT_COLOR));
+        setEmptyText(params.getMultilineText("emptytext"));
         setEmptyTextScale(params.getDouble("emptyscale", DEFAULT_TEXT_SCALE));
     }
 
