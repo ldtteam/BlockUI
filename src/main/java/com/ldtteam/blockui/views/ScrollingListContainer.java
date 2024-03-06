@@ -14,28 +14,16 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-import static com.ldtteam.blockui.controls.AbstractTextElement.DEFAULT_TEXT_COLOR;
-import static com.ldtteam.blockui.controls.AbstractTextElement.DEFAULT_TEXT_SCALE;
-
 /**
  * A Blockout pane that contains a scrolling line of other panes.
  */
 public class ScrollingListContainer extends ScrollingContainer
 {
     /**
-     * The current empty text values.
+     * The reference to the empty text label, if it exists.
      */
-    private List<MutableComponent> emptyText;
-
-    /**
-     * The current empty text color for the {@link ScrollingListContainer#emptyText}.
-     */
-    private int emptyTextColor = DEFAULT_TEXT_COLOR;
-
-    /**
-     * The current empty text scale for the {@link ScrollingListContainer#emptyText}.
-     */
-    private double emptyTextScale = DEFAULT_TEXT_SCALE;
+    @NotNull
+    private final Text emptyTextComponent;
 
     /**
      * The xml parameters for the row panes.
@@ -48,14 +36,13 @@ public class ScrollingListContainer extends ScrollingContainer
      */
     private SizeI templateSize = new SizeI(0, 0);
 
-    /**
-     * The reference to the empty text label, if it exists.
-     */
-    private Text currentEmptyTextComponent;
-
     ScrollingListContainer(final ScrollingList owner)
     {
         super(owner);
+
+        emptyTextComponent = new Text();
+        emptyTextComponent.setSize(this.width, this.height);
+        emptyTextComponent.setTextAlignment(Alignment.MIDDLE);
     }
 
     /**
@@ -65,39 +52,27 @@ public class ScrollingListContainer extends ScrollingContainer
      */
     public void setEmptyText(final List<MutableComponent> emptyText)
     {
-        this.emptyText = emptyText;
-        if (currentEmptyTextComponent != null)
-        {
-            currentEmptyTextComponent.setText(emptyText);
-        }
+        emptyTextComponent.setText(emptyText);
     }
 
     /**
-     * Set the text color for the {@link ScrollingListContainer#emptyText}.
+     * Set the text color for the empty text.
      *
      * @param emptyTextColor the color.
      */
     public void setEmptyTextColor(final int emptyTextColor)
     {
-        this.emptyTextColor = emptyTextColor;
-        if (currentEmptyTextComponent != null)
-        {
-            currentEmptyTextComponent.setColors(emptyTextColor);
-        }
+        emptyTextComponent.setColors(emptyTextColor);
     }
 
     /**
-     * Set the text scale for the {@link ScrollingListContainer#emptyText}.
+     * Set the text scale for the empty text.
      *
      * @param emptyTextScale the text scale.
      */
     public void setEmptyTextScale(final double emptyTextScale)
     {
-        this.emptyTextScale = emptyTextScale;
-        if (currentEmptyTextComponent != null)
-        {
-            currentEmptyTextComponent.setTextScale(emptyTextScale);
-        }
+        emptyTextComponent.setTextScale(emptyTextScale);
     }
 
     /**
@@ -132,14 +107,12 @@ public class ScrollingListContainer extends ScrollingContainer
             return;
         }
 
+        emptyTextComponent.setSize(this.width, this.height);
+
         final int numElements = (dataProvider != null) ? dataProvider.getElementCount() : 0;
         if (numElements > 0)
         {
-            if (currentEmptyTextComponent != null)
-            {
-                removeChild(currentEmptyTextComponent);
-                currentEmptyTextComponent = null;
-            }
+            removeChild(emptyTextComponent);
 
             final RowSizeModifier modifier = new RowSizeModifier();
 
@@ -176,22 +149,19 @@ public class ScrollingListContainer extends ScrollingContainer
 
                 currentYpos += elementHeight + childSpacing;
             }
-        }
 
-        while (currentEmptyTextComponent == null && children.size() > numElements)
-        {
-            removeChild(children.get(numElements));
+            while (children.size() > numElements)
+            {
+                removeChild(children.get(numElements));
+            }
         }
-
-        if (numElements == 0 && currentEmptyTextComponent == null)
+        else
         {
-            currentEmptyTextComponent = new Text();
-            currentEmptyTextComponent.setSize(this.width, this.height);
-            currentEmptyTextComponent.setTextAlignment(Alignment.MIDDLE);
-            currentEmptyTextComponent.setText(emptyText);
-            currentEmptyTextComponent.setTextScale(emptyTextScale);
-            currentEmptyTextComponent.setColors(emptyTextColor);
-            currentEmptyTextComponent.putInside(this);
+            if (emptyTextComponent.getParent() == null)
+            {
+                children.clear();
+                addChild(emptyTextComponent);
+            }
         }
 
         setContentHeight(currentYpos - childSpacing);

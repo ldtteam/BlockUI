@@ -125,7 +125,7 @@ public class ScrollingListsGui
             }
         });
 
-        window.findPaneOfTypeByID("list4add", Button.class).setHandler(button -> renderAmount.getAndIncrement());
-        window.findPaneOfTypeByID("list4remove", Button.class).setHandler(button -> renderAmount.getAndDecrement());
+        window.findPaneOfTypeByID("list4add", Button.class).setHandler(button -> renderAmount.getAndAdd(2));
+        window.findPaneOfTypeByID("list4remove", Button.class).setHandler(button -> renderAmount.getAndAdd(-2));
     }
 }
