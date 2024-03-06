@@ -180,6 +180,10 @@
         <xs:complexContent>
             <xs:extension base="scrollViewType">
                 <xs:group ref="paneContainerGroup" minOccurs="1" maxOccurs="1"/>
+
+                <xs:attribute name="emptytext" type="xs:string"/>
+                <xs:attribute name="emptyscale" type="xs:string"/>
+                <xs:attribute name="emptycolor" type="xs:string"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
