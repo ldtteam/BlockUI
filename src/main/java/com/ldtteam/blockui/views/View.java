@@ -368,6 +368,7 @@ public class View extends Pane
     public void removeChild(final Pane child)
     {
         children.remove(child);
+        child.setParentView(null);
     }
 
     @Override

@@ -1,19 +1,30 @@
 package com.ldtteam.blockui.views;
 
+import com.ldtteam.blockui.Alignment;
 import com.ldtteam.blockui.Loader;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
+import com.ldtteam.blockui.controls.Text;
 import com.ldtteam.blockui.util.SafeError;
 import com.ldtteam.blockui.util.records.SizeI;
 import com.ldtteam.blockui.views.ScrollingList.DataProvider;
+import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.List;
 
 /**
  * A Blockout pane that contains a scrolling line of other panes.
  */
 public class ScrollingListContainer extends ScrollingContainer
 {
+    /**
+     * The reference to the empty text label, if it exists.
+     */
+    @NotNull
+    private final Text emptyTextComponent;
+
     /**
      * The xml parameters for the row panes.
      */
@@ -28,6 +39,40 @@ public class ScrollingListContainer extends ScrollingContainer
     ScrollingListContainer(final ScrollingList owner)
     {
         super(owner);
+
+        emptyTextComponent = new Text();
+        emptyTextComponent.setSize(this.width, this.height);
+        emptyTextComponent.setTextAlignment(Alignment.MIDDLE);
+    }
+
+    /**
+     * Set the text shown when there are no items in the data provider.
+     *
+     * @param emptyText the list of components.
+     */
+    public void setEmptyText(final List<MutableComponent> emptyText)
+    {
+        emptyTextComponent.setText(emptyText);
+    }
+
+    /**
+     * Set the text color for the empty text.
+     *
+     * @param emptyTextColor the color.
+     */
+    public void setEmptyTextColor(final int emptyTextColor)
+    {
+        emptyTextComponent.setColors(emptyTextColor);
+    }
+
+    /**
+     * Set the text scale for the empty text.
+     *
+     * @param emptyTextScale the text scale.
+     */
+    public void setEmptyTextScale(final double emptyTextScale)
+    {
+        emptyTextComponent.setTextScale(emptyTextScale);
     }
 
     /**
@@ -62,9 +107,19 @@ public class ScrollingListContainer extends ScrollingContainer
             return;
         }
 
+        if (this.width != emptyTextComponent.getWidth() || this.height != emptyTextComponent.getHeight())
+        {
+            emptyTextComponent.setSize(this.width, this.height);
+        }
+
         final int numElements = (dataProvider != null) ? dataProvider.getElementCount() : 0;
         if (numElements > 0)
         {
+            if (emptyTextComponent.getParent() != null)
+            {
+                removeChild(emptyTextComponent);
+            }
+
             final RowSizeModifier modifier = new RowSizeModifier();
 
             for (int i = 0; i < numElements; ++i)
@@ -100,11 +155,19 @@ public class ScrollingListContainer extends ScrollingContainer
 
                 currentYpos += elementHeight + childSpacing;
             }
-        }
 
-        while (children.size() > numElements)
+            while (children.size() > numElements)
+            {
+                removeChild(children.get(numElements));
+            }
+        }
+        else
         {
-            removeChild(children.get(numElements));
+            if (emptyTextComponent.getParent() == null)
+            {
+                children.clear();
+                addChild(emptyTextComponent);
+            }
         }
 
         setContentHeight(currentYpos - childSpacing);

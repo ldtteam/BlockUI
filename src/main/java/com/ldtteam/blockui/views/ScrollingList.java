@@ -3,9 +3,13 @@ package com.ldtteam.blockui.views;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.views.ScrollingListContainer.RowSizeModifier;
+import net.minecraft.network.chat.MutableComponent;
 
 import java.util.List;
 import java.util.function.IntSupplier;
+
+import static com.ldtteam.blockui.controls.AbstractTextElement.DEFAULT_TEXT_COLOR;
+import static com.ldtteam.blockui.controls.AbstractTextElement.DEFAULT_TEXT_SCALE;
 
 /**
  * A ScrollingList is a View which can contain 0 or more children of a specific Pane or View type
@@ -15,10 +19,12 @@ import java.util.function.IntSupplier;
  */
 public class ScrollingList extends ScrollingView
 {
-    protected int          childSpacing = 0;
+    protected int childSpacing = 0;
+
     // Runtime
     protected DataProvider dataProvider;
-    private   int          maxHeight;
+
+    private int maxHeight;
 
     /**
      * Default constructor required by Blockout.
@@ -38,6 +44,50 @@ public class ScrollingList extends ScrollingView
         super(params);
         childSpacing = params.getInteger("childspacing", childSpacing);
         this.setMaxHeight(height);
+
+        setEmptyTextColor(params.getColor("emptycolor", DEFAULT_TEXT_COLOR));
+        setEmptyTextScale(params.getDouble("emptyscale", DEFAULT_TEXT_SCALE));
+        setEmptyText(params.getMultilineText("emptytext"));
+    }
+
+    /**
+     * Set the text shown when there are no items in the data provider.
+     *
+     * @param emptyText the component.
+     */
+    public void setEmptyText(final MutableComponent emptyText)
+    {
+        setEmptyText(List.of(emptyText));
+    }
+
+    /**
+     * Set the text shown when there are no items in the data provider.
+     *
+     * @param emptyText the list of components.
+     */
+    public void setEmptyText(final List<MutableComponent> emptyText)
+    {
+        ((ScrollingListContainer) container).setEmptyText(emptyText);
+    }
+
+    /**
+     * Set the text color for the empty text.
+     *
+     * @param emptyTextColor the color.
+     */
+    public void setEmptyTextColor(final int emptyTextColor)
+    {
+        ((ScrollingListContainer) container).setEmptyTextColor(emptyTextColor);
+    }
+
+    /**
+     * Set the text scale for the empty text.
+     *
+     * @param emptyTextScale the text scale.
+     */
+    public void setEmptyTextScale(final double emptyTextScale)
+    {
+        ((ScrollingListContainer) container).setEmptyTextScale(emptyTextScale);
     }
 
     /**
