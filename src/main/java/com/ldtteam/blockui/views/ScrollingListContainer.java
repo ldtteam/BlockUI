@@ -96,9 +96,15 @@ public class ScrollingListContainer extends ScrollingContainer
      * @param dataProvider data provider object, shouldn't be null.
      * @param height       the maximum height of the parent.
      * @param childSpacing the spacing between each row.
+     * @param force        should the list be forcefully updated.
      */
-    public void refreshElementPanes(final DataProvider dataProvider, final int height, final int childSpacing)
+    public void refreshElementPanes(final DataProvider dataProvider, final int height, final int childSpacing, final boolean force)
     {
+        if (dataProvider == null)
+        {
+            return;
+        }
+
         int currentYpos = 0;
 
         if (listNodeParams == null)
@@ -107,12 +113,17 @@ public class ScrollingListContainer extends ScrollingContainer
             return;
         }
 
+        if (!force && !dataProvider.shouldUpdate())
+        {
+            return;
+        }
+
         if (this.width != emptyTextComponent.getWidth() || this.height != emptyTextComponent.getHeight())
         {
             emptyTextComponent.setSize(this.width, this.height);
         }
 
-        final int numElements = (dataProvider != null) ? dataProvider.getElementCount() : 0;
+        final int numElements = dataProvider.getElementCount();
         if (numElements > 0)
         {
             if (emptyTextComponent.getParent() != null)
@@ -150,7 +161,10 @@ public class ScrollingListContainer extends ScrollingContainer
                         child.setSize(modifier.width, modifier.height);
                     }
 
-                    dataProvider.updateElement(i, child);
+                    if (!force && dataProvider.shouldUpdate(i))
+                    {
+                        dataProvider.updateElement(i, child);
+                    }
                 }
 
                 currentYpos += elementHeight + childSpacing;
