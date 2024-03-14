@@ -155,14 +155,14 @@ public class ScrollingListContainer extends ScrollingContainer
                         }
                     }
 
-                    child.setPosition(0, currentYpos);
-                    if (modifier.modified)
+                    if (force || dataProvider.shouldUpdate(i))
                     {
-                        child.setSize(modifier.width, modifier.height);
-                    }
+                        child.setPosition(0, currentYpos);
+                        if (modifier.modified)
+                        {
+                            child.setSize(modifier.width, modifier.height);
+                        }
 
-                    if (!force && dataProvider.shouldUpdate(i))
-                    {
                         dataProvider.updateElement(i, child);
                     }
                 }
