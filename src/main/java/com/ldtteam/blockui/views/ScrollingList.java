@@ -121,7 +121,7 @@ public class ScrollingList extends ScrollingView
     public void setDataProvider(final DataProvider p)
     {
         dataProvider = p;
-        refreshElementPanes();
+        refreshElementPanes(true);
     }
 
     /**
@@ -129,14 +129,24 @@ public class ScrollingList extends ScrollingView
      */
     public void refreshElementPanes()
     {
-        ((ScrollingListContainer) container).refreshElementPanes(dataProvider, maxHeight, childSpacing);
+        refreshElementPanes(true);
+    }
+
+    /**
+     * Use the data provider to update all the element panes.
+     *
+     * @param force should the list be forcefully updated.
+     */
+    public void refreshElementPanes(boolean force)
+    {
+        ((ScrollingListContainer) container).refreshElementPanes(dataProvider, maxHeight, childSpacing, force);
     }
 
     @Override
     public void onUpdate()
     {
         super.onUpdate();
-        refreshElementPanes();
+        refreshElementPanes(false);
     }
 
     @Override
@@ -184,6 +194,26 @@ public class ScrollingList extends ScrollingView
          * @return number of rows in the list
          */
         int getElementCount();
+
+        /**
+         * Should all the children update again?
+         *
+         * @return true if the updates should be made
+         */
+        default boolean shouldUpdate()
+        {
+            return true;
+        }
+
+        /**
+         * Should the specific child update again?
+         *
+         * @return true if the updates should be made
+         */
+        default boolean shouldUpdate(int index)
+        {
+            return true;
+        }
 
         /**
          * Override this to pick a custom size for this element. Event contains the logic to modify the old size.
