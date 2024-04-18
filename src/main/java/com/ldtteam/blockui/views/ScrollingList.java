@@ -137,7 +137,7 @@ public class ScrollingList extends ScrollingView
      *
      * @param force should the list be forcefully updated.
      */
-    public void refreshElementPanes(boolean force)
+    public void refreshElementPanes(final boolean force)
     {
         ((ScrollingListContainer) container).refreshElementPanes(dataProvider, maxHeight, childSpacing, force);
     }
@@ -210,7 +210,7 @@ public class ScrollingList extends ScrollingView
          *
          * @return true if the updates should be made
          */
-        default boolean shouldUpdate(int index)
+        default boolean shouldUpdate(final int index)
         {
             return true;
         }
@@ -221,7 +221,7 @@ public class ScrollingList extends ScrollingView
          * @param index    the index of the row/list element.
          * @param modifier the object used to modify the size.
          */
-        default void modifyRowSize(int index, final RowSizeModifier modifier)
+        default void modifyRowSize(final int index, final RowSizeModifier modifier)
         {
             // No implementation by default
         }
