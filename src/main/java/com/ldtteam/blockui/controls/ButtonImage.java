@@ -8,8 +8,6 @@ import com.ldtteam.blockui.util.texture.ResolvedWidgetSprites;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.WidgetSprites;
-import com.ldtteam.blockui.util.records.SizeI;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -164,36 +162,6 @@ public class ButtonImage extends Button
     }
 
     /**
-     * Set the default image.
-     *
-     * @param loc     ResourceLocation for the image.
-     * @param offsetX image x offset.
-     * @param offsetY image y offset.
-     * @param w       image width.
-     * @param h       image height.
-     * 
-     * @deprecated use same method name only with resLoc
-     */
-    @Deprecated(forRemoval = true, since = "1.20.2")
-    public void setImage(final ResourceLocation loc, final int offsetX, final int offsetY, final int w, final int h)
-    {
-        setImage(loc);
-    }
-
-    /**
-     * Set the default image.
-     *
-     * @param loc ResourceLocation for the image.
-     * 
-     * @deprecated use same method name only with resLoc
-     */
-    @Deprecated(forRemoval = true, since = "1.20.2")
-    public void setImage(final ResourceLocation loc, final boolean keepUv)
-    {
-        setImage(loc);
-    }
-
-    /**
      * Set the hover image.
      *
      * @param loc ResourceLocation for the image.
@@ -204,36 +172,6 @@ public class ButtonImage extends Button
         {
             setTextures(new WidgetSprites(textures.enabled(), textures.disabled(), loc, textures.disabledFocused()));
         }
-    }
-
-    /**
-     * Set the hover image.
-     *
-     * @param loc     ResourceLocation for the image.
-     * @param offsetX image x offset.
-     * @param offsetY image y offset.
-     * @param w       image width.
-     * @param h       image height.
-     * 
-     * @deprecated use same method name only with resLoc
-     */
-    @Deprecated(forRemoval = true, since = "1.20.2")
-    public void setImageHighlight(final ResourceLocation loc, final int offsetX, final int offsetY, final int w, final int h)
-    {
-        setImageHighlight(loc);
-    }
-
-    /**
-     * Set the hover image.
-     *
-     * @param loc ResourceLocation for the image.
-     * 
-     * @deprecated use same method name only with resLoc
-     */
-    @Deprecated(forRemoval = true, since = "1.20.2")
-    public void setImageHighlight(final ResourceLocation loc, final boolean keepUv)
-    {
-        setImageHighlight(loc);
     }
 
     /**
@@ -265,36 +203,6 @@ public class ButtonImage extends Button
         {
             setTextures(new WidgetSprites(textures.enabled(), textures.disabled(), textures.enabledFocused(), loc));
         }
-    }
-
-    /**
-     * Set the disabled image.
-     *
-     * @param loc ResourceLocation for the image.
-     * 
-     * @deprecated use same method name only with resLoc
-     */
-    @Deprecated(forRemoval = true, since = "1.20.2")
-    public void setImageDisabled(final ResourceLocation loc, final boolean keepUv)
-    {
-        setImageDisabled(loc);
-    }
-
-    /**
-     * Set the disabled image.
-     *
-     * @param loc     ResourceLocation for the image.
-     * @param offsetX image x offset.
-     * @param offsetY image y offset.
-     * @param w       image width.
-     * @param h       image height.
-     * 
-     * @deprecated use same method name only with resLoc
-     */
-    @Deprecated(forRemoval = true, since = "1.20.2")
-    public void setImageDisabled(final ResourceLocation loc, final int offsetX, final int offsetY, final int w, final int h)
-    {
-        setImageDisabled(loc);
     }
 
     /**

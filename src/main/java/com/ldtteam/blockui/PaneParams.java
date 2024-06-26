@@ -209,19 +209,6 @@ public class PaneParams
      * @param name the attribute name
      * @param def the default value to fallback to
      * @return the parsed resource location
-     * @deprecated use {@link PaneParams#getResource(String, ResourceLocation)} instead.
-     */
-    @Deprecated(forRemoval = true, since = "1.20.1")
-    public ResourceLocation getResource(final String name, final String def)
-    {
-        return getResource(name, new ResourceLocation(def));
-    }
-
-    /**
-     * Get the resource location from the name
-     * @param name the attribute name
-     * @param def the default value to fallback to
-     * @return the parsed resource location
      */
     public ResourceLocation getResource(final String name, final ResourceLocation def)
     {

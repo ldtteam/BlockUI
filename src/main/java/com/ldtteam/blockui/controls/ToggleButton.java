@@ -2,7 +2,6 @@ package com.ldtteam.blockui.controls;
 
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.Parsers;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.MutableComponent;
 
 import java.util.Arrays;
@@ -27,28 +26,6 @@ public class ToggleButton extends ButtonImage
     {
         super(params);
         setStateList(params.getString("options", ""));
-    }
-
-    /**
-     * Creates a new toggleable vanilla button
-     * @param options the available states as raw text strings
-     */
-    @Deprecated(forRemoval = true, since = "1.20.1")
-    public ToggleButton(String... options)
-    {
-        setStateList(String.join("|", options));
-    }
-
-    /**
-     * Creates a new custom image button
-     * @param image the image to set as the button's background
-     * @param options the available states as raw text strings
-     */
-    @Deprecated(forRemoval = true, since = "1.20.1")
-    public ToggleButton(ResourceLocation image, String... options)
-    {
-        setImage(image, false);
-        setStateList(String.join("|", options));
     }
 
     /**
@@ -136,22 +113,6 @@ public class ToggleButton extends ButtonImage
             clearText();
             return false;
         }
-    }
-
-    /**
-     * Change the underlying button pane
-     * @param button the new button pane to render
-     */
-    @Deprecated(forRemoval = true, since = "1.20.1")
-    public void setButton(Button button)
-    {
-        // noop
-    }
-
-    @Deprecated(forRemoval = true, since = "1.20.1")
-    public Button getButton()
-    {
-        return this;
     }
 
     @Override

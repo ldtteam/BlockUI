@@ -70,18 +70,6 @@ public class Image extends Pane
     }
 
     /**
-     * Set the map dimensions of the image to render.
-     * @param height the map height.
-     * @param width the map width.
-     * 
-     * @deprecated functionality removed, either display full texture and use u,v coords setter or use atlas
-     */
-    @Deprecated(forRemoval = true, since = "1.20.2")
-    public void setMapDimensions(final int height, final int width)
-    {
-    }
-
-    /**
      * Load and image from a {@link ResourceLocation} and return a {@link Tuple} containing its width and height.
      *
      * @param resourceLocation The {@link ResourceLocation} pointing to the image.

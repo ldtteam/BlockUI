@@ -116,16 +116,4 @@ public abstract class Button extends AbstractTextElement
         }
         return true;
     }
-
-    /**
-     * Selects and constructs a Button type based on its parameters
-     * @param params the patameters
-     * @return a freshly constructed Button
-     * @deprecated use {@link ButtonImage}
-     */
-    @Deprecated(forRemoval = true, since = "1.20.2")
-    public static Button construct(PaneParams params)
-    {
-        return new ButtonImage(params);
-    }
 }
