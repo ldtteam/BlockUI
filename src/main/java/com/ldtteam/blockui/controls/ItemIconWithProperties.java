@@ -64,13 +64,13 @@ public class ItemIconWithProperties extends ItemIcon
                     final CompoundTag child = tag.getCompound(itemKey);
                     final var itemOverrides = NBT_GENERIC_KEY.equals(itemKey) ? genericPropertyOverrides :
                         itemPropertyOverrides.computeIfAbsent(NBT_CURRENT_ITEM.equals(itemKey) ? itemStack.getItem() :
-                            BuiltInRegistries.ITEM.get(new ResourceLocation(itemKey)), i -> new HashMap<>());
+                            BuiltInRegistries.ITEM.get(ResourceLocation.parse(itemKey)), i -> new HashMap<>());
 
                     child.getAllKeys().forEach(key -> {
                         if (child.contains(key, Tag.TAG_ANY_NUMERIC))
                         {
                             final float value = child.getFloat(key); // intentionally ouf of lambda
-                            itemOverrides.put(new ResourceLocation(key), (itemStack, level, entity, seee) -> value);
+                            itemOverrides.put(ResourceLocation.parse(key), (itemStack, level, entity, seee) -> value);
                         }
                     });
                 }
@@ -124,7 +124,7 @@ public class ItemIconWithProperties extends ItemIcon
         final Map<ResourceLocation, ItemPropertyFunction> oldGenericVals =
             genericPropertyOverrides.isEmpty() ? Collections.emptyMap() : new HashMap<>();
         genericPropertyOverrides.forEach((key, val) -> {
-            oldGenericVals.put(key, ItemProperties.getProperty(item, key));
+            oldGenericVals.put(key, ItemProperties.getProperty(itemStack, key));
             ItemProperties.registerGeneric(key, val);
         });
 
@@ -132,7 +132,7 @@ public class ItemIconWithProperties extends ItemIcon
         final Map<ResourceLocation, ItemPropertyFunction> oldItemVals =
             currentItemOverrides.isEmpty() ? Collections.emptyMap() : new HashMap<>();
         currentItemOverrides.forEach((key, val) -> {
-            oldItemVals.put(key, ItemProperties.getProperty(item, key));
+            oldItemVals.put(key, ItemProperties.getProperty(itemStack, key));
             ItemProperties.register(item, key, val);
         });
 

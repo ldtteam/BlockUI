@@ -158,33 +158,31 @@ public final class HookRegistries
         }
 
         @Override
-        protected List<Entity> findTriggered(final EntityType<?> entityType, final TriggerMechanism trigger)
+        protected List<? extends Entity> findTriggered(final EntityType<?> entityType, final TriggerMechanism trigger)
         {
             final Minecraft mc = Minecraft.getInstance();
 
-            // TODO: sealed switch
-            if (trigger instanceof RangeTriggerMechanism rangeTrigger)
+            return switch (trigger)
             {
-                return mc.level.getEntities((EntityType<Entity>) entityType,
-                    mc.player.getBoundingBox().inflate(rangeTrigger.getSearchRange()),
+                case RangeTriggerMechanism range -> mc.level.getEntities(entityType,
+                    mc.player.getBoundingBox().inflate(range.getSearchRange()),
                     Predicates.alwaysTrue());
-            }
-            else if (trigger instanceof RayTraceTriggerMechanism)
-            {
-                if (mc.hitResult != null && mc.hitResult instanceof EntityHitResult entityHitResult)
-                {
-                    final Entity entity = entityHitResult.getEntity();
-                    if (entity.getType() == entityType)
+
+                case RayTraceTriggerMechanism rayTrace -> {
+                    if (mc.hitResult != null && mc.hitResult instanceof EntityHitResult entityHitResult)
                     {
-                        return Arrays.asList(entity);
+                        final Entity entity = entityHitResult.getEntity();
+                        if (entity.getType() == entityType)
+                        {
+                            yield Arrays.asList(entity);
+                        }
                     }
+                    yield Collections.emptyList();
                 }
-                return Collections.emptyList();
-            }
-            else
-            {
-                throw new IllegalArgumentException("No trigger mechanism for Entity and " + trigger.getName() + " trigger.");
-            }
+
+                default ->
+                    throw new IllegalArgumentException("No trigger mechanism for Entity and " + trigger.getName() + " trigger.");
+            };
         }
 
         @Override
@@ -307,54 +305,58 @@ public final class HookRegistries
         {
             final Minecraft mc = Minecraft.getInstance();
 
-            // TODO: sealed switch
-            if (trigger instanceof RangeTriggerMechanism rangeTrigger)
+            return switch (trigger)
             {
-                final AABB aabb = mc.player.getBoundingBox().inflate(rangeTrigger.getSearchRange());
-                final int xStart = Mth.floor(aabb.minX / 16.0D);
-                final int xEnd = Mth.ceil(aabb.maxX / 16.0D);
-                final int zStart = Mth.floor(aabb.minZ / 16.0D);
-                final int zEnd = Mth.ceil(aabb.maxZ / 16.0D);
+                case RangeTriggerMechanism range -> {
+                    final AABB aabb = mc.player.getBoundingBox().inflate(range.getSearchRange());
+                    final int xStart = Mth.floor(aabb.minX / 16.0D);
+                    final int xEnd = Mth.ceil(aabb.maxX / 16.0D);
+                    final int zStart = Mth.floor(aabb.minZ / 16.0D);
+                    final int zEnd = Mth.ceil(aabb.maxZ / 16.0D);
 
-                final List<BlockEntity> targets = new ArrayList<>();
-                for (int chunkX = xStart; chunkX < xEnd; ++chunkX)
-                {
-                    for (int chunkZ = zStart; chunkZ < zEnd; ++chunkZ)
+                    final List<BlockEntity> targets = new ArrayList<>();
+                    for (int chunkX = xStart; chunkX < xEnd; ++chunkX)
                     {
-                        final LevelChunk chunk = mc.level.getChunkSource().getChunk(chunkX, chunkZ, false);
-                        if (chunk != null)
+                        for (int chunkZ = zStart; chunkZ < zEnd; ++chunkZ)
                         {
-                            for (final Entry<BlockPos, BlockEntity> entry : chunk.getBlockEntities().entrySet())
+                            final LevelChunk chunk = mc.level.getChunkSource().getChunk(chunkX, chunkZ, false);
+                            if (chunk != null)
                             {
-                                final BlockPos bp = entry.getKey();
-                                final BlockEntity te = entry.getValue();
-                                if (te.getType() == teType && bp.getX() > aabb.minX && bp.getX() < aabb.maxX && bp.getY() > aabb.minY
-                                    && bp.getY() < aabb.maxY && bp.getZ() > aabb.minZ && bp.getZ() < aabb.maxZ)
+                                for (final Entry<BlockPos, BlockEntity> entry : chunk.getBlockEntities().entrySet())
                                 {
-                                    targets.add(te);
+                                    final BlockPos bp = entry.getKey();
+                                    final BlockEntity te = entry.getValue();
+                                    if (te.getType() == teType && bp.getX() > aabb.minX &&
+                                        bp.getX() < aabb.maxX &&
+                                        bp.getY() > aabb.minY &&
+                                        bp.getY() < aabb.maxY &&
+                                        bp.getZ() > aabb.minZ &&
+                                        bp.getZ() < aabb.maxZ)
+                                    {
+                                        targets.add(te);
+                                    }
                                 }
                             }
                         }
                     }
+                    yield targets;
                 }
-                return targets;
-            }
-            else if (trigger instanceof RayTraceTriggerMechanism)
-            {
-                if (mc.hitResult != null && mc.hitResult instanceof BlockHitResult blockHitResult)
-                {
-                    final BlockEntity te = mc.level.getBlockEntity(blockHitResult.getBlockPos());
-                    if (te != null && te.getType() == teType)
+
+                case RayTraceTriggerMechanism rayTrace -> {
+                    if (mc.hitResult != null && mc.hitResult instanceof BlockHitResult blockHitResult)
                     {
-                        return Arrays.asList(te);
+                        final BlockEntity te = mc.level.getBlockEntity(blockHitResult.getBlockPos());
+                        if (te != null && te.getType() == teType)
+                        {
+                            yield Arrays.asList(te);
+                        }
                     }
+                    yield Collections.emptyList();
                 }
-                return Collections.emptyList();
-            }
-            else
-            {
-                throw new IllegalArgumentException("No trigger mechanism for BlockEntity and " + trigger.getName() + " trigger.");
-            }
+
+                default ->
+                    throw new IllegalArgumentException("No trigger mechanism for BlockEntity and " + trigger.getName() + " trigger.");
+            };
         }
 
         @Override

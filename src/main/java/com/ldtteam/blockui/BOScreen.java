@@ -6,6 +6,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
@@ -80,14 +81,14 @@ public class BOScreen extends Screen
         y = Math.floor((guiHeight - height * renderScale) / 2.0d);
 
         // replace vanilla projection
-        final PoseStack shaderPs = RenderSystem.getModelViewStack();
+        final Matrix4fStack shaderPs = RenderSystem.getModelViewStack();
         final Matrix4f oldProjection = RenderSystem.getProjectionMatrix();
         RenderSystem.setProjectionMatrix(
             new Matrix4f().setOrtho(0.0F, framebufferWidth, framebufferHeight, 0.0F, 1000.0F, ClientHooks.getGuiFarPlane()),
             VertexSorting.ORTHOGRAPHIC_Z);
-        shaderPs.pushPose();
-        shaderPs.setIdentity();
-        shaderPs.translate(0.0D, 0.0D, 10000F - net.neoforged.neoforge.client.ClientHooks.getGuiFarPlane());
+        shaderPs.pushMatrix();
+        shaderPs.identity();
+        shaderPs.translate(0.0f, 0.0f, 10000f - net.neoforged.neoforge.client.ClientHooks.getGuiFarPlane());
         RenderSystem.applyModelViewMatrix();
 
         final PoseStack newMs = new PoseStack();
@@ -134,7 +135,7 @@ public class BOScreen extends Screen
         finally
         {
             // restore vanilla state
-            shaderPs.popPose();
+            shaderPs.popMatrix();
             RenderSystem.setProjectionMatrix(oldProjection, VertexSorting.ORTHOGRAPHIC_Z);
             RenderSystem.applyModelViewMatrix();
 

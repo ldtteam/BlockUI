@@ -2,7 +2,7 @@ package com.ldtteam.common.fakelevel;
 
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkSource;
-import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import javax.annotation.Nullable;
 import java.util.function.BooleanSupplier;

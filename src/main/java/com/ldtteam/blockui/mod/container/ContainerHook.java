@@ -30,7 +30,7 @@ import java.util.Set;
 
 public class ContainerHook
 {
-    public static TagKey<BlockEntityType<?>> CONTAINER_TAG = TagKey.create(Registries.BLOCK_ENTITY_TYPE, new ResourceLocation(BlockUI.MOD_ID, "container_gui"));
+    public static TagKey<BlockEntityType<?>> CONTAINER_TAG = TagKey.create(Registries.BLOCK_ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(BlockUI.MOD_ID, "container_gui"));
 
     public static void init()
     {
@@ -39,7 +39,7 @@ public class ContainerHook
             return;
         }
 
-        final ResourceLocation gui_loc = new ResourceLocation(BlockUI.MOD_ID, "gui/container.xml");
+        final ResourceLocation gui_loc = ResourceLocation.fromNamespaceAndPath(BlockUI.MOD_ID, "gui/container.xml");
         // TODO: properly support tag reloading
         for (final Holder<BlockEntityType<?>> beType : BuiltInRegistries.BLOCK_ENTITY_TYPE.getTagOrEmpty(CONTAINER_TAG))
         {
@@ -115,7 +115,7 @@ public class ContainerHook
                     ItemInfo info = null;
                     for (final ItemInfo itemInfo : allItems)
                     {
-                        if (ItemStack.isSameItemSameTags(isContainer, itemInfo.is))
+                        if (ItemStack.isSameItemSameComponents(isContainer, itemInfo.is))
                         {
                             info = itemInfo;
                             break;

@@ -44,7 +44,7 @@ public record BlockStateRenderingData(BlockState blockState,
         this(blockState,
             blockEntity,
             modelData,
-            checkModelForYrotation(blockState),
+            modelNeedsRotationFix,
             Lazy.of(() -> BlockToItemHelper.getItemStack(blockState, blockEntity, Minecraft.getInstance().player)));
     }
 
@@ -138,7 +138,7 @@ public record BlockStateRenderingData(BlockState blockState,
         final ModelResourceLocation modelResLoc = BlockModelShaper.stateToModelLocation(blockState);
         final ModelBakery modelBakery =
             Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getModelManager().getModelBakery();
-        final UnbakedModel model = modelBakery.getModel(modelResLoc);
+        final UnbakedModel model = modelBakery.topLevelModels.get(modelResLoc);
         final BlockModel blockModel = model instanceof final BlockModel bm ? bm :
             (model instanceof final MultiVariant mv ?
                 modelBakery.modelResources.get(ModelBakery.MODEL_LISTER.idToFile(mv.getVariants().get(0).getModelLocation())) :
@@ -149,12 +149,22 @@ public record BlockStateRenderingData(BlockState blockState,
             return false;
         }
 
+        int headCountOfRotated = 0;
         for (final BlockElement element : blockModel.getElements())
         {
-            if (element.rotation == null || element.rotation.axis() != Direction.Axis.Y)
+            if (element.rotation != null && element.rotation.axis() == Direction.Axis.Y)
             {
-                return false;
+                headCountOfRotated++;
             }
+            else
+            {
+                break;
+            }
+        }
+        // blind guess: if majority is rotation Y then fine
+        if (headCountOfRotated == 0)
+        {
+            return false;
         }
 
         if (blockState.hasProperty(BlockStateProperties.AXIS))

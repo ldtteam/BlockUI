@@ -9,8 +9,11 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -19,11 +22,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.item.component.BlockItemStateProperties;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
 import org.jetbrains.annotations.Nullable;
@@ -80,9 +83,10 @@ public class ItemIconWithBlockState extends ItemIcon
             {
                 try
                 {
-                    newItemStack.setTag(TagParser.parseTag(nbt));
+                    newItemStack.applyComponents(
+                        DataComponentMap.CODEC.decode(NbtOps.INSTANCE, TagParser.parseTag(nbt)).getOrThrow().getFirst());
                 }
-                catch (final CommandSyntaxException e)
+                catch (final CommandSyntaxException | IllegalStateException e)
                 {
                     Log.getLogger().error("Cannot parse item nbt", e);
                 }
@@ -172,7 +176,7 @@ public class ItemIconWithBlockState extends ItemIcon
             for (int i = tooltipList.size() - 1; i >= 0; i--)
             {
                 if (tooltipList.get(i).getContents() instanceof final LiteralContents literalContents &&
-                    ResourceLocation.isValidResourceLocation(literalContents.text()))
+                    ResourceLocation.tryParse(literalContents.text()) != null)
                 {
                     tooltipList.set(i, nameKey);
                     break;
@@ -296,33 +300,22 @@ public class ItemIconWithBlockState extends ItemIcon
         BlockState blockstate = blockItem.getBlock().defaultBlockState();
 
         // parse block state
-        final CompoundTag blockStateTag = itemStack.getTagElement(BlockItem.BLOCK_STATE_TAG);
+        final BlockItemStateProperties blockStateTag = itemStack.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
 
-        if (blockStateTag == null)
+        if (!blockStateTag.isEmpty())
         {
-            return;
-        }
-
-        final StateDefinition<Block, BlockState> statedefinition = blockstate.getBlock().getStateDefinition();
-
-        for (final String propertyKey : blockStateTag.getAllKeys())
-        {
-            final Property<?> property = statedefinition.getProperty(propertyKey);
-            if (property != null)
-            {
-                blockstate = updateState(blockstate, property, blockStateTag.getString(propertyKey));
-            }
+            blockstate = blockStateTag.apply(blockstate);
         }
 
         // try parsing blockentity
-        final CompoundTag blockEntityTag = itemStack.getTagElement(BlockItem.BLOCK_ENTITY_TAG);
+        final CompoundTag blockEntityTag = itemStack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY).copyTag();
         BlockEntity be = null;
-        if (blockEntityTag != null)
+        if (!blockEntityTag.isEmpty())
         {
             try
             {
                 // use probably invalid pos
-                be = BlockEntity.loadStatic(BlockStateRenderingData.ILLEGAL_BLOCK_ENTITY_POS, blockstate, blockEntityTag);
+                be = BlockEntity.loadStatic(BlockStateRenderingData.ILLEGAL_BLOCK_ENTITY_POS, blockstate, blockEntityTag, mc.level.registryAccess());
             }
             catch (final Exception e)
             {
@@ -331,11 +324,6 @@ public class ItemIconWithBlockState extends ItemIcon
         }
 
         setBlockStateWeak(BlockStateRenderingData.of(blockstate, be));
-    }
-
-    private static <T extends Comparable<T>> BlockState updateState(final BlockState state, final Property<T> property, final String valueName)
-    {
-        return property.getValue(valueName).map(value -> state.setValue(property, value)).orElse(state);
     }
 
     private static <T extends Comparable<T>> String getValueName(final BlockState blockState, final Property<T> property)

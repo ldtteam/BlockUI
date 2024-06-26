@@ -19,12 +19,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.event.InputEvent.MouseScrollingEvent;
-import net.neoforged.neoforge.client.event.RenderGuiOverlayEvent;
-import net.neoforged.neoforge.client.gui.overlay.VanillaGuiOverlay;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.event.TagsUpdatedEvent;
-import net.neoforged.neoforge.event.TickEvent.ClientTickEvent;
-import net.neoforged.neoforge.event.TickEvent.Phase;
 import org.lwjgl.glfw.GLFW;
 
 import java.nio.file.Path;
@@ -56,9 +55,9 @@ public class ClientEventSubscriber
      * @param event the catched event.
      */
     @SubscribeEvent
-    public static void onClientTickEvent(final ClientTickEvent event)
+    public static void onClientTickStart(final ClientTickEvent.Pre event)
     {
-        if (event.phase == Phase.START && Screen.hasAltDown() && Screen.hasControlDown() && Screen.hasShiftDown())
+        if (Screen.hasAltDown() && Screen.hasControlDown() && Screen.hasShiftDown())
         {
             if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_X))
             {
@@ -71,18 +70,22 @@ public class ClientEventSubscriber
                     AtlasManager.INSTANCE.dumpAtlases(dumpingFolder);
                 });
                 window.addChild(dumpAtlases);
-                window.addChild(createTestGuiButton(id++, "General All-in-one", new ResourceLocation(BlockUI.MOD_ID, "gui/test.xml"), parent -> {
+                window.addChild(createTestGuiButton(id++, "General All-in-one", ResourceLocation.fromNamespaceAndPath(BlockUI.MOD_ID, "gui/test.xml"), parent -> {
                     parent.findPaneOfTypeByID("missing_out_of_jar", Image.class).setImage(OutOfJarResourceLocation.ofMinecraftFolder(BlockUI.MOD_ID, "missing_out_of_jar.png"), false);
                     parent.findPaneOfTypeByID("working_out_of_jar", Image.class).setImage(OutOfJarResourceLocation.of(BlockUI.MOD_ID, Path.of("../../src/test/resources/button.png")), false);
                 }));
-                window.addChild(createTestGuiButton(id++, "Tooltip Positioning", new ResourceLocation(BlockUI.MOD_ID, "gui/test2.xml")));
-                window.addChild(createTestGuiButton(id++, "ItemIcon To BlockState", new ResourceLocation(BlockUI.MOD_ID, "gui/test3.xml"), BlockStateTestGui::setup));
-                window.addChild(createTestGuiButton(id++, "Scrolling Lists", new ResourceLocation(BlockUI.MOD_ID, "gui/test4.xml"), ScrollingListsGui::setup));
+                window.addChild(createTestGuiButton(id++, "Tooltip Positioning", ResourceLocation.fromNamespaceAndPath(BlockUI.MOD_ID, "gui/test2.xml")));
+                window.addChild(createTestGuiButton(id++, "ItemIcon To BlockState", ResourceLocation.fromNamespaceAndPath(BlockUI.MOD_ID, "gui/test3.xml"), BlockStateTestGui::setup));
+                window.addChild(createTestGuiButton(id++, "Scrolling Lists", ResourceLocation.fromNamespaceAndPath(BlockUI.MOD_ID, "gui/test4.xml"), ScrollingListsGui::setup));
                 window.open();
             }
         }
+    }
 
-        if (event.phase == Phase.END && Minecraft.getInstance().level != null)
+    @SubscribeEvent
+    public static void onClientTickEnd(final ClientTickEvent.Post event)
+    {
+        if (Minecraft.getInstance().level != null)
         {
             Minecraft.getInstance().getProfiler().push("hook_manager_tick");
             HookRegistries.tick(Minecraft.getInstance().level.getGameTime());
@@ -138,9 +141,9 @@ public class ClientEventSubscriber
     }
 
     @SubscribeEvent
-    public static void renderOverlay(final RenderGuiOverlayEvent.Pre event)
+    public static void renderOverlay(final RenderGuiLayerEvent.Pre event)
     {
-        if (Minecraft.getInstance().screen instanceof BOScreen && event.getOverlay() == VanillaGuiOverlay.CROSSHAIR.type())
+        if (Minecraft.getInstance().screen instanceof BOScreen && event.getName().equals(VanillaGuiLayers.CROSSHAIR))
         {
             event.setCanceled(true);
         }

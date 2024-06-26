@@ -3,6 +3,7 @@ package com.ldtteam.blockui;
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
@@ -98,24 +99,23 @@ public class UiRenderMacros
         }
 
         final Matrix4f m = ps.last().pose();
-        final BufferBuilder buffer = Tesselator.getInstance().getBuilder();
-        buffer.begin(Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-        buffer.vertex(m, x, y, 0).color(redStart, greenStart, blueStart, alphaStart).endVertex();
-        buffer.vertex(m, x, y + h, 0).color(redEnd, greenEnd, blueEnd, alphaEnd).endVertex();
-        buffer.vertex(m, x + lineWidth, y + h - lineWidth, 0).color(redEnd, greenEnd, blueEnd, alphaEnd).endVertex();
-        buffer.vertex(m, x + lineWidth, y + lineWidth, 0).color(redStart, greenStart, blueStart, alphaStart).endVertex();
-        buffer.vertex(m, x + w - lineWidth, y + lineWidth, 0).color(redStart, greenStart, blueStart, alphaStart).endVertex();
-        buffer.vertex(m, x + w, y, 0).color(redStart, greenStart, blueStart, alphaStart).endVertex();
-        Tesselator.getInstance().end();
+        BufferBuilder buffer = Tesselator.getInstance().begin(Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
+        buffer.addVertex(m, x, y, 0).setColor(redStart, greenStart, blueStart, alphaStart);
+        buffer.addVertex(m, x, y + h, 0).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
+        buffer.addVertex(m, x + lineWidth, y + h - lineWidth, 0).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
+        buffer.addVertex(m, x + lineWidth, y + lineWidth, 0).setColor(redStart, greenStart, blueStart, alphaStart);
+        buffer.addVertex(m, x + w - lineWidth, y + lineWidth, 0).setColor(redStart, greenStart, blueStart, alphaStart);
+        buffer.addVertex(m, x + w, y, 0).setColor(redStart, greenStart, blueStart, alphaStart);
+        BufferUploader.drawWithShader(buffer.build());
 
-        buffer.begin(Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-        buffer.vertex(m, x + w, y + h, 0).color(redEnd, greenEnd, blueEnd, alphaEnd).endVertex();
-        buffer.vertex(m, x + w, y, 0).color(redStart, greenStart, blueStart, alphaStart).endVertex();
-        buffer.vertex(m, x + w - lineWidth, y + lineWidth, 0).color(redStart, greenStart, blueStart, alphaStart).endVertex();
-        buffer.vertex(m, x + w - lineWidth, y + h - lineWidth, 0).color(redEnd, greenEnd, blueEnd, alphaEnd).endVertex();
-        buffer.vertex(m, x + lineWidth, y + h - lineWidth, 0).color(redEnd, greenEnd, blueEnd, alphaEnd).endVertex();
-        buffer.vertex(m, x, y + h, 0).color(redEnd, greenEnd, blueEnd, alphaEnd).endVertex();
-        Tesselator.getInstance().end();
+        buffer = Tesselator.getInstance().begin(Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
+        buffer.addVertex(m, x + w, y + h, 0).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
+        buffer.addVertex(m, x + w, y, 0).setColor(redStart, greenStart, blueStart, alphaStart);
+        buffer.addVertex(m, x + w - lineWidth, y + lineWidth, 0).setColor(redStart, greenStart, blueStart, alphaStart);
+        buffer.addVertex(m, x + w - lineWidth, y + h - lineWidth, 0).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
+        buffer.addVertex(m, x + lineWidth, y + h - lineWidth, 0).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
+        buffer.addVertex(m, x, y + h, 0).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
+        BufferUploader.drawWithShader(buffer.build());
 
         RenderSystem.disableBlend();
     }
@@ -172,24 +172,23 @@ public class UiRenderMacros
         }
 
         final Matrix4f m = ps.last().pose();
-        final BufferBuilder buffer = Tesselator.getInstance().getBuilder();
-        buffer.begin(Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-        buffer.vertex(m, x, y, 0).color(red, green, blue, alpha).endVertex();
-        buffer.vertex(m, x, y + h, 0).color(red, green, blue, alpha).endVertex();
-        buffer.vertex(m, x + lineWidth, y + h - lineWidth, 0).color(red, green, blue, alpha).endVertex();
-        buffer.vertex(m, x + lineWidth, y + lineWidth, 0).color(red, green, blue, alpha).endVertex();
-        buffer.vertex(m, x + w - lineWidth, y + lineWidth, 0).color(red, green, blue, alpha).endVertex();
-        buffer.vertex(m, x + w, y, 0).color(red, green, blue, alpha).endVertex();
-        Tesselator.getInstance().end();
+        BufferBuilder buffer = Tesselator.getInstance().begin(Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
+        buffer.addVertex(m, x, y, 0).setColor(red, green, blue, alpha);
+        buffer.addVertex(m, x, y + h, 0).setColor(red, green, blue, alpha);
+        buffer.addVertex(m, x + lineWidth, y + h - lineWidth, 0).setColor(red, green, blue, alpha);
+        buffer.addVertex(m, x + lineWidth, y + lineWidth, 0).setColor(red, green, blue, alpha);
+        buffer.addVertex(m, x + w - lineWidth, y + lineWidth, 0).setColor(red, green, blue, alpha);
+        buffer.addVertex(m, x + w, y, 0).setColor(red, green, blue, alpha);
+        BufferUploader.drawWithShader(buffer.build());
 
-        buffer.begin(Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-        buffer.vertex(m, x + w, y + h, 0).color(red, green, blue, alpha).endVertex();
-        buffer.vertex(m, x + w, y, 0).color(red, green, blue, alpha).endVertex();
-        buffer.vertex(m, x + w - lineWidth, y + lineWidth, 0).color(red, green, blue, alpha).endVertex();
-        buffer.vertex(m, x + w - lineWidth, y + h - lineWidth, 0).color(red, green, blue, alpha).endVertex();
-        buffer.vertex(m, x + lineWidth, y + h - lineWidth, 0).color(red, green, blue, alpha).endVertex();
-        buffer.vertex(m, x, y + h, 0).color(red, green, blue, alpha).endVertex();
-        Tesselator.getInstance().end();
+        buffer = Tesselator.getInstance().begin(Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
+        buffer.addVertex(m, x + w, y + h, 0).setColor(red, green, blue, alpha);
+        buffer.addVertex(m, x + w, y, 0).setColor(red, green, blue, alpha);
+        buffer.addVertex(m, x + w - lineWidth, y + lineWidth, 0).setColor(red, green, blue, alpha);
+        buffer.addVertex(m, x + w - lineWidth, y + h - lineWidth, 0).setColor(red, green, blue, alpha);
+        buffer.addVertex(m, x + lineWidth, y + h - lineWidth, 0).setColor(red, green, blue, alpha);
+        buffer.addVertex(m, x, y + h, 0).setColor(red, green, blue, alpha);
+        BufferUploader.drawWithShader(buffer.build());
 
         RenderSystem.disableBlend();
     }
@@ -225,17 +224,15 @@ public class UiRenderMacros
         }
 
         final Matrix4f m = ps.last().pose();
-        final BufferBuilder buffer = Tesselator.getInstance().getBuilder();
-        buffer.begin(Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-        buffer.vertex(m, x, y, 0).color(red, green, blue, alpha).endVertex();
-        buffer.vertex(m, x, y + h, 0).color(red, green, blue, alpha).endVertex();
-        buffer.vertex(m, x + w, y + h, 0).color(red, green, blue, alpha).endVertex();
-        buffer.vertex(m, x + w, y, 0).color(red, green, blue, alpha).endVertex();
-        Tesselator.getInstance().end();
+        final BufferBuilder buffer = Tesselator.getInstance().begin(Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
+        buffer.addVertex(m, x, y, 0).setColor(red, green, blue, alpha);
+        buffer.addVertex(m, x, y + h, 0).setColor(red, green, blue, alpha);
+        buffer.addVertex(m, x + w, y + h, 0).setColor(red, green, blue, alpha);
+        buffer.addVertex(m, x + w, y, 0).setColor(red, green, blue, alpha);
+        BufferUploader.drawWithShader(buffer.build());
 
         RenderSystem.disableBlend();
     }
-
 
     public static void fillGradient(final PoseStack ps,
         final int x,
@@ -290,13 +287,12 @@ public class UiRenderMacros
         }
 
         final Matrix4f m = ps.last().pose();
-        final BufferBuilder buffer = Tesselator.getInstance().getBuilder();
-        buffer.begin(Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-        buffer.vertex(m, x, y, 0).color(redStart, greenStart, blueStart, alphaStart).endVertex();
-        buffer.vertex(m, x, y + h, 0).color(redEnd, greenEnd, blueEnd, alphaEnd).endVertex();
-        buffer.vertex(m, x + w, y + h, 0).color(redEnd, greenEnd, blueEnd, alphaEnd).endVertex();
-        buffer.vertex(m, x + w, y, 0).color(redStart, greenStart, blueStart, alphaStart).endVertex();
-        Tesselator.getInstance().end();
+        final BufferBuilder buffer = Tesselator.getInstance().begin(Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
+        buffer.addVertex(m, x, y, 0).setColor(redStart, greenStart, blueStart, alphaStart);
+        buffer.addVertex(m, x, y + h, 0).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
+        buffer.addVertex(m, x + w, y + h, 0).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
+        buffer.addVertex(m, x + w, y, 0).setColor(redStart, greenStart, blueStart, alphaStart);
+        BufferUploader.drawWithShader(buffer.build());
 
         RenderSystem.disableBlend();
     }
@@ -366,11 +362,10 @@ public class UiRenderMacros
         }
 
         final Matrix4f m = ps.last().pose();
-        final BufferBuilder buffer = Tesselator.getInstance().getBuilder();
-        buffer.begin(Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-        buffer.vertex(m, x, y, 0).color(red, green, blue, alpha).endVertex();
-        buffer.vertex(m, xEnd, yEnd, 0).color(red, green, blue, alpha).endVertex();
-        Tesselator.getInstance().end();
+        final BufferBuilder buffer = Tesselator.getInstance().begin(Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+        buffer.addVertex(m, x, y, 0).setColor(red, green, blue, alpha);
+        buffer.addVertex(m, xEnd, yEnd, 0).setColor(red, green, blue, alpha);
+        BufferUploader.drawWithShader(buffer.build());
 
         RenderSystem.disableBlend();
     }
@@ -486,18 +481,17 @@ public class UiRenderMacros
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
 
         final Matrix4f m = ps.last().pose();
-        final BufferBuilder buffer = Tesselator.getInstance().getBuilder();
-        buffer.begin(Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_TEX);
-        buffer.vertex(m, x, y, 0).uv(uMin, vMin).endVertex();
-        buffer.vertex(m, x, y + h, 0).uv(uMin, vMax).endVertex();
-        buffer.vertex(m, x + w, y + h, 0).uv(uMax, vMax).endVertex();
-        buffer.vertex(m, x + w, y, 0).uv(uMax, vMin).endVertex();
-        Tesselator.getInstance().end();
+        final BufferBuilder buffer = Tesselator.getInstance().begin(Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_TEX);
+        buffer.addVertex(m, x, y, 0).setUv(uMin, vMin);
+        buffer.addVertex(m, x, y + h, 0).setUv(uMin, vMax);
+        buffer.addVertex(m, x + w, y + h, 0).setUv(uMax, vMax);
+        buffer.addVertex(m, x + w, y, 0).setUv(uMax, vMin);
+        BufferUploader.drawWithShader(buffer.build());
     }
 
     /**
-     * Draws texture without scaling so one texel is one pixel, using repeatable texture center.
-     * TODO: Nightenom - rework to better algoritm from pgr, also texture extensions?
+     * Draws texture without scaling so one texel is one pixel, using repeatable texture center. TODO: Nightenom - rework to better
+     * algoritm from pgr, also texture extensions?
      *
      * @param ps              MatrixStack
      * @param rl              image ResLoc
@@ -518,16 +512,28 @@ public class UiRenderMacros
      */
     protected static void blitRepeatable(final PoseStack ps,
         final ResourceLocation rl,
-        final int x, final int y,
-        final int width, final int height,
-        final float uMin, final float vMin,
-        final float uMax, final float vMax,
-        final int uRepeat, final int vRepeat,
-        final int repeatWidth, final int repeatHeight,
-        final int repeatBoxWidth, final int repeatBoxHeight)
+        final int x,
+        final int y,
+        final int width,
+        final int height,
+        final float uMin,
+        final float vMin,
+        final float uMax,
+        final float vMax,
+        final int uRepeat,
+        final int vRepeat,
+        final int repeatWidth,
+        final int repeatHeight,
+        final int repeatBoxWidth,
+        final int repeatBoxHeight)
     {
-        if (uRepeat < 0 || vRepeat < 0 || uRepeat >= repeatBoxWidth || vRepeat >= repeatBoxHeight || repeatWidth < 1 || repeatHeight < 1
-            || repeatWidth > repeatBoxWidth - uRepeat || repeatHeight > repeatBoxHeight - vRepeat)
+        if (uRepeat < 0 || vRepeat < 0 ||
+            uRepeat >= repeatBoxWidth ||
+            vRepeat >= repeatBoxHeight ||
+            repeatWidth < 1 ||
+            repeatHeight < 1 ||
+            repeatWidth > repeatBoxWidth - uRepeat ||
+            repeatHeight > repeatBoxHeight - vRepeat)
         {
             throw new IllegalArgumentException("Repeatable box is outside of texture box");
         }
@@ -538,8 +544,7 @@ public class UiRenderMacros
         final float vTexelHeight = (vMax - vMin) / repeatBoxHeight;
 
         final Matrix4f mat = ps.last().pose();
-        final BufferBuilder buffer = Tesselator.getInstance().getBuilder();
-        buffer.begin(Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX);
+        final BufferBuilder buffer = Tesselator.getInstance().begin(Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX);
 
         // main
         for (int i = 0; i < repeatCountX; i++)
@@ -599,7 +604,7 @@ public class UiRenderMacros
         RenderSystem.setShaderTexture(0, rl);
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
 
-        Tesselator.getInstance().end();
+        BufferUploader.drawWithShader(buffer.build());
     }
 
     public static void populateFillTriangles(final Matrix4f m,
@@ -613,12 +618,12 @@ public class UiRenderMacros
         final int blue,
         final int alpha)
     {
-        buffer.vertex(m, x, y, 0).color(red, green, blue, alpha).endVertex();
-        buffer.vertex(m, x, y + h, 0).color(red, green, blue, alpha).endVertex();
-        buffer.vertex(m, x + w, y, 0).color(red, green, blue, alpha).endVertex();
-        buffer.vertex(m, x + w, y, 0).color(red, green, blue, alpha).endVertex();
-        buffer.vertex(m, x, y + h, 0).color(red, green, blue, alpha).endVertex();
-        buffer.vertex(m, x + w, y + h, 0).color(red, green, blue, alpha).endVertex();
+        buffer.addVertex(m, x, y, 0).setColor(red, green, blue, alpha);
+        buffer.addVertex(m, x, y + h, 0).setColor(red, green, blue, alpha);
+        buffer.addVertex(m, x + w, y, 0).setColor(red, green, blue, alpha);
+        buffer.addVertex(m, x + w, y, 0).setColor(red, green, blue, alpha);
+        buffer.addVertex(m, x, y + h, 0).setColor(red, green, blue, alpha);
+        buffer.addVertex(m, x + w, y + h, 0).setColor(red, green, blue, alpha);
     }
 
     public static void populateFillGradientTriangles(final Matrix4f m,
@@ -636,12 +641,12 @@ public class UiRenderMacros
         final int alphaStart,
         final int alphaEnd)
     {
-        buffer.vertex(m, x, y, 0).color(redStart, greenStart, blueStart, alphaStart).endVertex();
-        buffer.vertex(m, x, y + h, 0).color(redEnd, greenEnd, blueEnd, alphaEnd).endVertex();
-        buffer.vertex(m, x + w, y, 0).color(redStart, greenStart, blueStart, alphaStart).endVertex();
-        buffer.vertex(m, x + w, y, 0).color(redStart, greenStart, blueStart, alphaStart).endVertex();
-        buffer.vertex(m, x, y + h, 0).color(redEnd, greenEnd, blueEnd, alphaEnd).endVertex();
-        buffer.vertex(m, x + w, y + h, 0).color(redEnd, greenEnd, blueEnd, alphaEnd).endVertex();
+        buffer.addVertex(m, x, y, 0).setColor(redStart, greenStart, blueStart, alphaStart);
+        buffer.addVertex(m, x, y + h, 0).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
+        buffer.addVertex(m, x + w, y, 0).setColor(redStart, greenStart, blueStart, alphaStart);
+        buffer.addVertex(m, x + w, y, 0).setColor(redStart, greenStart, blueStart, alphaStart);
+        buffer.addVertex(m, x, y + h, 0).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
+        buffer.addVertex(m, x + w, y + h, 0).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
     }
 
     public static void populateBlitTriangles(final BufferBuilder buffer,
@@ -655,27 +660,34 @@ public class UiRenderMacros
         final float vMin,
         final float vMax)
     {
-        buffer.vertex(mat, xStart, yStart, 0).uv(uMin, vMin).endVertex();
-        buffer.vertex(mat, xStart, yEnd, 0).uv(uMin, vMax).endVertex();
-        buffer.vertex(mat, xEnd, yStart, 0).uv(uMax, vMin).endVertex();
-        buffer.vertex(mat, xEnd, yStart, 0).uv(uMax, vMin).endVertex();
-        buffer.vertex(mat, xStart, yEnd, 0).uv(uMin, vMax).endVertex();
-        buffer.vertex(mat, xEnd, yEnd, 0).uv(uMax, vMax).endVertex();
+        buffer.addVertex(mat, xStart, yStart, 0).setUv(uMin, vMin);
+        buffer.addVertex(mat, xStart, yEnd, 0).setUv(uMin, vMax);
+        buffer.addVertex(mat, xEnd, yStart, 0).setUv(uMax, vMin);
+        buffer.addVertex(mat, xEnd, yStart, 0).setUv(uMax, vMin);
+        buffer.addVertex(mat, xStart, yEnd, 0).setUv(uMin, vMax);
+        buffer.addVertex(mat, xEnd, yEnd, 0).setUv(uMax, vMax);
     }
 
     /**
      * Render an entity on a GUI.
+     * 
      * @param poseStack matrix
-     * @param x horizontal center position
-     * @param y vertical bottom position
-     * @param scale scaling factor
-     * @param headYaw adjusts look rotation
-     * @param yaw adjusts body rotation
-     * @param pitch adjusts look rotation
-     * @param entity the entity to render
+     * @param x         horizontal center position
+     * @param y         vertical bottom position
+     * @param scale     scaling factor
+     * @param headYaw   adjusts look rotation
+     * @param yaw       adjusts body rotation
+     * @param pitch     adjusts look rotation
+     * @param entity    the entity to render
      */
-    public static void drawEntity(final PoseStack poseStack, final int x, final int y, final double scale,
-                                  final float headYaw, final float yaw, final float pitch, final Entity entity)
+    public static void drawEntity(final PoseStack poseStack,
+        final int x,
+        final int y,
+        final double scale,
+        final float headYaw,
+        final float yaw,
+        final float pitch,
+        final Entity entity)
     {
         // INLINE: vanilla from InventoryScreen
         final LivingEntity livingEntity = (entity instanceof LivingEntity) ? (LivingEntity) entity : null;
@@ -724,7 +736,7 @@ public class UiRenderMacros
     }
 
     /**
-     * @return   rendering lambda detached from sprite and guiScaling instances
+     * @return rendering lambda detached from sprite and guiScaling instances
      * @implNote same as logic {@link #blitSprite(PoseStack, TextureAtlasSprite, GuiSpriteScaling, int, int, int, int)}
      */
     public static ResolvedBlit resolveSprite(final TextureAtlasSprite sprite, final GuiSpriteScaling guiScaling)

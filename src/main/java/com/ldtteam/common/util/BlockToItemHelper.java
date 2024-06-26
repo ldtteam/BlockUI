@@ -19,6 +19,7 @@ import net.minecraft.world.level.block.BubbleColumnBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -122,11 +123,11 @@ public class BlockToItemHelper
         final Block block = blockState.getBlock();
         if (block instanceof final LiquidBlock liquid)
         {
-            return liquid.getFluid().getBucket();
+            return liquid.fluid.getBucket();
         }
-        else if (block instanceof final BubbleColumnBlock column)
+        else if (block instanceof BubbleColumnBlock)
         {
-            return column.getFluidState(blockState).getType().getBucket();
+            return Fluids.WATER.getBucket();
         }
         else if (block instanceof BaseFireBlock)
         {

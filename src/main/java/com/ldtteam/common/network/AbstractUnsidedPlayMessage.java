@@ -1,8 +1,7 @@
 package com.ldtteam.common.network;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
 
 /**
  * Root class of message hierarchy serving as bouncer to vanilla networking.
@@ -17,16 +16,9 @@ abstract class AbstractUnsidedPlayMessage implements CustomPacketPayload
     }
 
     @Override
-    public ResourceLocation id()
+    public Type<?> type()
     {
         return key.id();
-    }
-
-    // Bouncer to reduce porting
-    @Override
-    public void write(final FriendlyByteBuf buf)
-    {
-        toBytes(buf);
     }
 
     /**
@@ -34,5 +26,5 @@ abstract class AbstractUnsidedPlayMessage implements CustomPacketPayload
      *
      * @param buf fresh network payload
      */
-    protected abstract void toBytes(final FriendlyByteBuf buf);
+    protected abstract void toBytes(final RegistryFriendlyByteBuf buf);
 }

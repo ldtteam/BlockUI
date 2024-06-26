@@ -1,5 +1,6 @@
 package com.ldtteam.common.fakelevel;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.storage.LevelData;
@@ -20,21 +21,9 @@ public class FakeLevelData implements WritableLevelData
     }
 
     @Override
-    public int getXSpawn()
+    public BlockPos getSpawnPos()
     {
-        return 0;
-    }
-
-    @Override
-    public int getYSpawn()
-    {
-        return 0;
-    }
-
-    @Override
-    public int getZSpawn()
-    {
-        return 0;
+        return BlockPos.ZERO;
     }
 
     @Override
@@ -99,26 +88,8 @@ public class FakeLevelData implements WritableLevelData
     }
 
     @Override
-    public void setXSpawn(final int p_78651_)
+    public void setSpawn(final BlockPos pos, final float angle)
     {
-        // Noop
-    }
-
-    @Override
-    public void setYSpawn(final int p_78652_)
-    {
-        // Noop
-    }
-
-    @Override
-    public void setZSpawn(final int p_78653_)
-    {
-        // Noop
-    }
-
-    @Override
-    public void setSpawnAngle(final float p_78648_)
-    {
-        // Noop
+        // Noop        
     }
 }

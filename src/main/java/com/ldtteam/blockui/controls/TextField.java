@@ -414,19 +414,17 @@ public class TextField extends Pane
             }
 
             final Matrix4f m = target.pose().last().pose();
-            final Tesselator tessellator = Tesselator.getInstance();
             RenderSystem.setShaderColor(0.0F, 0.0F, 1.0F, 1.0F);
             RenderSystem.enableColorLogicOp();
             RenderSystem.logicOp(LogicOp.OR_REVERSE);
             RenderSystem.setShader(GameRenderer::getPositionShader);
 
-            final BufferBuilder vertexBuffer = tessellator.getBuilder();
-            vertexBuffer.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION);
-            vertexBuffer.vertex(m, selectionStartX, drawY - 1, 0.0f).endVertex();
-            vertexBuffer.vertex(m, selectionStartX, drawY + 1 + mc.font.lineHeight, 0.0f).endVertex();
-            vertexBuffer.vertex(m, selectionEndX, drawY + 1 + mc.font.lineHeight, 0.0f).endVertex();
-            vertexBuffer.vertex(m, selectionEndX, drawY - 1, 0.0f).endVertex();
-            tessellator.end();
+            final BufferBuilder vertexBuffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION);
+            vertexBuffer.addVertex(m, selectionStartX, drawY - 1, 0.0f);
+            vertexBuffer.addVertex(m, selectionStartX, drawY + 1 + mc.font.lineHeight, 0.0f);
+            vertexBuffer.addVertex(m, selectionEndX, drawY + 1 + mc.font.lineHeight, 0.0f);
+            vertexBuffer.addVertex(m, selectionEndX, drawY - 1, 0.0f);
+            BufferUploader.drawWithShader(vertexBuffer.build());
 
             RenderSystem.disableColorLogicOp();
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);

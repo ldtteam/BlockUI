@@ -142,7 +142,7 @@ public abstract class HookManager<T, U, K>
      * @param trigger   hook trigger
      * @return all things of thingType being triggered by trigger of given hook
      */
-    protected abstract List<T> findTriggered(final U thingType, final TriggerMechanism trigger);
+    protected abstract List<? extends T> findTriggered(final U thingType, final TriggerMechanism trigger);
 
     /**
      * @param thing instance of registered type

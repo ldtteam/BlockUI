@@ -199,11 +199,5 @@ public class OutOfJarResourceLocation extends ResourceLocation
         {
             return "blockui out-of-jar resource: " + resLoc;
         }
-
-        @Override
-        public boolean isBuiltin()
-        {
-            return false;
-        }
     }
 }

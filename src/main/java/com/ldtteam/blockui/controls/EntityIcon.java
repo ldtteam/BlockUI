@@ -6,7 +6,6 @@ import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.controls.AbstractTextBuilder.AutomaticTooltipBuilder;
 import com.ldtteam.blockui.controls.Tooltip.AutomaticTooltip;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -38,10 +37,10 @@ public class EntityIcon extends Pane
     {
         super(params);
 
-        final String entityName = params.getString("entity");
+        final ResourceLocation entityName = params.getResource("entity");
         if (entityName != null)
         {
-            setEntity(new ResourceLocation(entityName));
+            setEntity(entityName);
         }
 
         this.count = params.getInteger("count", this.count);
@@ -132,7 +131,7 @@ public class EntityIcon extends Pane
                 String s = String.valueOf(this.count);
                 ms.translate(getWidth(), getHeight(), 100.0D);
                 ms.scale(0.75F, 0.75F, 0.75F);
-                MultiBufferSource.BufferSource buffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
+                MultiBufferSource.BufferSource buffer = target.bufferSource();
                 mc.font.drawInBatch(s,
                         (float) (-4 - mc.font.width(s)),
                         (float) (-mc.font.lineHeight),

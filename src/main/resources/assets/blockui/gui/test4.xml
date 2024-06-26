@@ -17,7 +17,7 @@
         </view>
     </list>
     <list id="list4" size="160 200" pos="480 0" emptytext="This list is empty" emptyscale="0.8" emptycolor="white">
-        <label size="152 20"/>
+        <text size="152 20"/>
     </list>
     <button id="list4add" pos="480 200" size="160 20" label="Add item"/>
     <button id="list4remove" pos="480 220" size="160 20" label="Remove item"/>

@@ -20,6 +20,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.block.AirBlock;
@@ -65,10 +66,10 @@ public class ItemIcon extends Pane
     {
         super(params);
 
-        final String itemName = params.getString("item");
+        final ResourceLocation itemName = params.getResource("item");
         if (itemName != null)
         {
-            final Item item = BuiltInRegistries.ITEM.get(new ResourceLocation(itemName));
+            final Item item = BuiltInRegistries.ITEM.get(itemName);
             if (item != null)
             {
                 setItem(item.getDefaultInstance());
@@ -142,7 +143,7 @@ public class ItemIcon extends Pane
         }
         if (!itemStack.isEmpty() && blockStateExtension.blockEntity() != null)
         {
-            blockStateExtension.blockEntity().saveToItem(itemStack);
+            blockStateExtension.blockEntity().saveToItem(itemStack, mc.level.registryAccess());
         }
         onItemUpdate();
     }
@@ -189,6 +190,7 @@ public class ItemIcon extends Pane
             ms.translate(x, y, 0.0f);
             ms.scale(this.getWidth() / DEFAULT_ITEMSTACK_SIZE, this.getHeight() / DEFAULT_ITEMSTACK_SIZE, 1.0f);
 
+            ms.last().normal().identity(); // reset normals cuz lighting
             target.renderItem(itemStack, 0, 0);
             if (renderItemDecorations)
             {
@@ -206,7 +208,8 @@ public class ItemIcon extends Pane
     {
         if (onHover == null && !isItemEmpty())
         {
-            new AutomaticTooltipBuilder().hoverPane(this).build().setTextOld(getModifiedItemStackTooltip());
+            new AutomaticTooltipBuilder().hoverPane(this).build();
+            tooltipUpdateScheduled = true;
         }
     }
 
@@ -253,7 +256,7 @@ public class ItemIcon extends Pane
             tooltipFlags = tooltipFlags.asCreative();
         }
 
-        final List<Component> tooltipList = itemStack.getTooltipLines(mc.player, tooltipFlags);
+        final List<Component> tooltipList = itemStack.getTooltipLines(TooltipContext.of(mc.level), mc.player, tooltipFlags);
         int nameOffset = 1;
 
         nameOffset = modifyTooltipName(tooltipList, tooltipFlags, nameOffset);

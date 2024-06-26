@@ -27,7 +27,7 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
 {
     public static final Loader INSTANCE = new Loader();
 
-    private final Map<ResourceLocation, Function<PaneParams, ? extends Pane>> paneFactories = new HashMap<>();
+    private final Map<String, Function<PaneParams, ? extends Pane>> paneFactories = new HashMap<>();
 
     private Map<ResourceLocation, PaneParams> xmlCache = new HashMap<>();
 
@@ -42,7 +42,6 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
         register("toggle", ToggleButton::new);
         register("input", TextFieldVanilla::new);
         register("image", Image::new);
-        register("imagerepeat", ImageRepeatable::new);
         register("box", Box::new);
         register("itemicon", Loader::itemIcon);
         register("entityicon", EntityIcon::new);
@@ -80,14 +79,12 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
      */
     public void register(final String name, final Function<PaneParams, ? extends Pane> factoryMethod)
     {
-        final ResourceLocation key = new ResourceLocation(name);
-
-        if (paneFactories.containsKey(key))
+        if (paneFactories.containsKey(name))
         {
             throw new IllegalArgumentException("Duplicate pane type '" + name + "' when registering Pane class method.");
         }
 
-        paneFactories.put(key, factoryMethod);
+        paneFactories.put(name, factoryMethod);
     }
 
     /**
@@ -98,20 +95,13 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
      */
     private Pane createFromPaneParams(final PaneParams params)
     {
-        final ResourceLocation paneType = new ResourceLocation(params.getType());
-
-        if (paneFactories.containsKey(paneType))
+        final String name = params.getType();
+        if (paneFactories.containsKey(name))
         {
-            return paneFactories.get(paneType).apply(params);
+            return paneFactories.get(name).apply(params);
         }
 
-        if (paneFactories.containsKey(new ResourceLocation(paneType.getPath())))
-        {
-            Log.getLogger().warn("Namespace override for " + paneType.getPath() + " not found. Using default.");
-            return paneFactories.get(new ResourceLocation(paneType.getPath())).apply(params);
-        }
-
-        Log.getLogger().error("There is no factory method for " + paneType.getPath());
+        Log.getLogger().error("There is no factory method for " + name);
         return null;
     }
 

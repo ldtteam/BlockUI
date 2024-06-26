@@ -1,8 +1,8 @@
 package com.ldtteam.common.network;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.neoforge.network.handling.PlayPayloadContext;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
  * Client (sender) -> Server (receiver) message
@@ -20,13 +20,13 @@ public abstract class AbstractServerPlayMessage extends AbstractUnsidedPlayMessa
     }
 
     /**
-     * In this constructor you deserialize received network payload. Formerly known as <code>#fromBytes(FriendlyByteBuf)</code>
+     * In this constructor you deserialize received network payload. Formerly known as <code>#fromBytes(RegistryFriendlyByteBuf)</code>
      *
      * @param buf received network payload
      * @param type message type
      * @apiNote you can keep this protected to reduce visibility
      */
-    protected AbstractServerPlayMessage(final FriendlyByteBuf buf, final PlayMessageType<?> type)
+    protected AbstractServerPlayMessage(final RegistryFriendlyByteBuf buf, final PlayMessageType<?> type)
     {
         super(type);
     }
@@ -37,5 +37,5 @@ public abstract class AbstractServerPlayMessage extends AbstractUnsidedPlayMessa
      * @param context network context
      * @param player  server player which is receiving this packet
      */
-    protected abstract void onExecute(final PlayPayloadContext context, final ServerPlayer player);
+    protected abstract void onExecute(final IPayloadContext context, final ServerPlayer player);
 }

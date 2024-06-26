@@ -1,9 +1,9 @@
 package com.ldtteam.common.network;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
-import net.neoforged.neoforge.network.handling.PlayPayloadContext;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
  * Bidirectional message
@@ -23,13 +23,13 @@ public abstract class AbstractPlayMessage extends AbstractUnsidedPlayMessage imp
     }
 
     /**
-     * In this constructor you deserialize received network payload. Formerly known as <code>#fromBytes(FriendlyByteBuf)</code>
+     * In this constructor you deserialize received network payload. Formerly known as <code>#fromBytes(RegistryFriendlyByteBuf)</code>
      *
      * @param buf received network payload
      * @param type message type
      * @apiNote you can keep this protected to reduce visibility
      */
-    protected AbstractPlayMessage(final FriendlyByteBuf buf, final PlayMessageType<?> type)
+    protected AbstractPlayMessage(final RegistryFriendlyByteBuf buf, final PlayMessageType<?> type)
     {
         super(type);
     }
@@ -40,7 +40,7 @@ public abstract class AbstractPlayMessage extends AbstractUnsidedPlayMessage imp
      * @param context network context
      * @param player  client player which is receiving this packet
      */
-    protected abstract void onClientExecute(final PlayPayloadContext context, final Player player);
+    protected abstract void onClientExecute(final IPayloadContext context, final Player player);
 
     /**
      * Executes message action on main thread.
@@ -48,5 +48,5 @@ public abstract class AbstractPlayMessage extends AbstractUnsidedPlayMessage imp
      * @param context network context
      * @param player  server player which is receiving this packet
      */
-    protected abstract void onServerExecute(final PlayPayloadContext context, final ServerPlayer player);
+    protected abstract void onServerExecute(final IPayloadContext context, final ServerPlayer player);
 }

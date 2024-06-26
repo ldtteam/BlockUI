@@ -10,7 +10,6 @@ import com.ldtteam.blockui.util.ToggleableTextComponent;
 import com.ldtteam.blockui.util.ToggleableTextComponent.FormattedToggleableCharSequence;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
@@ -31,8 +30,6 @@ import java.util.stream.Stream;
  */
 public abstract class AbstractTextElement extends Pane
 {
-    @Deprecated(forRemoval = true, since = "1.20.1")
-    public static final int FILTERING_ROUNDING = 50;
     public static final float FILTERING_MAX_SCALE = 2; // enable texture filtering when text is below this scale (in monitor pixels)
     public static final float FILTERING_THRESHOLD = 0.02f; // should be 1/FILTERING_ROUNDING
 
@@ -325,7 +322,7 @@ public abstract class AbstractTextElement extends Pane
         final float scale = temp.distanceSquared(FILTERING_THRESHOLD, fbH - FILTERING_THRESHOLD, 0, 0);
         NeoForgeRenderTypes.enableTextTextureLinearFiltering = Math.abs(temp.x - fbH + temp.y) > FILTERING_THRESHOLD || scale < FILTERING_MAX_SCALE * FILTERING_MAX_SCALE;
 
-        final MultiBufferSource.BufferSource drawBuffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
+        final MultiBufferSource.BufferSource drawBuffer = target.bufferSource();
         int lineShift = 0;
         for (FormattedCharSequence row : preparedText)
         {

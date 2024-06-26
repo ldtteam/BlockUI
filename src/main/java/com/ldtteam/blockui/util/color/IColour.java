@@ -71,14 +71,6 @@ public interface IColour
      */
     default void writeIntoBuffer(final BufferBuilder buffer)
     {
-        buffer.color(red(), green(), blue(), alpha());
-    }
-
-    /**
-     * @see BufferBuilder#defaultColor(int, int, int, int)
-     */
-    default void setInfoBufferDefaultColor(final BufferBuilder buffer)
-    {
-        buffer.defaultColor(red(), green(), blue(), alpha());
+        buffer.setColor(red(), green(), blue(), alpha());
     }
 }

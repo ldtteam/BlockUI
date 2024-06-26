@@ -14,9 +14,9 @@ import net.minecraft.world.level.biome.Climate.Sampler;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.Heightmap.Types;
 import net.minecraft.world.level.levelgen.blending.BlendingData;
@@ -26,6 +26,7 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.ticks.BlackholeTickAccess;
 import net.minecraft.world.ticks.TickContainerAccess;
+import net.neoforged.neoforge.client.model.data.ModelData;
 import org.jetbrains.annotations.Nullable;
 import java.util.Collection;
 import java.util.Collections;
@@ -35,6 +36,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 /**
@@ -105,6 +107,12 @@ public class FakeChunk extends LevelChunk
         return getBlockEntities().keySet();
     }
 
+    @Override
+    public ModelData getModelData(BlockPos pos)
+    {
+        return fakeLevel.getModelData(pos);
+    }
+
     // ========================================
     // ======= NOOP UNSAFE NULL METHODS =======
     // ========================================
@@ -120,7 +128,7 @@ public class FakeChunk extends LevelChunk
     }
 
     @Override
-    public ChunkStatus getStatus()
+    public ChunkStatus getPersistedStatus()
     {
         return ChunkStatus.FULL;
     }
@@ -177,7 +185,9 @@ public class FakeChunk extends LevelChunk
     // ========================================
 
     @Override
-    public void findBlocks(BiPredicate<BlockState, BlockPos> predicate, BiConsumer<BlockPos, BlockState> sink)
+    public void findBlocks(Predicate<BlockState> filter,
+        BiPredicate<BlockState, BlockPos> fineFilter,
+        BiConsumer<BlockPos, BlockState> sink)
     {
         for (final BlockPos mutablePos : BlockPos.betweenClosed(chunkPos.getBlockX(0),
             fakeLevel.levelSource.getMinBuildHeight(),
@@ -187,7 +197,7 @@ public class FakeChunk extends LevelChunk
             Math.min(chunkPos.getBlockZ(15), fakeLevel.levelSource.getMaxZ() - 1)))
         {
             final BlockState blockState = getBlockState(mutablePos);
-            if (predicate.test(blockState, mutablePos))
+            if (fineFilter.test(blockState, mutablePos))
             {
                 sink.accept(mutablePos, blockState);
             }
@@ -203,7 +213,14 @@ public class FakeChunk extends LevelChunk
     @Override
     public LevelChunkSection[] getSections()
     {
+        // don't cache them
         return new LevelChunkSection[0];
+    }
+
+    @Override
+    public LevelChunkSection getSection(int yIdx)
+    {
+        return new FakeLevelChunkSection(this, yIdx);
     }
 
     // ========================================
@@ -214,14 +231,6 @@ public class FakeChunk extends LevelChunk
     public void addAndRegisterBlockEntity(BlockEntity p_156391_)
     {
         // Noop
-    }
-
-    @Override
-    @javax.annotation.Nullable
-    public CompoundTag getBlockEntityNbtForSaving(BlockPos p_62932_)
-    {
-        // Noop
-        return null;
     }
 
     @Override
@@ -411,12 +420,6 @@ public class FakeChunk extends LevelChunk
     }
     
     @Override
-    public Level getWorldForge()
-    {
-        return super.getWorldForge();
-    }
-    
-    @Override
     public boolean isEmpty()
     {
         return super.isEmpty();
@@ -454,6 +457,12 @@ public class FakeChunk extends LevelChunk
     
     @Override
     public void findBlocks(Predicate<BlockState> p_285343_, BiConsumer<BlockPos, BlockState> p_285030_)
+    {
+        super.findBlocks(p_285343_, p_285030_);
+    }
+    
+    @Override
+    public void findBlocks(BiPredicate<BlockState, BlockPos> p_285343_, BiConsumer<BlockPos, BlockState> p_285030_)
     {
         super.findBlocks(p_285343_, p_285030_);
     }
@@ -551,9 +560,9 @@ public class FakeChunk extends LevelChunk
     }
     
     @Override
-    public LevelChunkSection getSection(int p_187657_)
+    public boolean isSectionEmpty(int p_350678_)
     {
-        return super.getSection(p_187657_);
+        return super.isSectionEmpty(p_350678_);
     }
     
     @Override
@@ -725,12 +734,6 @@ public class FakeChunk extends LevelChunk
     }
     
     @Override
-    public @Nullable ModelDataManager getModelDataManager()
-    {
-        return super.getModelDataManager();
-    }
-    
-    @Override
     public LevelChunkAuxiliaryLightManager getAuxLightManager(ChunkPos pos)
     {
         return super.getAuxLightManager(pos);
@@ -777,6 +780,48 @@ public class FakeChunk extends LevelChunk
     public <T> T setData(AttachmentType<T> type, T data)
     {
         return super.setData(type, data);
+    }
+    
+    @Override
+    public <T> Optional<T> getExistingData(AttachmentType<T> type)
+    {
+        return super.getExistingData(type);
+    }
+    
+    @Override
+    public boolean hasAttachments()
+    {
+        return super.hasAttachments();
+    }
+    
+    @Override
+    public <T> T removeData(AttachmentType<T> type)
+    {
+        return super.removeData(type);
+    }
+    
+    @Override
+    public <T> Optional<T> getExistingData(Supplier<AttachmentType<T>> type)
+    {
+        return super.getExistingData(type);
+    }
+    
+    @Override
+    public <T> @Nullable T removeData(Supplier<AttachmentType<T>> type)
+    {
+        return super.removeData(type);
+    }
+    
+    @Override
+    protected AsField getAttachmentHolder()
+    {
+        return super.getAttachmentHolder();
+    }
+    
+    @Override
+    public CompoundTag getBlockEntityNbtForSaving(BlockPos p_62932_, Provider p_323699_)
+    {
+        return super.getBlockEntityNbtForSaving(p_62932_, p_323699_);
     }
     */
 }

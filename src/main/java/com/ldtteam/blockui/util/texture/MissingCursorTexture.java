@@ -16,7 +16,7 @@ public final class MissingCursorTexture extends CursorTexture
 
     private MissingCursorTexture()
     {
-        super(new ResourceLocation(BlockUI.MOD_ID, "missing_cursor_texture"));
+        super(ResourceLocation.fromNamespaceAndPath(BlockUI.MOD_ID, "missing_cursor_texture"));
         super.nativeImage = MissingTextureAtlasSprite.getTexture().getPixels();
     }
 

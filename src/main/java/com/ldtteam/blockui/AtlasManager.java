@@ -107,8 +107,8 @@ public class AtlasManager
         private CustomGuiSpriteManager(final TextureManager textureManager, final String modId)
         {
             super(textureManager,
-                new ResourceLocation(modId, "textures/atlas/" + modId + "_gui.png"),
-                new ResourceLocation(modId, modId + "_gui"),
+                ResourceLocation.fromNamespaceAndPath(modId, "textures/atlas/" + modId + "_gui.png"),
+                ResourceLocation.fromNamespaceAndPath(modId, modId + "_gui"),
                 GuiSpriteManager.METADATA_SECTIONS);
         }
 
