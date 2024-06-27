@@ -1,6 +1,7 @@
 modLoader="javafml"
 loaderVersion="${fml_range}"
 license="GPL3"
+issueTrackerURL="https://github.com/ldtteam/BlockUI/issues/new/choose"
 
 [[mods]]
 modId="blockui"
