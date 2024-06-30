@@ -74,7 +74,7 @@ public interface IClientboundDistributor extends CustomPacketPayload
             "Got client chunk for server network message: " + this.getClass().getName() + " - " + chunk.getClass().getName();
         if (FMLEnvironment.production)
         {
-            System.err.println(crash);
+            new IllegalArgumentException(crash).printStackTrace();
         }
         else
         {
