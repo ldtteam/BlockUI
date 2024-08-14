@@ -19,6 +19,8 @@ import javax.annotation.Nullable;
 public class FakeLevelLightEngine extends LevelLightEngine
 {
     private final FakeLevel<?> fakeLevel;
+    private FakeLevelLayerLightEventListener blockLightLayer = null;
+    private FakeLevelLayerLightEventListener skyLightLayer = null;
 
     public FakeLevelLightEngine(final FakeLevel<?> level)
     {
@@ -55,8 +57,23 @@ public class FakeLevelLightEngine extends LevelLightEngine
     @Override
     public LayerLightEventListener getLayerListener(final LightLayer p_75815_)
     {
-        // intentionally don't cache them
-        return new FakeLevelLayerLightEventListener(p_75815_);
+        return switch (p_75815_)
+        {
+            case BLOCK -> {
+                if (blockLightLayer == null)
+                {
+                    blockLightLayer = new FakeLevelLayerLightEventListener(p_75815_);
+                }
+                yield blockLightLayer;
+            }
+            case SKY -> {
+                if (skyLightLayer == null)
+                {
+                    skyLightLayer = new FakeLevelLayerLightEventListener(p_75815_);
+                }
+                yield skyLightLayer;
+            }
+        };
     }
 
     @Override
