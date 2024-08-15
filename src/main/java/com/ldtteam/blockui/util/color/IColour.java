@@ -1,6 +1,6 @@
 package com.ldtteam.blockui.util.color;
 
-import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 
 public interface IColour
 {
@@ -67,9 +67,9 @@ public interface IColour
     }
 
     /**
-     * @see BufferBuilder#setColor(int, int, int, int)
+     * @see VertexConsumer#setColor(int, int, int, int)
      */
-    default void writeIntoBuffer(final BufferBuilder buffer)
+    default void writeIntoBuffer(final VertexConsumer buffer)
     {
         buffer.setColor(red(), green(), blue(), alpha());
     }

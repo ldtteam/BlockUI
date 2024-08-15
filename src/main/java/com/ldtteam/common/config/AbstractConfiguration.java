@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 
 public abstract class AbstractConfiguration
 {
-    public static final String DEFAULT_KEY_PREFIX = "structurize.config.default.";
+    public static final String DEFAULT_KEY_PREFIX = "blockui.config.default.";
     public static final String COMMENT_SUFFIX = ".comment";
 
     final List<ConfigWatcher<?>> watchers = new ArrayList<>();

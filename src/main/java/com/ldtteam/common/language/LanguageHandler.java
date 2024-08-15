@@ -9,8 +9,8 @@ import org.apache.commons.io.IOUtils;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Helper class for localization and sending player messages.
@@ -33,9 +33,9 @@ public final class LanguageHandler
      * @param args     Objects for String.format().
      * @return Localized string.
      */
-    public static String format(final String inputKey, final Object... args)
+    @Deprecated(forRemoval = true, since = "1.21.1")
+    public static String format(final String key, final Object... args)
     {
-        final String key = inputKey.toLowerCase(Locale.US);
         final String result = (args.length == 0 ? Component.translatable(key) : Component.translatable(key, args)).getString();
         return result.isEmpty() ? key : result;
     }
@@ -47,6 +47,7 @@ public final class LanguageHandler
      * @param format String.format() attributes
      * @return formatted string
      */
+    @Deprecated(forRemoval = true, since = "1.21.1")
     public static String translateKeyWithFormat(final String key, final Object... format)
     {
         return String.format(translateKey(key), format);
@@ -60,7 +61,7 @@ public final class LanguageHandler
      */
     public static String translateKey(final String key)
     {
-        return LanguageCache.getInstance().translateKey(key.toLowerCase(Locale.US));
+        return LanguageCache.getInstance().translateKey(key);
     }
 
     /**
@@ -82,11 +83,11 @@ public final class LanguageHandler
         private static final String defaultLocale = "en_us";
         private static final LanguageCache instance = new LanguageCache();
         private boolean isMCloaded = false;
-        private Map<String, String> languageMap;
+        private Map<String, String> languageMap = new ConcurrentHashMap<>();
 
         private LanguageCache()
         {
-            load("assets/structurize/lang/%s.json");
+            load("assets/blockui/lang/%s.json");
         }
 
         private void load(final String path)
@@ -98,8 +99,8 @@ public final class LanguageHandler
             {
                 is = Thread.currentThread().getContextClassLoader().getResourceAsStream(String.format(path, defaultLocale));
             }
-            languageMap = new Gson().fromJson(new InputStreamReader(is, StandardCharsets.UTF_8), new TypeToken<Map<String, String>>()
-            {}.getType());
+            languageMap.putAll(new Gson().fromJson(new InputStreamReader(is, StandardCharsets.UTF_8), new TypeToken<Map<String, String>>()
+            {}.getType()));
 
             IOUtils.closeQuietly(is);
         }
