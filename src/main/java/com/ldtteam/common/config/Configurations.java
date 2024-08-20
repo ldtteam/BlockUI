@@ -77,7 +77,11 @@ public class Configurations<CLIENT extends AbstractConfiguration,
         // register events for watchers
         modBus.addListener(ModConfigEvent.Loading.class, event -> onConfigLoad(event.getConfig()));
         modBus.addListener(ModConfigEvent.Reloading.class, event -> onConfigReload(event.getConfig()));
-        modContainer.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new);
+
+        if (FMLEnvironment.dist.isClient())
+        {
+            ClientConfigHelper.registerClient(modContainer);
+        }
     }
 
     private <T extends AbstractConfiguration> Pair<T, ModConfig> createConfig(final Function<Builder, T> factory,
