@@ -11,7 +11,7 @@ body:
           required: true
   - type: checkboxes
     attributes:
-      label: Are you using the latest Structurize Version?
+      label: Are you using the latest BlockUI Version?
       description: |
         Please check to see if any newer version fixes the issue you're experiencing.
         [List of all BlockUI versions](https://www.curseforge.com/minecraft/mc-mods/blockui/files/all)
@@ -19,7 +19,7 @@ body:
         [List of all MineColonies versions](https://www.curseforge.com/minecraft/mc-mods/minecolonies/files/all)
       options:
         - label: |
-            I am running the latest **alpha** version of Structurize for my Minecraft version.
+            I am running the latest **beta/release** version of BlockUI for my Minecraft version.
             I am also running the latest versions of other mods that are part of my problem.
           required: true
   - type: dropdown
