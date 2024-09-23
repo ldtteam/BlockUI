@@ -293,9 +293,15 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
         return levelSource.isPosInside(pos) ? levelSource.getBlockState(pos) : Blocks.AIR.defaultBlockState();
     }
 
+    int lastX, lastZ;
+    ChunkAccess lastChunk = null;
     @Override
     public ChunkAccess getChunk(int x, int z, ChunkStatus requiredStatus, boolean nonnull)
     {
+        if (lastX == x && lastZ == z && lastChunk != null)
+        {
+            return lastChunk;
+        }
         return nonnull || hasChunk(x, z) ? new FakeChunk(this, x, z) : null;
     }
 
@@ -368,7 +374,7 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
     @Override
     public CrashReportCategory fillReportDetails(CrashReport report)
     {
-        CrashReportCategory crashreportcategory = report.addCategory("Structurize fake level");
+        CrashReportCategory crashreportcategory = report.addCategory("BlockUI fake level");
         levelSource.describeSelfInCrashReport(crashreportcategory);
         return crashreportcategory;
     }

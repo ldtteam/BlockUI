@@ -57,6 +57,11 @@ public class FakeChunk extends LevelChunk
     {
         super(worldIn, new ChunkPos(x, z));
         this.fakeLevel = worldIn;
+
+        // set itself to cache
+        fakeLevel.lastX = x;
+        fakeLevel.lastZ = z;
+        fakeLevel.lastChunk = this;
     }
 
     // ========================================
@@ -217,9 +222,15 @@ public class FakeChunk extends LevelChunk
         return new LevelChunkSection[0];
     }
 
+    int lastY;
+    LevelChunkSection lastSection = null;
     @Override
     public LevelChunkSection getSection(int yIdx)
     {
+        if (lastY == yIdx && lastSection != null)
+        {
+            return lastSection;
+        }
         return new FakeLevelChunkSection(this, yIdx);
     }
 

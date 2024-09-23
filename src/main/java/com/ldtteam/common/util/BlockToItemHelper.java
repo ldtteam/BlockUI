@@ -2,7 +2,6 @@ package com.ldtteam.common.util;
 
 import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
 import com.ldtteam.common.fakelevel.FakeLevel;
-import com.ldtteam.common.fakelevel.IFakeLevelLightProvider;
 import com.ldtteam.common.fakelevel.SingleBlockFakeLevelGetter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -60,14 +59,14 @@ public class BlockToItemHelper
 
         if (fakeLevel == null)
         {
-            fakeLevel = new FakeLevel<>(new SingleBlockFakeLevelGetter(), IFakeLevelLightProvider.USE_CLIENT_LEVEL, player.level(), null, true);
+            fakeLevel = SingleBlockFakeLevelGetter.createSimpleInstance(player.level());
         }
 
-        fakeLevel.setRealLevel(player.level());
-        fakeLevel.getLevelSource().blockState = blockState;
-        fakeLevel.getLevelSource().blockEntity = blockEntity;
+        SingleBlockFakeLevelGetter.prepare(fakeLevel, blockState, blockEntity, player.level());
+        final ItemStack result = getItemStackUsingPlayerPick(fakeLevel, BlockPos.ZERO, player, ZERO_POS_HIT_RESULT);
+        SingleBlockFakeLevelGetter.unset(fakeLevel, blockEntity);
         
-        return getItemStackUsingPlayerPick(fakeLevel, BlockPos.ZERO, player, ZERO_POS_HIT_RESULT);
+        return result;
     }
 
     /**

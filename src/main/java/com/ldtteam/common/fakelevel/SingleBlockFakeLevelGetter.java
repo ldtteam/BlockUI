@@ -1,6 +1,8 @@
 package com.ldtteam.common.fakelevel;
 
+import net.minecraft.CrashReportCategory;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -13,8 +15,6 @@ import java.util.Collection;
  */
 public class SingleBlockFakeLevelGetter implements IFakeLevelBlockGetter
 {
-    public static final ThreadLocal<FakeLevel<SingleBlockFakeLevelGetter>> THREAD_LOCAL = new ThreadLocal<>();
-
     public BlockState blockState = null;
     public BlockEntity blockEntity = null;
 
@@ -48,63 +48,59 @@ public class SingleBlockFakeLevelGetter implements IFakeLevelBlockGetter
         return 1;
     }
 
-    private static void prepareThreadLocal(final Level realLevel)
+    @Override
+    public void describeSelfInCrashReport(final CrashReportCategory category)
     {
-        THREAD_LOCAL.set(new FakeLevel<>(new SingleBlockFakeLevelGetter(), IFakeLevelLightProvider.USE_CLIENT_LEVEL, realLevel, null, true));
+        category.setDetail("Single block", blockState::toString);
+        category.setDetail("Single block entity type",
+            () -> blockEntity == null ? null : BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(blockEntity.getType()).toString());
+    }
+
+    /**
+     * Creates simple fakeLevel instance
+     * 
+     * @param realLevel actual valid vanilla instance to provide eg. registries
+     * @return new fakeLevel instance
+     */
+    public static FakeLevel<SingleBlockFakeLevelGetter> createSimpleInstance(final Level realLevel)
+    {
+        return new FakeLevel<>(new SingleBlockFakeLevelGetter(), IFakeLevelLightProvider.USE_CLIENT_LEVEL, realLevel, null, true);
     }
 
     /**
      * Do not forget to unset to prevent potential memory leaks
      *
-     * @param state       related to blockEntity
+     * @param blockState  related to blockEntity
      * @param blockEntity related to blockState
      * @param realLevel   actual valid vanilla instance to provide eg. registries
      * @return prepared {@link FakeLevel} instance
-     * @see #unsetThreadLocal()
-     * @see #unsetThreadLocal(BlockEntity)
+     * @see #unset(FakeLevel, BlockEntity)
      * @see FakeLevel#setEntities(Collection) FakeLevel#setEntities(Collection) if you want to add entities, do not forget to reset
      */
-    public static FakeLevel<SingleBlockFakeLevelGetter> prepareThreadLocal(final BlockState state,
+    public static void prepare(final FakeLevel<SingleBlockFakeLevelGetter> fakeLevel,
+        final BlockState blockState,
         @Nullable final BlockEntity blockEntity,
         final Level realLevel)
     {
-        final FakeLevel<SingleBlockFakeLevelGetter> level = THREAD_LOCAL.get();
-        if (level == null)
-        {
-            prepareThreadLocal(realLevel);
-            return prepareThreadLocal(state, blockEntity, realLevel);
-        }
-
-        level.getLevelSource().blockEntity = blockEntity;
-        level.getLevelSource().blockState = state;
-        level.setRealLevel(realLevel);
+        fakeLevel.getLevelSource().blockEntity = blockEntity;
+        fakeLevel.getLevelSource().blockState = blockState;
+        fakeLevel.setRealLevel(realLevel);
 
         if (blockEntity != null)
         {
-            blockEntity.setLevel(level);
+            blockEntity.setLevel(fakeLevel);
         }
-
-        return level;
-    }
-
-    /**
-     * @see #prepareThreadLocal(Level)
-     */
-    public static void unsetThreadLocal()
-    {
-        unsetThreadLocal(null);
     }
 
     /**
      * @param blockEntity to unlink level if needed
-     * @see #prepareThreadLocal(Level)
+     * @see #prepare(FakeLevel, BlockState, BlockEntity, Level)
      */
-    public static void unsetThreadLocal(@Nullable final BlockEntity blockEntity)
+    public static void unset(final FakeLevel<SingleBlockFakeLevelGetter> fakeLevel, @Nullable final BlockEntity blockEntity)
     {
-        final FakeLevel<SingleBlockFakeLevelGetter> level = THREAD_LOCAL.get();
-        level.getLevelSource().blockEntity = null;
-        level.getLevelSource().blockState = null;
-        level.setRealLevel(null);
+        fakeLevel.getLevelSource().blockEntity = null;
+        fakeLevel.getLevelSource().blockState = null;
+        fakeLevel.setRealLevel(null);
 
         if (blockEntity != null)
         {

@@ -30,6 +30,10 @@ public class FakeLevelChunkSection extends LevelChunkSection
         super(null, null);
         this.fakeChunk = fakeChunk;
         this.yIdx = yIdx;
+
+        // set itself to cache
+        fakeChunk.lastY = yIdx;
+        fakeChunk.lastSection = this;
     }
 
     private BlockPos formGlobalPos(int x, int y, int z)
