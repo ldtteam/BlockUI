@@ -2,8 +2,8 @@ package com.ldtteam.common.util;
 
 import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
 import com.ldtteam.common.fakelevel.FakeLevel;
-import com.ldtteam.common.fakelevel.IFakeLevelBlockGetter.SingleBlockFakeLevelGetter;
 import com.ldtteam.common.fakelevel.IFakeLevelLightProvider;
+import com.ldtteam.common.fakelevel.SingleBlockFakeLevelGetter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;

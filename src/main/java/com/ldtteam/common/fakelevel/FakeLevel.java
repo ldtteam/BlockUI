@@ -201,7 +201,7 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
 
     /**
      * For better block entity handling in chunk methods. If set then {@link IFakeLevelBlockGetter#getBlockEntity(BlockPos)
-     * levelSource.getBlockEntity(BlockPos)} is not used
+     * levelSource.getBlockEntity(BlockPos)} is not used. Reset with empty collection
      * 
      * @param blockEntities all block entities, should be data equivalent to levelSource
      */
@@ -211,11 +211,11 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
     }
 
     /**
-     * @param entities all entities, their level should be this fake level instance
+     * @param entities all entities, their level should be this fake level instance. Reset with empty collection
      */
     public void setEntities(final Collection<? extends Entity> entities)
     {
-        levelEntityGetter = FakeLevelEntityGetterAdapter.ofEntities(entities);
+        levelEntityGetter = entities.isEmpty() ? FakeLevelEntityGetterAdapter.EMPTY : FakeLevelEntityGetterAdapter.ofEntities(entities);
     }
 
     // ========================================

@@ -3,7 +3,6 @@ package com.ldtteam.common.fakelevel;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
@@ -125,41 +124,5 @@ public interface IFakeLevelBlockGetter extends BlockGetter
     default AABB getAABB()
     {
         return new AABB(getMinX(), getMinBuildHeight(), getMinZ(), getMaxX(), getMaxBuildHeight(), getMaxZ());
-    }
-
-    public static class SingleBlockFakeLevelGetter implements IFakeLevelBlockGetter
-    {
-        public BlockState blockState = null;
-        public BlockEntity blockEntity = null;
-
-        @Override
-        public BlockEntity getBlockEntity(final BlockPos pos)
-        {
-            return blockEntity;
-        }
-
-        @Override
-        public BlockState getBlockState(final BlockPos pos)
-        {
-            return blockState;
-        }
-
-        @Override
-        public int getHeight()
-        {
-            return 1;
-        }
-
-        @Override
-        public int getSizeX()
-        {
-            return 1;
-        }
-
-        @Override
-        public int getSizeZ()
-        {
-            return 1;
-        }
     }
 }
