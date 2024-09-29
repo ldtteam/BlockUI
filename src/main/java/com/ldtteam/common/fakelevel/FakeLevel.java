@@ -135,7 +135,7 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
             realLevel.registryAccess(),
             realLevel.dimensionTypeRegistration(),
             realLevel.getProfilerSupplier(),
-            true,
+            realLevel.isClientSide(),
             false,
             0,
             0);
@@ -160,6 +160,11 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
         if (Objects.equals(this.realLevel, realLevel))
         {
             return;
+        }
+
+        if (realLevel != null && realLevel.isClientSide != this.isClientSide)
+        {
+            throw new IllegalArgumentException("Received wrong sided realLevel - fakeLevel.isClientSide = " + this.isClientSide);
         }
 
         this.realLevel = realLevel;

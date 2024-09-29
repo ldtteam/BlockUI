@@ -155,4 +155,22 @@ public class SingleBlockFakeLevel extends FakeLevel<SingleBlockFakeLevel.SingleB
                 () -> blockEntity == null ? null : BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(blockEntity.getType()).toString());
         }
     }
+
+    public static class SidedSingleBlockFakeLevel
+    {
+        private SingleBlockFakeLevel client;
+        private SingleBlockFakeLevel server;
+
+        public SingleBlockFakeLevel get(final Level realLevel)
+        {
+            if (realLevel.isClientSide())
+            {
+                return client != null ? client : (client = new SingleBlockFakeLevel(realLevel));
+            }
+            else
+            {
+                return server != null ? server : (server = new SingleBlockFakeLevel(realLevel));
+            }
+        }
+    }
 }

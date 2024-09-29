@@ -1,7 +1,7 @@
 package com.ldtteam.common.util;
 
 import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
-import com.ldtteam.common.fakelevel.SingleBlockFakeLevel;
+import com.ldtteam.common.fakelevel.SingleBlockFakeLevel.SidedSingleBlockFakeLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -30,7 +30,7 @@ import org.jetbrains.annotations.Nullable;
 public class BlockToItemHelper
 {
     public static final HitResult ZERO_POS_HIT_RESULT = new BlockHitResult(Vec3.atCenterOf(BlockPos.ZERO), Direction.NORTH, BlockPos.ZERO, true);
-    private static SingleBlockFakeLevel fakeLevel;
+    private static final SidedSingleBlockFakeLevel fakeLevel = new SidedSingleBlockFakeLevel();
 
     /**
      * Mostly for use in UI where you dont have level instance (eg. player selects block, from xml, but not when displaying real world
@@ -47,18 +47,12 @@ public class BlockToItemHelper
             return ItemStack.EMPTY;
         }
 
-        if (fakeLevel == null)
-        {
-            fakeLevel = new SingleBlockFakeLevel(player.level());
-        }
         // client vs server concurrency - we dont care if create two instances, the other should just disappear
-        synchronized (fakeLevel) 
-        {
-            return fakeLevel.useFakeLevelContext(blockState,
-                blockEntity,
-                player.level(),
-                level -> getItemStackUsingPlayerPick(level, BlockPos.ZERO, player, ZERO_POS_HIT_RESULT));
-        }
+
+        return fakeLevel.get(player.level()).useFakeLevelContext(blockState,
+            blockEntity,
+            player.level(),
+            level -> getItemStackUsingPlayerPick(level, BlockPos.ZERO, player, ZERO_POS_HIT_RESULT));
     }
 
     /**
@@ -95,7 +89,7 @@ public class BlockToItemHelper
         }
 
         final BlockState blockState = level.getBlockState(pos);
-        ItemStack result = blockState.getCloneItemStack(hitResult, fakeLevel, pos, player);
+        ItemStack result = blockState.getCloneItemStack(hitResult, level, pos, player);
 
         if (result.isEmpty())
         {
