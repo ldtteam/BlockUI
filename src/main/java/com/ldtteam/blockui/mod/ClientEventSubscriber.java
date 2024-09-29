@@ -12,7 +12,6 @@ import com.ldtteam.blockui.hooks.HookRegistries;
 import com.ldtteam.blockui.mod.container.ContainerHook;
 import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
 import com.ldtteam.blockui.views.BOWindow;
-import com.ldtteam.common.util.BlockToItemHelper;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -22,7 +21,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
 import net.neoforged.neoforge.client.event.InputEvent.MouseScrollingEvent;
@@ -173,21 +171,6 @@ public class ClientEventSubscriber
         if (Minecraft.getInstance().screen instanceof BOScreen && event.getName().equals(VanillaGuiLayers.CROSSHAIR))
         {
             event.setCanceled(true);
-        }
-    }
-
-    @SubscribeEvent
-    public static void onClientPlayerLoggingOut(final ClientPlayerNetworkEvent.LoggingOut event)
-    {
-        BlockToItemHelper.releaseFakeLevelInstance();
-    }
-
-    @SubscribeEvent
-    public static void onClientPlayerDimChange(final ClientPlayerNetworkEvent.Clone event)
-    {
-        if (event.getNewPlayer().level() != event.getOldPlayer().level())
-        {
-            BlockToItemHelper.releaseFakeLevelInstance();
         }
     }
 }

@@ -233,8 +233,8 @@ public class ZoomDragView extends View
         final boolean childResult = super.onMouseDrag(startX, startY, speed, calcRelativeX(x), calcRelativeY(y));
         if (!childResult && dragEnabled)
         {
-            setScrollX(scrollX - x * dragFactor);
-            setScrollY(scrollY - y * dragFactor);
+            setScrollX(scrollX - x * dragFactor * BOGuiGraphics.getAltSpeedFactor());
+            setScrollY(scrollY - y * dragFactor * BOGuiGraphics.getAltSpeedFactor());
             return true;
         }
         return childResult;
@@ -250,6 +250,7 @@ public class ZoomDragView extends View
             final double childY = my - y;
             final double oldX = (childX + scrollX) / scale;
             final double oldY = (childY + scrollY) / scale;
+            final double zoomFactor = this.zoomFactor * BOGuiGraphics.getAltSpeedFactor();
             scale = verticalWheel < 0 ? scale / zoomFactor : scale * zoomFactor;
 
             // try to round if around whole number (cuz of text texture)

@@ -109,6 +109,10 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
      */
     protected BlockPos worldPos = BlockPos.ZERO;
 
+    // chunk cache
+    int lastX, lastZ;
+    ChunkAccess lastChunk = null;
+
     /**
      * @param levelSource     data source, also try to set block entities/entities collections
      * @param lightProvider   light source
@@ -293,8 +297,6 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
         return levelSource.isPosInside(pos) ? levelSource.getBlockState(pos) : Blocks.AIR.defaultBlockState();
     }
 
-    int lastX, lastZ;
-    ChunkAccess lastChunk = null;
     @Override
     public ChunkAccess getChunk(int x, int z, ChunkStatus requiredStatus, boolean nonnull)
     {
