@@ -39,12 +39,12 @@ public class BOWindow extends View
     /**
      * Defines if the window should pause the game.
      */
-    protected boolean windowPausesGame = true;
+    protected boolean windowPausesGame = false;
 
     /**
      * Defines if the window should have a lightbox.
      */
-    protected boolean lightbox = true;
+    protected boolean lightbox = false;
 
     /**
      * Render using size or attemp to scale to fullscreen.
