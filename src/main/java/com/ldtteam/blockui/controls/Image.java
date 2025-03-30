@@ -235,10 +235,10 @@ public class Image extends Pane
 
         // else map u,v to float
         final SizeI mapSize = getImageDimensions(resLoc);
-        final float uMin = u / mapSize.width();
-        final float uMax = uWidth == 0 ? 1 : uMin + uWidth / mapSize.width();
-        final float vMin = v / mapSize.height();
-        final float vMax = vHeight == 0 ? 1 : vMin + vHeight / mapSize.height();
+        final float uMin = u / (float) mapSize.width();
+        final float uMax = uWidth == 0 ? 1.0f : uMin + uWidth / (float) mapSize.width();
+        final float vMin = v / (float) mapSize.height();
+        final float vMax = vHeight == 0 ? 1.0f : vMin + vHeight / (float) mapSize.height();
 
         return (ps, x, y, w, h) -> blit(ps, resLoc, x, y, uWidth, vHeight, uMin, vMin, uMax, vMax);
     }
