@@ -1,6 +1,10 @@
 package com.ldtteam.blockui.util.resloc;
 
+import com.mojang.authlib.GameProfile;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.HttpTexture;
+import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.resources.FallbackResourceManager;
@@ -15,6 +19,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 public class OutOfJarResourceLocation extends ResourceLocation
@@ -42,6 +48,33 @@ public class OutOfJarResourceLocation extends ResourceLocation
             path = path.resolve(part);
         }
         return of(namespace, path);
+    }
+
+    /**
+     * @param minecraft       minecraft instance
+     * @param gameProfile     player profile
+     * @param textureSelector null for {@code PlayerSkin#texture()}, or {@code PlayerSkin#capeTexture()} or
+     *                        {@code PlayerSkin#elytraTexture()} - both cape and elytry may return null future
+     */
+    public static CompletableFuture<ResourceLocation> ofMinecraftSkin(final Minecraft minecraft,
+        final GameProfile gameProfile,
+        @Nullable final Function<PlayerSkin, ResourceLocation> textureSelector)
+    {
+        return minecraft.getSkinManager().getOrLoad(gameProfile).thenApply(playerSkin -> {
+            final ResourceLocation skinResLoc = textureSelector == null ? playerSkin.texture() : textureSelector.apply(playerSkin);
+            if (skinResLoc == null)
+            {
+                return null;
+            }
+
+            final AbstractTexture texture = minecraft.getTextureManager().getTexture(skinResLoc);
+            if (!(texture instanceof final HttpTexture httpTexture))
+            {
+                return skinResLoc;
+            }
+
+            return new OutOfJarResourceLocation(skinResLoc.getNamespace(), httpTexture.file.toPath(), skinResLoc.getPath());
+        });
     }
 
     public Path getNioPath()

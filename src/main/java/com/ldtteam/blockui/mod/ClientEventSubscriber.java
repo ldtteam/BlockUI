@@ -15,6 +15,7 @@ import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
@@ -77,6 +78,12 @@ public class ClientEventSubscriber
                 window.addChild(createTestGuiButton(id++, "General All-in-one", ResourceLocation.fromNamespaceAndPath(BlockUI.MOD_ID, "gui/test.xml"), parent -> {
                     parent.findPaneOfTypeByID("missing_out_of_jar", Image.class).setImage(OutOfJarResourceLocation.ofMinecraftFolder(BlockUI.MOD_ID, "missing_out_of_jar.png"), false);
                     parent.findPaneOfTypeByID("working_out_of_jar", Image.class).setImage(OutOfJarResourceLocation.of(BlockUI.MOD_ID, Path.of("../../src/test/resources/button.png")), false);
+                    OutOfJarResourceLocation.ofMinecraftSkin(Minecraft.getInstance(), Minecraft.getInstance().getGameProfile(), null)
+                        .thenAccept(resLoc -> parent.findPaneOfTypeByID("player_skin", Image.class).setImage(resLoc, false));
+                    OutOfJarResourceLocation.ofMinecraftSkin(Minecraft.getInstance(), Minecraft.getInstance().getGameProfile(), PlayerSkin::capeTexture)
+                        .thenAccept(resLoc -> {if (resLoc!=null){parent.findPaneOfTypeByID("player_cape", Image.class).setImage(resLoc, false);}});
+                    OutOfJarResourceLocation.ofMinecraftSkin(Minecraft.getInstance(), Minecraft.getInstance().getGameProfile(), PlayerSkin::elytraTexture)
+                        .thenAccept(resLoc -> {if (resLoc!=null){parent.findPaneOfTypeByID("player_elytra", Image.class).setImage(resLoc, false);}});
                 }));
                 window.addChild(createTestGuiButton(id++, "Tooltip Positioning", ResourceLocation.fromNamespaceAndPath(BlockUI.MOD_ID, "gui/test2.xml")));
                 window.addChild(createTestGuiButton(id++, "ItemIcon To BlockState", ResourceLocation.fromNamespaceAndPath(BlockUI.MOD_ID, "gui/test3.xml"), BlockStateTestGui::setup));
