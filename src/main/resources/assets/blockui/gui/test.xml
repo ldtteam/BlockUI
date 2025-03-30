@@ -51,5 +51,8 @@
         <itemicon item="minecraft:oak_stairs" size="64 64" pos="580 50"/>
         <itemicon item="minecraft:clock" properties="{_item:{time:0.5}}" size="32 32" pos="650 50"/>
         <itemicon item="minecraft:clock" size="32 32" pos="700 50"/>
+        <image id="player_skin" pos="300 300" size="128 128" source="blockui:veryuglymissingtexture"/>
+        <image id="player_cape" pos="428 300" size="128 64" source="blockui:veryuglymissingtexture"/>
+        <image id="player_elytra" pos="556 300" size="128 128" source="blockui:veryuglymissingtexture"/>
     </zoomdragview>
 </window>
