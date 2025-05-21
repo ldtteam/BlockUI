@@ -40,9 +40,6 @@ public class ButtonImage extends Button
     public ButtonImage()
     {
         this(false);
-
-        setVanillaButton();
-        recalcTextRendering();
     }
 
     /**
