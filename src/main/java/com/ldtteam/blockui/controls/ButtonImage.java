@@ -39,9 +39,22 @@ public class ButtonImage extends Button
      */
     public ButtonImage()
     {
-        super(Alignment.MIDDLE, DEFAULT_TEXT_COLOR, DEFAULT_TEXT_COLOR, DEFAULT_TEXT_COLOR, DEFAULT_TEXT_SHADOW, DEFAULT_TEXT_WRAP);
+        this(false);
 
         setVanillaButton();
+        recalcTextRendering();
+    }
+
+    /**
+     * Constructor with a flag for vanilla button settings.
+     */
+    public ButtonImage(final boolean vanilla)
+    {
+        super(Alignment.MIDDLE, DEFAULT_TEXT_COLOR, DEFAULT_TEXT_COLOR, DEFAULT_TEXT_COLOR, DEFAULT_TEXT_SHADOW, DEFAULT_TEXT_WRAP);
+        if (vanilla)
+        {
+            setVanillaButton();
+        }
         recalcTextRendering();
     }
 
