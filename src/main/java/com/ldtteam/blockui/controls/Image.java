@@ -9,6 +9,7 @@ import com.ldtteam.blockui.util.records.SizeI;
 import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
 import com.ldtteam.blockui.util.texture.OutOfJarTexture;
 import com.ldtteam.blockui.util.texture.SpriteTexture;
+import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -21,6 +22,7 @@ import net.minecraftforge.fml.loading.FMLEnvironment;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.NoSuchFileException;
 import java.util.Iterator;
 import java.util.Objects;
@@ -130,7 +132,15 @@ public class Image extends Pane
 
         if (pos == -1)
         {
-            throw new IllegalStateException("No extension for file: " + resourceLocation.toString());
+            try (InputStream is = OutOfJarResourceLocation.openStream(resourceLocation, Minecraft.getInstance().getResourceManager());
+                NativeImage nativeImage = NativeImage.read(is))
+            {
+                return new SizeI(nativeImage.getWidth(), nativeImage.getHeight());
+            }
+            catch (final Exception e)
+            {
+                throw new IllegalStateException("No extension for file: " + resourceLocation.toString(), e);
+            }
         }
 
         final String suffix = resourceLocation.getPath().substring(pos + 1);
@@ -139,8 +149,8 @@ public class Image extends Pane
         while (it.hasNext())
         {
             final ImageReader reader = it.next();
-            try (ImageInputStream stream =
-                ImageIO.createImageInputStream(OutOfJarResourceLocation.openStream(resourceLocation, Minecraft.getInstance().getResourceManager())))
+            try (InputStream is = OutOfJarResourceLocation.openStream(resourceLocation, Minecraft.getInstance().getResourceManager());
+                ImageInputStream stream = ImageIO.createImageInputStream(is))
             {
                 reader.setInput(stream);
 
