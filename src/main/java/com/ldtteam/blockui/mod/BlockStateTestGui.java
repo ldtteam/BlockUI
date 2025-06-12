@@ -8,11 +8,11 @@ import com.ldtteam.blockui.controls.Tooltip;
 import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
 import com.ldtteam.blockui.views.BOWindow;
 import com.ldtteam.blockui.views.ZoomDragView;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.registries.ForgeRegistries;
 
 /**
  * Sets up gui for all blockstates
@@ -25,7 +25,7 @@ public class BlockStateTestGui
         final int rowHeight = 18;
 
         int rowY = 0;
-        for (final Block block : ForgeRegistries.BLOCKS)
+        for (final Block block : BuiltInRegistries.BLOCK)
         {
             final ItemIcon icon = new ItemIcon();
             icon.setPosition(0, rowY);
@@ -39,7 +39,7 @@ public class BlockStateTestGui
             view.addChildPlain(pickIcon);
 
             final Text text = PaneBuilders.textBuilder()
-                .append(Component.literal(ForgeRegistries.BLOCKS.getKey(block).toString()))
+                .append(Component.literal(BuiltInRegistries.BLOCK.getKey(block).toString()))
                 .colorName(BlockStateRenderingData.checkModelForYrotation(block.defaultBlockState()) ? "red" : "black")
                 .build();
             text.setPosition(35, rowY);
@@ -55,7 +55,7 @@ public class BlockStateTestGui
                 blockIcon.setPosition(x, rowY);
                 blockIcon.setSize(16, 16);
                 blockIcon.setAlwaysAddBlockStateTooltip(true);
-                blockIcon.setBlockState(blockState, null);
+                blockIcon.setBlockState(BlockStateRenderingData.of(blockState));
 
                 if (pickIcon.isDataEmpty() && blockIcon.getBlockState() != null)
                 {

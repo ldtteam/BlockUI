@@ -6,14 +6,13 @@ import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.controls.AbstractTextBuilder.AutomaticTooltipBuilder;
 import com.ldtteam.blockui.controls.Tooltip.AutomaticTooltip;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.AABB;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -34,14 +33,14 @@ public class EntityIcon extends Pane
         super();
     }
 
-    public EntityIcon(@NotNull PaneParams params)
+    public EntityIcon(final PaneParams params)
     {
         super(params);
 
-        final String entityName = params.getString("entity");
+        final ResourceLocation entityName = params.getResource("entity");
         if (entityName != null)
         {
-            setEntity(new ResourceLocation(entityName));
+            setEntity(entityName);
         }
 
         this.count = params.getInteger("count", this.count);
@@ -52,7 +51,7 @@ public class EntityIcon extends Pane
 
     public void setEntity(@NotNull ResourceLocation entityId)
     {
-        final EntityType<?> entityType = ForgeRegistries.ENTITY_TYPES.getValue(entityId);
+        final EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(entityId);
         if (entityType != null)
         {
             setEntity(entityType);
@@ -132,7 +131,7 @@ public class EntityIcon extends Pane
                 String s = String.valueOf(this.count);
                 ms.translate(getWidth(), getHeight(), 100.0D);
                 ms.scale(0.75F, 0.75F, 0.75F);
-                MultiBufferSource.BufferSource buffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
+                MultiBufferSource.BufferSource buffer = target.bufferSource();
                 mc.font.drawInBatch(s,
                         (float) (-4 - mc.font.width(s)),
                         (float) (-mc.font.lineHeight),

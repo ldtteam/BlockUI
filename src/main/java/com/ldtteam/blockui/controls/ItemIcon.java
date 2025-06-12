@@ -14,19 +14,17 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
-import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.block.AirBlock;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.CreativeModeTabRegistry;
-import net.minecraftforge.registries.ForgeRegistries;
+import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import org.jetbrains.annotations.Nullable;
 import java.util.Collections;
 import java.util.List;
@@ -68,10 +66,10 @@ public class ItemIcon extends Pane
     {
         super(params);
 
-        final String itemName = params.getString("item");
+        final ResourceLocation itemName = params.getResource("item");
         if (itemName != null)
         {
-            final Item item = ForgeRegistries.ITEMS.getValue(new ResourceLocation(itemName));
+            final Item item = BuiltInRegistries.ITEM.get(itemName);
             if (item != null)
             {
                 setItem(item.getDefaultInstance());
@@ -90,6 +88,15 @@ public class ItemIcon extends Pane
     {
         clearDataAndScheduleTooltipUpdate();
         this.itemStack = itemStack;
+        onItemUpdate();
+    }
+
+    /**
+     * Called when itemStack was changed
+     */
+    protected void onItemUpdate()
+    {
+
     }
 
     /**
@@ -123,16 +130,6 @@ public class ItemIcon extends Pane
      * 
      * @see #setItem(ItemStack) equivalent of setItem(ItemStack)
      */
-    public void setItemFromBlockState(final BlockState blockState, @Nullable final BlockEntity blockEntity)
-    {
-        setItemFromBlockState(BlockStateRenderingData.of(blockState, blockEntity));
-    }
-
-    /**
-     * Sets itemStack from blockState.
-     * 
-     * @see #setItem(ItemStack) equivalent of setItem(ItemStack)
-     */
     public void setItemFromBlockState(final BlockStateRenderingData blockStateExtension)
     {
         clearDataAndScheduleTooltipUpdate();
@@ -146,8 +143,9 @@ public class ItemIcon extends Pane
         }
         if (!itemStack.isEmpty() && blockStateExtension.blockEntity() != null)
         {
-            blockStateExtension.blockEntity().saveToItem(itemStack);
+            blockStateExtension.blockEntity().saveToItem(itemStack, mc.level.registryAccess());
         }
+        onItemUpdate();
     }
 
     /**
@@ -159,9 +157,14 @@ public class ItemIcon extends Pane
         tooltipUpdateScheduled = true;
     }
 
-    public boolean isDataEmpty()
+    protected boolean isItemEmpty()
     {
         return itemStack == null || itemStack.isEmpty();
+    }
+
+    public boolean isDataEmpty()
+    {
+        return isItemEmpty();
     }
 
     protected void updateTooltipIfNeeded()
@@ -187,6 +190,7 @@ public class ItemIcon extends Pane
             ms.translate(x, y, 0.0f);
             ms.scale(this.getWidth() / DEFAULT_ITEMSTACK_SIZE, this.getHeight() / DEFAULT_ITEMSTACK_SIZE, 1.0f);
 
+            ms.last().normal().identity(); // reset normals cuz lighting
             target.renderItem(itemStack, 0, 0);
             if (renderItemDecorations)
             {
@@ -202,9 +206,10 @@ public class ItemIcon extends Pane
     @Override
     public void onUpdate()
     {
-        if (onHover == null && itemStack != null && !itemStack.isEmpty())
+        if (onHover == null && !isItemEmpty())
         {
-            new AutomaticTooltipBuilder().hoverPane(this).build().setTextOld(getModifiedItemStackTooltip());
+            new AutomaticTooltipBuilder().hoverPane(this).build();
+            tooltipUpdateScheduled = true;
         }
     }
 
@@ -251,7 +256,7 @@ public class ItemIcon extends Pane
             tooltipFlags = tooltipFlags.asCreative();
         }
 
-        final List<Component> tooltipList = itemStack.getTooltipLines(mc.player, tooltipFlags);
+        final List<Component> tooltipList = itemStack.getTooltipLines(TooltipContext.of(mc.level), mc.player, tooltipFlags);
         int nameOffset = 1;
 
         nameOffset = modifyTooltipName(tooltipList, tooltipFlags, nameOffset);
@@ -261,10 +266,10 @@ public class ItemIcon extends Pane
         {
             // add tags
             final int nameoffset = nameOffset + 1;
-            ForgeRegistries.ITEMS.getHolder(itemStack.getItem())
-                .map(Holder::getTagKeys)
-                .ifPresent(tags -> tags.forEach(tag -> tooltipList.add(nameoffset,
-                    wrapShift(Component.literal("#" + tag.location()).withStyle(ChatFormatting.DARK_PURPLE)))));
+            BuiltInRegistries.ITEM.wrapAsHolder(itemStack.getItem())
+                .tags()
+                .forEach(tag -> tooltipList.add(nameoffset,
+                    wrapShift(Component.literal("#" + tag.location()).withStyle(ChatFormatting.DARK_PURPLE))));
 
             // add creative tabs
             int i = nameOffset + 1;

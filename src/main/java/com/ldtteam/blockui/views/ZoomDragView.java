@@ -233,24 +233,25 @@ public class ZoomDragView extends View
         final boolean childResult = super.onMouseDrag(startX, startY, speed, calcRelativeX(x), calcRelativeY(y));
         if (!childResult && dragEnabled)
         {
-            setScrollX(scrollX - x * dragFactor);
-            setScrollY(scrollY - y * dragFactor);
+            setScrollX(scrollX - x * dragFactor * BOGuiGraphics.getAltSpeedFactor());
+            setScrollY(scrollY - y * dragFactor * BOGuiGraphics.getAltSpeedFactor());
             return true;
         }
         return childResult;
     }
 
     @Override
-    public boolean scrollInput(final double wheel, final double mx, final double my)
+    public boolean scrollInput(final double horizontalWheel, final double verticalWheel, final double mx, final double my)
     {
-        final boolean childResult = super.scrollInput(wheel, mx, my);
+        final boolean childResult = super.scrollInput(horizontalWheel, verticalWheel, mx, my);
         if (!childResult && zoomEnabled)
         {
             final double childX = mx - x;
             final double childY = my - y;
             final double oldX = (childX + scrollX) / scale;
             final double oldY = (childY + scrollY) / scale;
-            scale = wheel < 0 ? scale / zoomFactor : scale * zoomFactor;
+            final double zoomFactor = this.zoomFactor * BOGuiGraphics.getAltSpeedFactor();
+            scale = verticalWheel < 0 ? scale / zoomFactor : scale * zoomFactor;
 
             // try to round if around whole number (cuz of text texture)
             final double rounded = Math.rint(scale);
@@ -397,7 +398,7 @@ public class ZoomDragView extends View
 
     /**
      * Automatically clamped between minScale and maxScale.
-     * @see #scrollInput(double, double, double) for zooming at position
+     * @see #scrollInput(double, double, double, double) for zooming at position
      */
     public void setScaleRaw(final double scale)
     {

@@ -45,6 +45,7 @@ public class Pane extends UiRenderMacros
     // Runtime
     protected BOWindow window;
     protected View parent;
+    protected Pane hoverSource = null;
     /**
      * Should be only used during drawing methods. Outside drawing scope value may be outdated.
      */
@@ -76,7 +77,7 @@ public class Pane extends UiRenderMacros
             height = a.get(1);
         });
 
-        params.getScaledInteger("pos", params.getParentView().x, params.getParentView().y, a -> {
+        params.getScaledInteger("pos", params.getParentLeft(), params.getParentTop(), a -> {
             x = a.get(0);
             y = a.get(1);
         });
@@ -202,6 +203,14 @@ public class Pane extends UiRenderMacros
     public boolean isVisible()
     {
         return visible;
+    }
+
+    /**
+     * @return visible because of anything
+     */
+    public boolean shouldDraw()
+    {
+        return visible || hoverSource != null;
     }
 
     public void setVisible(final boolean v)
@@ -337,9 +346,9 @@ public class Pane extends UiRenderMacros
         wasCursorInPane = isPointInPane(mx, my);
         handleHover(oldCursorInPane);
 
-        if (visible)
+        if (shouldDraw())
         {
-            if (wasCursorInPane && enabled)
+            if (wasCursorInPane && isEnabled())
             {
                 // intentional getter cuz overrides
                 target.setCursor(getCursor());
@@ -363,6 +372,16 @@ public class Pane extends UiRenderMacros
     }
 
     /**
+     * Called instead of normal draw() if it wasnt called during this frame.
+     */
+    public void drawHidden()
+    {
+        final boolean oldCursorInPane = wasCursorInPane;
+        wasCursorInPane = false;
+        handleHover(oldCursorInPane);
+    }
+
+    /**
      * Draw something after finishing drawing the GUI.
      *
      * @param mx mouse x.
@@ -370,7 +389,7 @@ public class Pane extends UiRenderMacros
      */
     public void drawLast(final BOGuiGraphics target, final double mx, final double my)
     {
-        if (visible)
+        if (shouldDraw())
         {
             drawSelfLast(target, mx, my);
         }
@@ -411,7 +430,7 @@ public class Pane extends UiRenderMacros
      */
     public boolean isPointInPane(final double mx, final double my)
     {
-        return isVisible() && mx >= x && mx < (x + width) && my >= y && my < (y + height);
+        return shouldDraw() && mx >= x && mx < (x + width) && my >= y && my < (y + height);
     }
 
     /**
@@ -558,7 +577,7 @@ public class Pane extends UiRenderMacros
 
     public boolean isClickable()
     {
-        return visible && enabled;
+        return shouldDraw() && isEnabled();
     }
 
     // ----------Mouse-------------//
@@ -642,7 +661,7 @@ public class Pane extends UiRenderMacros
      */
     public boolean canHandleClick(final double mx, final double my)
     {
-        return visible && enabled && isPointInPane(mx, my);
+        return shouldDraw() && isEnabled() && isPointInPane(mx, my);
     }
 
     /**
@@ -769,12 +788,13 @@ public class Pane extends UiRenderMacros
     /**
      * Wheel input.
      *
-     * @param wheel minus for down, plus for up.
-     * @param mx    mouse x
-     * @param my    mouse y
-     * @return true if event was used or propagation needs to be stopped
+     * @param  horizontalWheel x-axis scrolling, minus for down, plus for up.
+     * @param  verticalWheel   y-axis scrolling, minus for down, plus for up.
+     * @param  mx              mouse x
+     * @param  my              mouse y
+     * @return                 true if event was used or propagation needs to be stopped
      */
-    public boolean scrollInput(final double wheel, final double mx, final double my)
+    public boolean scrollInput(final double horizontalWheel, final double verticalWheel, final double mx, final double my)
     {
         // Can be overwritten by child classes
         return false;
@@ -819,23 +839,24 @@ public class Pane extends UiRenderMacros
         {
             onHover = window.findPaneByID(onHoverId); // do not use setHoverPane, here onHover is defined in xml
             Objects.requireNonNull(onHover, String.format("Hover pane \"%s\" for \"%s\" was not found.", onHoverId, id));
+            onHover.hide(); // automatically hide it (in case someone forgot to do so in xml)
         }
 
-        if (onHover == null)
+        if (onHover != null && this.wasCursorInPane && onHover.hoverSource == null && onHover.isEnabled())
         {
-            return;
+            onHover.hoverSource = this;
         }
-
-        if (this.wasCursorInPane && !onHover.isVisible() && onHover.isEnabled())
+        // if onHover was already drawn then we good, else we have to wait for next frame
+        else if (!this.wasCursorInPane && !wasCursorInPaneLastTick)
         {
-            onHover.show();
-        }
-        // if onHover was already drawn then we good
-        // else we have to wait for next frame
-        else if (!onHover.wasCursorInPane && !this.wasCursorInPane && this.wasCursorInPane == wasCursorInPaneLastTick
-            && onHover.isVisible())
-        {
-            onHover.hide();
+            if (onHover != null && onHover.hoverSource == this && !onHover.wasCursorInPane)
+            {
+                onHover.hoverSource = null;
+            }
+            else if (hoverSource != null && !hoverSource.wasCursorInPane)
+            {
+                hoverSource = null;
+            }
         }
     }
 

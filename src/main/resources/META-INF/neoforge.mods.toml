@@ -1,12 +1,12 @@
 modLoader="javafml"
 loaderVersion="${fml_range}"
 license="GPL3"
+issueTrackerURL="https://github.com/ldtteam/BlockUI/issues/new/choose"
 
 [[mods]]
 modId="blockui"
 version="${version}"
 displayName="UI Library Mod"
-logoFile=""
 credits="LDT Team"
 authors="LDT Team"
 description='''
@@ -14,15 +14,15 @@ UI Library mod, use ctrl+alt+shift+x to open a test-ui
 '''
 
 [[dependencies.blockui]]
-    modId="forge"
-    mandatory=true
+    modId="neoforge"
+    type="required"
     versionRange="${forge_range}"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.blockui]]
     modId="minecraft"
-    mandatory=true
+    type="required"
     versionRange="${minecraft_range}"
     ordering="NONE"
     side="BOTH"

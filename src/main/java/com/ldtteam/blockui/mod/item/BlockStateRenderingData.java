@@ -1,6 +1,7 @@
 package com.ldtteam.blockui.mod.item;
 
 import com.ldtteam.blockui.mod.Log;
+import com.ldtteam.common.util.BlockToItemHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.block.model.BlockElement;
@@ -12,13 +13,15 @@ import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraftforge.client.model.data.ModelData;
-import net.minecraftforge.common.util.Lazy;
+import net.neoforged.neoforge.client.model.data.ModelData;
+import net.neoforged.neoforge.common.util.Lazy;
 import org.jetbrains.annotations.Nullable;
 import java.util.function.Function;
 
@@ -41,13 +44,29 @@ public record BlockStateRenderingData(BlockState blockState,
         this(blockState,
             blockEntity,
             modelData,
-            checkModelForYrotation(blockState),
+            modelNeedsRotationFix,
             Lazy.of(() -> BlockToItemHelper.getItemStack(blockState, blockEntity, Minecraft.getInstance().player)));
     }
 
-    public BlockStateRenderingData(final BlockState blockState, final BlockEntity blockEntity, final ModelData modelData)
+    private BlockStateRenderingData(final BlockState blockState, final BlockEntity blockEntity, final ModelData modelData)
     {
         this(blockState, blockEntity, modelData, checkModelForYrotation(blockState));
+    }
+
+    /**
+     * @return captures blockstate in given level at given pos in current time (now)
+     */
+    public static BlockStateRenderingData of(final Level level, final BlockPos pos, final Player player)
+    {
+        final BlockState blockState = level.getBlockState(pos);
+        final BlockEntity blockEntity = level.getBlockEntity(pos);
+        final ItemStack itemStack = BlockToItemHelper.getItemStack(level, pos, player);
+
+        return new BlockStateRenderingData(blockState,
+            blockEntity,
+            getModelData(blockState, blockEntity),
+            checkModelForYrotation(blockState),
+            Lazy.of(() -> itemStack));
     }
 
     /**
@@ -119,7 +138,7 @@ public record BlockStateRenderingData(BlockState blockState,
         final ModelResourceLocation modelResLoc = BlockModelShaper.stateToModelLocation(blockState);
         final ModelBakery modelBakery =
             Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getModelManager().getModelBakery();
-        final UnbakedModel model = modelBakery.getModel(modelResLoc);
+        final UnbakedModel model = modelBakery.topLevelModels.get(modelResLoc);
         final BlockModel blockModel = model instanceof final BlockModel bm ? bm :
             (model instanceof final MultiVariant mv ?
                 modelBakery.modelResources.get(ModelBakery.MODEL_LISTER.idToFile(mv.getVariants().get(0).getModelLocation())) :
@@ -130,12 +149,22 @@ public record BlockStateRenderingData(BlockState blockState,
             return false;
         }
 
+        int headCountOfRotated = 0;
         for (final BlockElement element : blockModel.getElements())
         {
-            if (element.rotation == null || element.rotation.axis() != Direction.Axis.Y)
+            if (element.rotation != null && element.rotation.axis() == Direction.Axis.Y)
             {
-                return false;
+                headCountOfRotated++;
             }
+            else
+            {
+                break;
+            }
+        }
+        // blind guess: if majority is rotation Y then fine
+        if (headCountOfRotated == 0)
+        {
+            return false;
         }
 
         if (blockState.hasProperty(BlockStateProperties.AXIS))

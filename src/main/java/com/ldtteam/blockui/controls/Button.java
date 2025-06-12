@@ -77,6 +77,14 @@ public abstract class Button extends AbstractTextElement
     }
 
     /**
+     * @return true if any handler is present
+     */
+    public boolean hasHandler()
+    {
+        return handler != null;
+    }
+
+    /**
      * Play click sound and find the proper handler.
      *
      * @param mx mouse X coordinate, relative to Pane's top-left
@@ -85,7 +93,7 @@ public abstract class Button extends AbstractTextElement
     @Override
     public boolean handleClick(final double mx, final double my)
     {
-        mc.getSoundManager().play(SimpleSoundInstance.forMusic(SoundEvents.UI_BUTTON_CLICK.get()));
+        mc.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK.value(), 1.0f));
 
         ButtonHandler delegatedHandler = handler;
 
@@ -107,17 +115,5 @@ public abstract class Button extends AbstractTextElement
             delegatedHandler.onButtonClicked(this);
         }
         return true;
-    }
-
-    /**
-     * Selects and constructs a Button type based on its parameters
-     * @param params the patameters
-     * @return a freshly constructed Button
-     */
-    public static Button construct(PaneParams params)
-    {
-        return params.hasAttribute("source")
-          ? new ButtonImage(params)
-          : new ButtonVanilla(params);
     }
 }

@@ -118,6 +118,15 @@ public abstract class AbstractTextBuilder<P extends AbstractTextElement, R exten
     }
 
     /**
+     * Appends 1 empty line.
+     * Ends current line if there is any.
+     */
+    public R emptyLine()
+    {
+        return emptyLines(1);
+    }
+
+    /**
      * Appends <code>count</code> new line symbols.
      * Ends current line if there is any.
      * Works like appending <code>count</code> empty lines.
@@ -149,7 +158,12 @@ public abstract class AbstractTextBuilder<P extends AbstractTextElement, R exten
     {
         newLine();
 
-        final Style style = new Style(Color.toVanilla(color), bold, italic, underlined, strikeThrough, obfuscated, clickEvent, null, insertionEvent, null);
+        Style style = new Style(Color.toVanilla(color), bold, italic, underlined, strikeThrough, obfuscated, clickEvent, null, insertionEvent, null);
+        if (style.equals(Style.EMPTY))
+        {
+            style = Style.EMPTY;
+        }
+
         for (int i = lastParagraphStart; i < text.size(); i++)
         {
             if (forceStyle || text.get(i).getStyle().equals(Style.EMPTY))
@@ -379,6 +393,41 @@ public abstract class AbstractTextBuilder<P extends AbstractTextElement, R exten
     public List<MutableComponent> getText()
     {
         return new ArrayList<>(text); // copy, so different elements are not backed by the same list
+    }
+
+    /**
+     * Finishes current paragraph and replaces text of given pane.
+     * 
+     * @see #paragraphBreak()
+     */
+    public R applyToPane(final AbstractTextElement textPane)
+    {
+        paragraphBreak();
+
+        textPane.setText(getText());
+
+        return thiz;
+    }
+
+    /**
+     * Finishes current paragraph and appends to current text of given pane.
+     * 
+     * @see #paragraphBreak()
+     */
+    public R appendToPane(final AbstractTextElement textPane)
+    {
+        if (textPane.getTextAsList() == null)
+        {
+            return applyToPane(textPane);
+        }
+
+        paragraphBreak();
+
+        final List<MutableComponent> newText = getText();
+        newText.addAll(textPane.getTextAsList());
+        textPane.setText(newText);
+
+        return thiz;
     }
 
     public static class AutomaticTooltipBuilder extends TooltipBuilder

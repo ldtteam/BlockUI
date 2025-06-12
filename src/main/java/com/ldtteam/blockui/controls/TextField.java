@@ -231,6 +231,14 @@ public class TextField extends Pane
             case GLFW.GLFW_KEY_TAB:
                 return handleTab();
 
+            case GLFW.GLFW_KEY_ESCAPE:
+                if (selectionEnd != cursorPosition)
+                {
+                    setSelectionEnd(cursorPosition);
+                    return true;
+                }
+                // else fall-through
+
             default:
                 return handleChar(c);
         }
@@ -330,7 +338,7 @@ public class TextField extends Pane
     @Override
     public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
-        final int color = enabled ? textColor : textColorDisabled;
+        final int color = isEnabled() ? textColor : textColorDisabled;
         final int drawWidth = getInternalWidth();
         final int drawX = x;
         final int drawY = y;
@@ -406,19 +414,17 @@ public class TextField extends Pane
             }
 
             final Matrix4f m = target.pose().last().pose();
-            final Tesselator tessellator = Tesselator.getInstance();
             RenderSystem.setShaderColor(0.0F, 0.0F, 1.0F, 1.0F);
             RenderSystem.enableColorLogicOp();
             RenderSystem.logicOp(LogicOp.OR_REVERSE);
             RenderSystem.setShader(GameRenderer::getPositionShader);
 
-            final BufferBuilder vertexBuffer = tessellator.getBuilder();
-            vertexBuffer.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION);
-            vertexBuffer.vertex(m, selectionStartX, drawY - 1, 0.0f).endVertex();
-            vertexBuffer.vertex(m, selectionStartX, drawY + 1 + mc.font.lineHeight, 0.0f).endVertex();
-            vertexBuffer.vertex(m, selectionEndX, drawY + 1 + mc.font.lineHeight, 0.0f).endVertex();
-            vertexBuffer.vertex(m, selectionEndX, drawY - 1, 0.0f).endVertex();
-            tessellator.end();
+            final BufferBuilder vertexBuffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION);
+            vertexBuffer.addVertex(m, selectionStartX, drawY - 1, 0.0f);
+            vertexBuffer.addVertex(m, selectionStartX, drawY + 1 + mc.font.lineHeight, 0.0f);
+            vertexBuffer.addVertex(m, selectionEndX, drawY + 1 + mc.font.lineHeight, 0.0f);
+            vertexBuffer.addVertex(m, selectionEndX, drawY - 1, 0.0f);
+            BufferUploader.drawWithShader(vertexBuffer.build());
 
             RenderSystem.disableColorLogicOp();
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);

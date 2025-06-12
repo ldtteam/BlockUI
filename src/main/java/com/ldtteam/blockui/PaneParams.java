@@ -33,29 +33,74 @@ public class PaneParams
         children = new ArrayList<>(node.getChildNodes().getLength());
     }
 
+    /**
+     * Get the node type.
+     *
+     * @return the name of the node.
+     */
     public String getType()
     {
         return node.getNodeName();
     }
 
+    /**
+     * Get the parent for this pane.
+     *
+     * @return the parent.
+     */
     public View getParentView()
     {
         return parentView;
     }
 
+    /**
+     * Set the parent for this pane.
+     *
+     * @param parent the new parent.
+     */
     public void setParentView(final View parent)
     {
         parentView = parent;
     }
 
+    /**
+     * Get the width of the parent, if any. Defaults to 0 if no parent has been set.
+     *
+     * @return the width.
+     */
     public int getParentWidth()
     {
         return parentView != null ? parentView.getInteriorWidth() : 0;
     }
 
+    /**
+     * Get the height of the parent, if any. Defaults to 0 if no parent has been set.
+     *
+     * @return the height.
+     */
     public int getParentHeight()
     {
         return parentView != null ? parentView.getInteriorHeight() : 0;
+    }
+
+    /**
+     * Get the left position of the parent, if any. Defaults to 0 if no parent has been set.
+     *
+     * @return the left position.
+     */
+    public int getParentLeft()
+    {
+        return parentView != null ? parentView.x : 0;
+    }
+
+    /**
+     * Get the top position of the parent, if any. Defaults to 0 if no parent has been set.
+     *
+     * @return the top position.
+     */
+    public int getParentTop()
+    {
+        return parentView != null ? parentView.y : 0;
     }
 
     public List<PaneParams> getChildren()
@@ -151,12 +196,23 @@ public class PaneParams
     /**
      * Get the resource location from the name
      * @param name the attribute name
+     * @return the parsed resource location
+     */
+    @Nullable
+    public ResourceLocation getResource(final String name)
+    {
+        return getResource(name, (ResourceLocation) null);
+    }
+
+    /**
+     * Get the resource location from the name
+     * @param name the attribute name
      * @param def the default value to fallback to
      * @return the parsed resource location
      */
-    public ResourceLocation getResource(final String name, final String def)
+    public ResourceLocation getResource(final String name, final ResourceLocation def)
     {
-        return getProperty(name, Parsers.RESOURCE, new ResourceLocation(def));
+        return getProperty(name, Parsers.RESOURCE, def);
     }
 
     /**
@@ -168,8 +224,8 @@ public class PaneParams
     @Nullable
     public ResourceLocation getResource(final String name, final Consumer<ResourceLocation> loader)
     {
-        ResourceLocation rl = getResource(name, "");
-        if (!rl.getPath().isEmpty())
+        final ResourceLocation rl = getResource(name);
+        if (rl != null && !rl.getPath().isEmpty())
         {
             loader.accept(rl);
             return rl;
@@ -199,7 +255,7 @@ public class PaneParams
     {
         return getProperty(name, Parsers.MULTILINE, def);
     }
-    
+
     /**
      * Get the localized String attribute from the name and revert to the default if not present.
      *

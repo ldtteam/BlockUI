@@ -1,0 +1,10 @@
+{
+    "blockui.container_gui.client_side_only": "Konteyner içeriği yalnızca entegre sunucuda oynatılırken görünür (tek oyunculu, lan yok).",
+    "blockui.container_gui.empty": "Bu konteyner boş.",
+    "blockui.tooltip.item_additional_info": "Ek bilgi göstermek için %s tuşunu basılı tut",
+    "blockui.tooltip.properties": "BlockState özellikleri:",
+    "blockui.config.default.boolean": "[Varsayılan: %s]",
+    "blockui.config.default.string": "[Varsayılan: %s]",
+    "blockui.config.default.enum": "[Varsayılan: %s, değerler: %s]",
+    "blockui.config.default.number": "[Varsayılan: %s, en düşük: %s, maks: %s]"
+}

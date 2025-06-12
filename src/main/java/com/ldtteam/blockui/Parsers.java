@@ -32,7 +32,7 @@ public final class Parsers
     public static Function<String, Double> DOUBLE = Double::parseDouble;
 
     /** Parses a resource location, include shorthand tricks */
-    public static Function<String, ResourceLocation> RESOURCE = ResourceLocation::new;
+    public static Function<String, ResourceLocation> RESOURCE = ResourceLocation::tryParse;
 
     /** Parses a potentially translatable portion of text as a component */
     private static Function<String, String> RAW_TEXT = v -> {

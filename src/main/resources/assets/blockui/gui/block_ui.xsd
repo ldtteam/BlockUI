@@ -126,10 +126,8 @@
             <xs:element name="scrollgroup" type="scrollViewType"/>
             <xs:element name="list" type="listType"/>
             <xs:element name="button" type="buttonType"/>
-            <xs:element name="buttonimage" type="buttonImageType"/>
             <xs:element name="toggle" type="toggleType"/>
             <xs:element name="text" type="textType"/>
-            <xs:element name="label" type="textType"/>
             <xs:element name="input" type="inputType"/>
             <xs:element name="image" type="imageType"/>
             <xs:element name="imagerepeat" type="imageRepeatType"/>
@@ -139,6 +137,7 @@
             <xs:element name="entityicon" type="entityIconType"/>
             <xs:element name="switch" type="switchType"/>
             <xs:element name="dropdown" type="dropdownType"/>
+            <xs:element name="checkbox" type="checkboxType"/>
         </xs:choice>
     </xs:group>
 
@@ -181,6 +180,10 @@
         <xs:complexContent>
             <xs:extension base="scrollViewType">
                 <xs:group ref="paneContainerGroup" minOccurs="1" maxOccurs="1"/>
+
+                <xs:attribute name="emptytext" type="xs:string"/>
+                <xs:attribute name="emptyscale" type="xs:string"/>
+                <xs:attribute name="emptycolor" type="xs:string"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>
@@ -190,14 +193,8 @@
         <xs:complexContent>
             <xs:extension base="textElementType">
                 <xs:attribute name="source" type="xs:string"/>
-                <xs:attribute name="imageoffset" type="fixedSizePair"/>
-                <xs:attribute name="imagesize" type="fixedSizePair"/>
                 <xs:attribute name="highlight" type="xs:string"/>
-                <xs:attribute name="highlightoffset" type="fixedSizePair"/>
-                <xs:attribute name="highlightsize" type="fixedSizePair"/>
                 <xs:attribute name="disabled" type="xs:string"/>
-                <xs:attribute name="disabledoffset" type="fixedSizePair"/>
-                <xs:attribute name="disabledsize" type="fixedSizePair"/>
                 <xs:attribute name="textoffset" type="fixedSizePair"/>
                 <xs:attribute name="textbox" type="fixedSizePair"/>
             </xs:extension>
@@ -217,10 +214,14 @@
             <xs:extension base="paneType">
                 <xs:attribute name="item" type="xs:string"/>
                 <xs:attribute name="nbt" type="xs:string"/>
+                <xs:attribute name="properties" type="xs:string"/>
                 <xs:attribute name="renderItemDecorations" type="xs:boolean" default="true"/>
                 <xs:attribute name="alwaysAddBlockStateTooltip" type="xs:boolean" default="false"/>
             </xs:extension>
         </xs:complexContent>
+        <!-- TODO:
+            <xs:assert test="(@nbt and not(@properties)) or (not(@nbt) and @properties)"/>
+        -->
     </xs:complexType>
 
     <!-- <entityicon> -->
@@ -233,13 +234,6 @@
                 <xs:attribute name="pitch" type="xs:float"/>
                 <xs:attribute name="head" type="xs:float"/>
             </xs:extension>
-        </xs:complexContent>
-    </xs:complexType>
-
-    <!-- <buttonimage> -->
-    <xs:complexType name="buttonImageType">
-        <xs:complexContent>
-            <xs:extension base="buttonType"/>
         </xs:complexContent>
     </xs:complexType>
 
@@ -289,7 +283,7 @@
     <xs:complexType name="inputType">
         <xs:complexContent>
             <xs:extension base="paneType">
-                <xs:attribute name="text" type="xs:string"/>
+                <xs:attribute name="textContent" type="xs:string"/>
                 <xs:attribute name="maxlength" type="xs:integer"/>
                 <xs:attribute name="color" type="xs:string"/>
                 <xs:attribute name="colordisabled" type="xs:string"/>
@@ -324,6 +318,15 @@
                 <xs:attribute name="zoomenabled" type="xs:boolean"/>
                 <xs:attribute name="minscale" type="xs:double"/>
                 <xs:attribute name="maxscale" type="xs:double"/>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+
+    <!-- <checkbox> -->
+    <xs:complexType name="checkboxType">
+        <xs:complexContent>
+            <xs:extension base="buttonType">
+                <xs:attribute name="checkmark" type="xs:string"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

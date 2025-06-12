@@ -3,7 +3,6 @@ package com.ldtteam.blockui.controls;
 import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.PaneParams;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.SharedConstants;
 
 /**
  * Mimics Vanilla text fields.
@@ -143,13 +142,23 @@ public class TextFieldVanilla extends TextField
         @Override
         public String filter(final String s)
         {
-            return SharedConstants.filterText(s);
+            final StringBuilder sb = new StringBuilder(s.length());
+
+            for (final char c : s.toCharArray())
+            {
+                if (isAllowedCharacter(c))
+                {
+                    sb.append(c);
+                }
+            }
+
+            return sb.toString();
         }
 
         @Override
         public boolean isAllowedCharacter(final char c)
         {
-            return SharedConstants.isAllowedChatCharacter(c);
+            return c != 167 && c >= ' ' && c != 127;
         }
     }
 }

@@ -89,9 +89,22 @@ public class View extends Pane
             {
                 child.draw(target, drawX, drawY);
             }
+            else
+            {
+                child.drawHidden();
+            }
         }
 
         ms.popPose();
+    }
+
+    @Override
+    public void drawHidden()
+    {
+        for (final Pane child : children)
+        {
+            child.drawHidden();
+        }
     }
 
     @Override
@@ -123,9 +136,9 @@ public class View extends Pane
     }
 
     @Override
-    public boolean scrollInput(final double wheel, final double mx, final double my)
+    public boolean scrollInput(final double horizontalWheel, final double verticalWheel, final double mx, final double my)
     {
-        return mousePointableEventHandler(mx, my, (child, mxChild, myChild) -> child.scrollInput(wheel, mxChild, myChild), null);
+        return mousePointableEventHandler(mx, my, (child, mxChild, myChild) -> child.scrollInput(horizontalWheel, verticalWheel, mxChild, myChild), null);
     }
 
     @Nullable
@@ -246,7 +259,7 @@ public class View extends Pane
         // copy to prevent CME during scrolling list updates, ctor uses fast array copy so it's cheap
         for (final Pane child : new ArrayList<>(children))
         {
-            if (child.isVisible())
+            if (child.shouldDraw())
             {
                 child.onUpdate();
             }
@@ -355,6 +368,7 @@ public class View extends Pane
     public void removeChild(final Pane child)
     {
         children.remove(child);
+        child.setParentView(null);
     }
 
     @Override

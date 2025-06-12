@@ -10,14 +10,12 @@ import com.ldtteam.blockui.util.ToggleableTextComponent;
 import com.ldtteam.blockui.util.ToggleableTextComponent.FormattedToggleableCharSequence;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FormattedCharSequence;
-import net.minecraftforge.client.ForgeRenderTypes;
+import net.neoforged.neoforge.client.NeoForgeRenderTypes;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
@@ -32,7 +30,7 @@ import java.util.stream.Stream;
  */
 public abstract class AbstractTextElement extends Pane
 {
-    public static final int FILTERING_ROUNDING = 50;
+    public static final float FILTERING_MAX_SCALE = 2; // enable texture filtering when text is below this scale (in monitor pixels)
     public static final float FILTERING_THRESHOLD = 0.02f; // should be 1/FILTERING_ROUNDING
 
     public static final double DEFAULT_TEXT_SCALE = 1.0d;
@@ -214,7 +212,7 @@ public abstract class AbstractTextElement extends Pane
             return toFormattedSequence(maxWidth, toggleable.data())
                 .map(formatted -> new FormattedToggleableCharSequence(toggleable.condition(), formatted));
         }
-        else if (textBlock.getContents() == ComponentContents.EMPTY && textBlock.getSiblings().isEmpty())
+        else if (textBlock.getContents() == Component.empty().getContents() && textBlock.getSiblings().isEmpty())
         {
             return Stream.of(textBlock.getVisualOrderText());
         }
@@ -283,7 +281,7 @@ public abstract class AbstractTextElement extends Pane
     {
         final PoseStack ms = target.pose();
 
-        final int color = enabled ? (wasCursorInPane ? textHoverColor : textColor) : textDisabledColor;
+        final int color = isEnabled() ? (wasCursorInPane ? textHoverColor : textColor) : textDisabledColor;
 
         int offsetX = textOffsetX;
         int offsetY = textOffsetY;
@@ -308,32 +306,23 @@ public abstract class AbstractTextElement extends Pane
 
         ms.pushPose();
         ms.translate(x + offsetX, y + offsetY, 0.0d);
+        ms.scale((float) textScale, (float) textScale, 1.0f);
 
         final Matrix4f matrix4f = ms.last().pose();
 
+        // we want to see how big is one scaled pixel on monitor (using one texel)
+        final int fbW = window.getScreen().getFramebufferWidth(), fbH = window.getScreen().getFramebufferHeight();
         final Vector4f temp = new Vector4f(1, 1, 0, 0);
-        matrix4f.transform(temp);
-        final float oldScaleX = temp.x();
-        final float oldScaleY = temp.y();
-        final float newScaleX = (float) Math.round(oldScaleX * textScale * FILTERING_ROUNDING) / FILTERING_ROUNDING;
-        final float newScaleY = (float) Math.round(oldScaleY * textScale * FILTERING_ROUNDING) / FILTERING_ROUNDING;
+        matrix4f.transform(temp); // PVM
+        temp.w = 1; // vector -> point
+        temp.mulProject(RenderSystem.getProjectionMatrix()); // projection, perspective
+        temp.add(1, 1, 0, 0); // viewport, discard non (x,y)
+        temp.mul(fbW / 2.0f, fbH / 2.0f, 0, 0);
 
-        if (Math.abs((float) Math.round(newScaleX) - newScaleX) > FILTERING_THRESHOLD
-            || Math.abs((float) Math.round(newScaleY) - newScaleY) > FILTERING_THRESHOLD)
-        {
-            // smooth the texture
-            // if (newScaleX < window.getScreen().getVanillaGuiScale() || newScaleY < window.getScreen().getVanillaGuiScale())
-            // TODO: figure out how to not linear filter when mag filter is used, might just want to use direct ogl call
-            ForgeRenderTypes.enableTextTextureLinearFiltering = true;
-            ms.scale((float) textScale, (float) textScale, 1.0f);
-        }
-        else
-        {
-            // round scale if not smoothing
-            ms.scale(newScaleX / oldScaleX, newScaleY / oldScaleY, 1.0f);
-        }
+        final float scale = temp.distanceSquared(FILTERING_THRESHOLD, fbH - FILTERING_THRESHOLD, 0, 0);
+        NeoForgeRenderTypes.enableTextTextureLinearFiltering = Math.abs(temp.x - fbH + temp.y) > FILTERING_THRESHOLD || scale < FILTERING_MAX_SCALE * FILTERING_MAX_SCALE;
 
-        final MultiBufferSource.BufferSource drawBuffer = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
+        final MultiBufferSource.BufferSource drawBuffer = target.bufferSource();
         int lineShift = 0;
         for (FormattedCharSequence row : preparedText)
         {
@@ -376,7 +365,7 @@ public abstract class AbstractTextElement extends Pane
         }
         drawBuffer.endBatch();
 
-        ForgeRenderTypes.enableTextTextureLinearFiltering = false;
+        NeoForgeRenderTypes.enableTextTextureLinearFiltering = false;
         RenderSystem.disableBlend();
 
         ms.popPose();
@@ -503,10 +492,9 @@ public abstract class AbstractTextElement extends Pane
         return isTextEmpty() ? null : text.get(0);
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
     public void setTextOld(final List<Component> text)
     {
-        setText((List<MutableComponent>)((List) text));
+        setText(text.stream().map(c -> c instanceof MutableComponent m ? m : c.copy()).toList());
     }
 
     public void setText(final List<MutableComponent> text)
@@ -517,7 +505,7 @@ public abstract class AbstractTextElement extends Pane
 
     public void setText(final Component text)
     {
-        setText((MutableComponent) text);
+        setText(text instanceof MutableComponent m ? m : text.copy());
     }
 
     public void setText(final MutableComponent text)

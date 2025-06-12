@@ -1,7 +1,9 @@
 package com.ldtteam.blockui.util.texture;
 
 import com.google.gson.JsonObject;
+import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.mod.BlockUI;
+import com.ldtteam.blockui.util.cursor.Cursor;
 import com.ldtteam.blockui.util.cursor.CursorUtils;
 import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
 import com.mojang.blaze3d.platform.NativeImage;
@@ -25,7 +27,7 @@ import java.io.IOException;
 /**
  * Used for textured cursors.
  *
- * @see MouseCursorImage#setCursorImage(ResourceLocation, int, int)
+ * @see Pane#setCursor(Cursor)
  */
 public class CursorTexture extends AbstractTexture
 {
@@ -36,7 +38,7 @@ public class CursorTexture extends AbstractTexture
     private int hotspotY = 0;
     private long glfwCursorAddress = 0;
     @Nullable
-    private NativeImage nativeImage = null;
+    protected NativeImage nativeImage = null;
 
     public CursorTexture(final ResourceLocation resLoc)
     {
@@ -87,7 +89,7 @@ public class CursorTexture extends AbstractTexture
         }
     }
 
-    private void destroyCursorHandle()
+    protected void destroyCursorHandle()
     {
         if (glfwCursorAddress != 0)
         {

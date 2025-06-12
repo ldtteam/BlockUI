@@ -7,16 +7,18 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.neoforged.fml.loading.FMLEnvironment;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * Utilities to load xml files.
@@ -25,7 +27,7 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
 {
     public static final Loader INSTANCE = new Loader();
 
-    private final Map<ResourceLocation, Function<PaneParams, ? extends Pane>> paneFactories = new HashMap<>();
+    private final Map<String, Function<PaneParams, ? extends Pane>> paneFactories = new HashMap<>();
 
     private Map<ResourceLocation, PaneParams> xmlCache = new HashMap<>();
 
@@ -36,21 +38,36 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
         register("scrollgroup", ScrollingGroup::new);
         register("list", ScrollingList::new);
         register("text", Text::new);
-        register("button", Button::construct);
-        register("buttonimage", Button::construct); // TODO: remove, but we don't want to deal with xml changes now
+        register("button", ButtonImage::new);
         register("toggle", ToggleButton::new);
-        register("label", Text::new); // TODO: remove, but we don't want to deal with xml changes now
         register("input", TextFieldVanilla::new);
         register("image", Image::new);
-        register("imagerepeat", ImageRepeatable::new);
         register("box", Box::new);
-        register("itemicon", ItemIconWithBlockState::new);
+        register("itemicon", Loader::itemIcon);
         register("entityicon", EntityIcon::new);
         register("switch", SwitchView::new);
         register("dropdown", DropDownList::new);
         register("overlay", OverlayView::new);
         register("gradient", Gradient::new);
         register("zoomdragview", ZoomDragView::new);
+        register("checkbox", CheckBox::new);
+    }
+
+    private static ItemIcon itemIcon(final PaneParams paneParams)
+    {
+        if (paneParams.hasAttribute(ItemIconWithBlockState.PARAM_NBT))
+        {
+            if (!FMLEnvironment.production && paneParams.hasAttribute(ItemIconWithProperties.PARAM_PROPERTIES))
+            {
+                throw new IllegalStateException("Must be one of '%s' or '%s'".formatted(ItemIconWithBlockState.PARAM_NBT, ItemIconWithProperties.PARAM_PROPERTIES));
+            }
+            return new ItemIconWithBlockState(paneParams);
+        }
+        if (paneParams.hasAttribute(ItemIconWithProperties.PARAM_PROPERTIES))
+        {
+            return new ItemIconWithProperties(paneParams);
+        }
+        return new ItemIcon(paneParams);
     }
 
     /**
@@ -62,14 +79,12 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
      */
     public void register(final String name, final Function<PaneParams, ? extends Pane> factoryMethod)
     {
-        final ResourceLocation key = new ResourceLocation(name);
-
-        if (paneFactories.containsKey(key))
+        if (paneFactories.containsKey(name))
         {
             throw new IllegalArgumentException("Duplicate pane type '" + name + "' when registering Pane class method.");
         }
 
-        paneFactories.put(key, factoryMethod);
+        paneFactories.put(name, factoryMethod);
     }
 
     /**
@@ -80,20 +95,13 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
      */
     private Pane createFromPaneParams(final PaneParams params)
     {
-        final ResourceLocation paneType = new ResourceLocation(params.getType());
-
-        if (paneFactories.containsKey(paneType))
+        final String name = params.getType();
+        if (paneFactories.containsKey(name))
         {
-            return paneFactories.get(paneType).apply(params);
+            return paneFactories.get(name).apply(params);
         }
 
-        if (paneFactories.containsKey(new ResourceLocation(paneType.getPath())))
-        {
-            Log.getLogger().warn("Namespace override for " + paneType.getPath() + " not found. Using default.");
-            return paneFactories.get(new ResourceLocation(paneType.getPath())).apply(params);
-        }
-
-        Log.getLogger().error("There is no factory method for " + paneType.getPath());
+        Log.getLogger().error("There is no factory method for " + name);
         return null;
     }
 
@@ -143,31 +151,7 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
      * @param resource xml as a {@link ResourceLocation}.
      * @param parent   parent view.
      */
-    public static void createFromXMLFile(final ResourceLocation resource, final View parent)
-    {
-        if (INSTANCE.xmlCache.containsKey(resource))
-        {
-            try
-            {
-                createFromPaneParams(INSTANCE.xmlCache.get(resource), parent);
-            }
-            catch (Exception e)
-            {
-                throw new RuntimeException("Can't parse xml at: " + resource.toString(), e);
-            }
-        }
-        else
-        {
-            throw new RuntimeException("Gui at \"" + resource.toString() + "\" was not found!");
-            // TODO: create "missing gui" gui and don't crash?
-        }
-    }
-
-    /**
-     * TODO: breaks bin compat, merge with old on vanilla major
-     */
-    @Deprecated(forRemoval = true, since = "1.20.1")
-    public static Pane createFromXMLFile2(final ResourceLocation resource, final View parent)
+    public static Pane createFromXMLFile(final ResourceLocation resource, final View parent)
     {
         if (INSTANCE.xmlCache.containsKey(resource))
         {

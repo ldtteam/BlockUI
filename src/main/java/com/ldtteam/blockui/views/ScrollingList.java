@@ -2,11 +2,14 @@ package com.ldtteam.blockui.views;
 
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
-import com.ldtteam.blockui.util.records.SizeI;
-import org.jetbrains.annotations.Nullable;
+import com.ldtteam.blockui.views.ScrollingListContainer.RowSizeModifier;
+import net.minecraft.network.chat.MutableComponent;
 
 import java.util.List;
 import java.util.function.IntSupplier;
+
+import static com.ldtteam.blockui.controls.AbstractTextElement.DEFAULT_TEXT_COLOR;
+import static com.ldtteam.blockui.controls.AbstractTextElement.DEFAULT_TEXT_SCALE;
 
 /**
  * A ScrollingList is a View which can contain 0 or more children of a specific Pane or View type
@@ -16,11 +19,12 @@ import java.util.function.IntSupplier;
  */
 public class ScrollingList extends ScrollingView
 {
-    protected int          childSpacing = 0;
+    protected int childSpacing = 0;
+
     // Runtime
     protected DataProvider dataProvider;
-    private   PaneParams   listNodeParams;
-    private   int          maxHeight;
+
+    private int maxHeight;
 
     /**
      * Default constructor required by Blockout.
@@ -40,6 +44,50 @@ public class ScrollingList extends ScrollingView
         super(params);
         childSpacing = params.getInteger("childspacing", childSpacing);
         this.setMaxHeight(height);
+
+        setEmptyTextColor(params.getColor("emptycolor", DEFAULT_TEXT_COLOR));
+        setEmptyTextScale(params.getDouble("emptyscale", DEFAULT_TEXT_SCALE));
+        setEmptyText(params.getMultilineText("emptytext"));
+    }
+
+    /**
+     * Set the text shown when there are no items in the data provider.
+     *
+     * @param emptyText the component.
+     */
+    public void setEmptyText(final MutableComponent emptyText)
+    {
+        setEmptyText(List.of(emptyText));
+    }
+
+    /**
+     * Set the text shown when there are no items in the data provider.
+     *
+     * @param emptyText the list of components.
+     */
+    public void setEmptyText(final List<MutableComponent> emptyText)
+    {
+        ((ScrollingListContainer) container).setEmptyText(emptyText);
+    }
+
+    /**
+     * Set the text color for the empty text.
+     *
+     * @param emptyTextColor the color.
+     */
+    public void setEmptyTextColor(final int emptyTextColor)
+    {
+        ((ScrollingListContainer) container).setEmptyTextColor(emptyTextColor);
+    }
+
+    /**
+     * Set the text scale for the empty text.
+     *
+     * @param emptyTextScale the text scale.
+     */
+    public void setEmptyTextScale(final double emptyTextScale)
+    {
+        ((ScrollingListContainer) container).setEmptyTextScale(emptyTextScale);
     }
 
     /**
@@ -73,7 +121,7 @@ public class ScrollingList extends ScrollingView
     public void setDataProvider(final DataProvider p)
     {
         dataProvider = p;
-        refreshElementPanes();
+        refreshElementPanes(true);
     }
 
     /**
@@ -81,17 +129,27 @@ public class ScrollingList extends ScrollingView
      */
     public void refreshElementPanes()
     {
-        ((ScrollingListContainer) container).refreshElementPanes(dataProvider, listNodeParams, maxHeight, childSpacing);
+        refreshElementPanes(true);
+    }
+
+    /**
+     * Use the data provider to update all the element panes.
+     *
+     * @param force should the list be forcefully updated.
+     */
+    public void refreshElementPanes(final boolean force)
+    {
+        ((ScrollingListContainer) container).refreshElementPanes(dataProvider, maxHeight, childSpacing, force);
     }
 
     @Override
     public void onUpdate()
     {
         super.onUpdate();
-        refreshElementPanes();
+        refreshElementPanes(false);
     }
 
-        @Override
+    @Override
     protected ScrollingContainer createScrollingContainer()
     {
         return new ScrollingListContainer(this);
@@ -108,7 +166,10 @@ public class ScrollingList extends ScrollingView
 
         // Get the PaneParams for this child, because we'll need it in the future
         // to create more nodes
-        listNodeParams = childNodes.get(0);
+        if (container instanceof final ScrollingListContainer scrollingListContainer)
+        {
+            scrollingListContainer.setListNodeParams(childNodes.get(0));
+        }
     }
 
     /**
@@ -135,15 +196,34 @@ public class ScrollingList extends ScrollingView
         int getElementCount();
 
         /**
-         * Override this to pick a custom size for this element. Tuple arguments are width and height, in that order.
+         * Should all the children update again?
          *
-         * @param index   the index of the row/list element
-         * @param rowPane the parent Pane for the row, containing the elements to update
-         * @return a new size for the element, or null to use the template element size.
+         * @return true if the updates should be made
          */
-        default @Nullable SizeI getElementSize(int index, Pane rowPane)
+        default boolean shouldUpdate()
         {
-            return null;
+            return true;
+        }
+
+        /**
+         * Should the specific child update again?
+         *
+         * @return true if the updates should be made
+         */
+        default boolean shouldUpdate(final int index)
+        {
+            return true;
+        }
+
+        /**
+         * Override this to pick a custom size for this element. Event contains the logic to modify the old size.
+         *
+         * @param index    the index of the row/list element.
+         * @param modifier the object used to modify the size.
+         */
+        default void modifyRowSize(final int index, final RowSizeModifier modifier)
+        {
+            // No implementation by default
         }
 
         /**
@@ -164,6 +244,6 @@ public class ScrollingList extends ScrollingView
          * @param index   The index to update.
          * @param rowPane The pane to fill.
          */
-        void apply(int index, Pane rowPane);
+        void apply(final int index, final Pane rowPane);
     }
 }

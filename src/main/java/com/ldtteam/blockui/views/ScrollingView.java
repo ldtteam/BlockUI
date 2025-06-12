@@ -1,5 +1,6 @@
 package com.ldtteam.blockui.views;
 
+import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.controls.Scrollbar;
@@ -73,9 +74,9 @@ public class ScrollingView extends View
     }
 
     @Override
-    public boolean scrollInput(final double wheel, final double mx, final double my)
+    public boolean scrollInput(final double horizontalWheel, final double verticalWheel, final double mx, final double my)
     {
-        return setScrollY(getScrollY() - (int) wheel);
+        return setScrollY(getScrollY() - verticalWheel * BOGuiGraphics.getAltSpeedFactor());
     }
 
     public ScrollingContainer getContainer()

@@ -3,13 +3,13 @@ package com.ldtteam.blockui;
 import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
 import com.ldtteam.blockui.util.SingleBlockGetter.SingleBlockNeighborhood;
 import com.ldtteam.blockui.util.cursor.Cursor;
-import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.ItemBlockRenderTypes;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
@@ -22,10 +22,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraftforge.client.ForgeHooksClient;
-import net.minecraftforge.client.extensions.common.IClientItemExtensions;
+import net.neoforged.neoforge.client.ClientHooks;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
+import org.joml.Matrix3f;
 
 public class BOGuiGraphics extends GuiGraphics
 {
@@ -82,9 +82,17 @@ public class BOGuiGraphics extends GuiGraphics
         }
     }
 
-    public void applyCursor()
+    /**
+     * @param debugXoffset debug string x offset
+     */
+    public void applyCursor(final int debugXoffset)
     {
         selectedCursor.apply();
+
+        if (Pane.debugging)
+        {
+            drawString(selectedCursor.toString(), debugXoffset, -minecraft.font.lineHeight, Color.getByName("white"));
+        }
     }
 
     /**
@@ -105,44 +113,33 @@ public class BOGuiGraphics extends GuiGraphics
         // prepare pose just like itemStack rendering would do
 
         pose().pushPose();
+        pose().last().normal().identity(); // reset normals cuz lighting
         pose().translate(8, 8, 150);
-        pose().mulPoseMatrix(new Matrix4f().scaling(1.0F, -1.0F, 1.0F));
-        pose().scale(16.0F, 16.0F, 16.0F);
-        ForgeHooksClient.handleCameraTransforms(pose(), itemModel, ItemDisplayContext.GUI, false);
+        pose().scale(16.0F, -16.0F, 16.0F);
+        ClientHooks.handleCameraTransforms(pose(), itemModel, ItemDisplayContext.GUI, false);
 
         if (data.modelNeedsRotationFix())
         {
+            final Matrix3f oldNormal = pose().last().normal();
             pose().pushPose();
             pose().rotateAround(Axis.YP.rotationDegrees(45), 0.0f, 0.5f, 0.0f);
+            pose().last().normal().set(oldNormal.rotate(Axis.YP.rotationDegrees(-45)));
         }
 
         pose().translate(-0.5F, -0.5F, -0.5F);
 
-        RenderSystem.getModelViewStack().pushPose();
-        applyPoseToShader();
-
-        if (data.modelNeedsRotationFix())
-        {
-            Lighting.setupLevel(new Matrix4f().rotationAround(Axis.ZP.rotationDegrees(-180), 0.5f, 0.0f, 0.5f));
-        }
-        else
-        {
-            Lighting.setupLevel(new Matrix4f().rotationAround(Axis.YP.rotationDegrees(-45), 0.0f, 0.5f, 0.0f));
-        }
-
         // render block and BE
 
-        final PoseStack poseStack = new PoseStack();
-        final int light = LightTexture.pack(10, 10);
+        final int light = LightTexture.pack(15, 15);
         minecraft.getBlockRenderer()
-            .renderSingleBlock(data.blockState(), poseStack, bufferSource(), light, OverlayTexture.NO_OVERLAY, data.modelData(), null);
+            .renderSingleBlock(data.blockState(), pose(), bufferSource(), light, OverlayTexture.NO_OVERLAY, data.modelData(), null);
         if (data.blockEntity() != null)
         {
             try
             {
                 minecraft.getBlockEntityRenderDispatcher()
                     .getRenderer(data.blockEntity())
-                    .render(data.blockEntity(), 0, poseStack, bufferSource(), light, OverlayTexture.NO_OVERLAY);
+                    .render(data.blockEntity(), 0, pose(), bufferSource(), light, OverlayTexture.NO_OVERLAY);
             }
             catch (final Exception e)
             {
@@ -151,11 +148,10 @@ public class BOGuiGraphics extends GuiGraphics
         }
         flush();
 
-        if (data.modelNeedsRotationFix()) // this might need shift before BER?
+        if (data.modelNeedsRotationFix())
         {
             pose().popPose();
             pose().translate(-0.5F, -0.5F, -0.5F);
-            applyPoseToShader();
         }
 
         // render fluid
@@ -164,26 +160,34 @@ public class BOGuiGraphics extends GuiGraphics
         if (!fluidState.isEmpty())
         {
             final RenderType renderType = ItemBlockRenderTypes.getRenderLayer(fluidState);
+            pushMvApplyPose();
 
             NEIGHBORHOOD.blockState = data.blockState();
             minecraft.getBlockRenderer()
                 .renderLiquid(BlockPos.ZERO, NEIGHBORHOOD, bufferSource().getBuffer(renderType), data.blockState(), fluidState);
 
             bufferSource().endBatch(renderType);
+            popMvPose();
         }
-
-        Lighting.setupFor3DItems();
-
-        RenderSystem.getModelViewStack().popPose();
-        RenderSystem.applyModelViewMatrix();
 
         pose().popPose();
     }
 
-    public void applyPoseToShader()
+    public void pushMvApplyPose()
     {
-        RenderSystem.getModelViewStack().setIdentity();
-        RenderSystem.getModelViewStack().mulPoseMatrix(pose().last().pose());
+        RenderSystem.getModelViewStack().pushMatrix();
+        RenderSystem.getModelViewStack().mul(pose().last().pose());
         RenderSystem.applyModelViewMatrix();
+    }
+
+    public void popMvPose()
+    {
+        RenderSystem.getModelViewStack().popMatrix();
+        RenderSystem.applyModelViewMatrix();
+    }
+
+    public static double getAltSpeedFactor()
+    {
+        return Screen.hasAltDown() ? 5 : 1;
     }
 }

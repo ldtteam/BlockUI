@@ -1,33 +1,35 @@
 package com.ldtteam.blockui.mod;
 
+import com.ldtteam.blockui.AtlasManager;
 import com.ldtteam.blockui.BOScreen;
+import com.ldtteam.blockui.PaneBuilders;
 import com.ldtteam.blockui.controls.Button;
-import com.ldtteam.blockui.controls.ButtonVanilla;
-import com.ldtteam.blockui.Pane;
+import com.ldtteam.blockui.controls.ButtonImage;
+import com.ldtteam.blockui.controls.Image;
 import com.ldtteam.blockui.controls.Text;
 import com.ldtteam.blockui.hooks.HookManager;
 import com.ldtteam.blockui.hooks.HookRegistries;
 import com.ldtteam.blockui.mod.container.ContainerHook;
-import com.ldtteam.blockui.util.records.SizeI;
+import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
 import com.ldtteam.blockui.views.BOWindow;
-import com.ldtteam.blockui.views.ScrollingList;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.client.event.InputEvent.MouseScrollingEvent;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.event.ModMismatchEvent;
-import net.minecraftforge.event.TagsUpdatedEvent;
-import net.minecraftforge.event.TickEvent.ClientTickEvent;
-import net.minecraftforge.event.TickEvent.Phase;
-import net.minecraftforge.eventbus.api.EventPriority;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import org.jetbrains.annotations.Nullable;
+import net.neoforged.bus.api.EventPriority;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModList;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
+import net.neoforged.neoforge.client.event.InputEvent.MouseScrollingEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
+import net.neoforged.neoforge.event.TagsUpdatedEvent;
 import org.lwjgl.glfw.GLFW;
 
+import java.nio.file.Path;
 import java.util.function.Consumer;
 
 public class ClientEventSubscriber
@@ -56,22 +58,66 @@ public class ClientEventSubscriber
      * @param event the catched event.
      */
     @SubscribeEvent
-    public static void onClientTickEvent(final ClientTickEvent event)
+    public static void onClientTickStart(final ClientTickEvent.Pre event)
     {
-        if (event.phase == Phase.START && Screen.hasAltDown() && Screen.hasControlDown() && Screen.hasShiftDown())
+        if (Screen.hasAltDown() && Screen.hasControlDown() && Screen.hasShiftDown())
         {
             if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_X))
             {
                 final BOWindow window = new BOWindow();
-                window.addChild(createTestGuiButton(0, "General All-in-one", new ResourceLocation(BlockUI.MOD_ID, "gui/test.xml")));
-                window.addChild(createTestGuiButton(1, "Tooltip Positioning", new ResourceLocation(BlockUI.MOD_ID, "gui/test2.xml")));
-                window.addChild(createTestGuiButton(2, "ItemIcon To BlockState", new ResourceLocation(BlockUI.MOD_ID, "gui/test3.xml"), BlockStateTestGui::setup));
-                window.addChild(createTestGuiButton(3, "Dynamic ScrollingLists", new ResourceLocation(BlockUI.MOD_ID, "gui/test4.xml"), DynamicScrollingListGui::setup));
+                int id = 0;
+
+                final Button dumpAtlases = createTestGuiButton(id++, "Dump mod atlases to run folder", null);
+                dumpAtlases.setHandler(b -> {
+                    final Path dumpingFolder = Path.of("atlas_dump").toAbsolutePath().normalize();
+                    Minecraft.getInstance().player.sendSystemMessage(Component.literal("Dumping atlases into: " + dumpingFolder.toString()));
+                    AtlasManager.INSTANCE.dumpAtlases(dumpingFolder);
+                });
+                window.addChild(dumpAtlases);
+
+                window.addChild(createTestGuiButton(id++, "General All-in-one", ResourceLocation.fromNamespaceAndPath(BlockUI.MOD_ID, "gui/test.xml"), parent -> {
+                    parent.findPaneOfTypeByID("missing_out_of_jar", Image.class).setImage(OutOfJarResourceLocation.ofMinecraftFolder(BlockUI.MOD_ID, "missing_out_of_jar.png"), false);
+                    parent.findPaneOfTypeByID("working_out_of_jar", Image.class).setImage(OutOfJarResourceLocation.of(BlockUI.MOD_ID, Path.of("../../src/test/resources/button.png")), false);
+                    OutOfJarResourceLocation.ofMinecraftSkin(Minecraft.getInstance(), Minecraft.getInstance().getGameProfile(), null)
+                        .thenAccept(resLoc -> parent.findPaneOfTypeByID("player_skin", Image.class).setImage(resLoc, false));
+                    OutOfJarResourceLocation.ofMinecraftSkin(Minecraft.getInstance(), Minecraft.getInstance().getGameProfile(), PlayerSkin::capeTexture)
+                        .thenAccept(resLoc -> {if (resLoc!=null){parent.findPaneOfTypeByID("player_cape", Image.class).setImage(resLoc, false);}});
+                    OutOfJarResourceLocation.ofMinecraftSkin(Minecraft.getInstance(), Minecraft.getInstance().getGameProfile(), PlayerSkin::elytraTexture)
+                        .thenAccept(resLoc -> {if (resLoc!=null){parent.findPaneOfTypeByID("player_elytra", Image.class).setImage(resLoc, false);}});
+                }));
+                window.addChild(createTestGuiButton(id++, "Tooltip Positioning", ResourceLocation.fromNamespaceAndPath(BlockUI.MOD_ID, "gui/test2.xml")));
+                window.addChild(createTestGuiButton(id++, "ItemIcon To BlockState", ResourceLocation.fromNamespaceAndPath(BlockUI.MOD_ID, "gui/test3.xml"), BlockStateTestGui::setup));
+                window.addChild(createTestGuiButton(id++, "Scrolling Lists", ResourceLocation.fromNamespaceAndPath(BlockUI.MOD_ID, "gui/test4.xml"), ScrollingListsGui::setup));
+
+                final Text builderTest = new Text();
+                builderTest.setSize(ButtonImage.DEFAULT_BUTTON_WIDTH * 2 + 20, ButtonImage.DEFAULT_BUTTON_HEIGHT);
+                builderTest.setPosition(0, ((id + 1) / 2) * (builderTest.getHeight() + 10));
+                PaneBuilders.textBuilder()
+                    .append(Component.literal(BlockUI.MOD_ID))
+                    .append(Component.literal(" - "))
+                    .append(Component.literal(ModList.get().getModFileById(BlockUI.MOD_ID).versionString()))
+                    .paragraphBreak()
+                    .colorName("red")
+                    .underlined()
+                    .append(Component.translatable("blockui.tooltip.item_additional_info",
+                        Component.translatable("key.keyboard.left.control")
+                            .append(" + ")
+                            .append(Component.translatable("key.keyboard.left.shift"))
+                            .append(" + ")
+                            .append(Component.translatable("key.keyboard.left.alt"))
+                            .setStyle(Style.EMPTY.withItalic(true))))
+                    .applyToPane(builderTest);
+                window.addChild(builderTest);
+
                 window.open();
             }
         }
+    }
 
-        if (event.phase == Phase.END && Minecraft.getInstance().level != null)
+    @SubscribeEvent
+    public static void onClientTickEnd(final ClientTickEvent.Post event)
+    {
+        if (Minecraft.getInstance().level != null)
         {
             Minecraft.getInstance().getProfiler().push("hook_manager_tick");
             HookRegistries.tick(Minecraft.getInstance().level.getGameTime());
@@ -85,7 +131,7 @@ public class ClientEventSubscriber
         final ResourceLocation testGuiResLoc,
         final Consumer<BOWindow>... setups)
     {
-        final Button button = new ButtonVanilla();
+        final Button button = new ButtonImage();
         button.setPosition((order % 2) * (button.getWidth() + 20), (order / 2) * (button.getHeight() + 10));
         button.setText(Component.literal(name));
         button.setHandler(b -> {
@@ -114,7 +160,7 @@ public class ClientEventSubscriber
     public static void onMouseScrollEvent(final MouseScrollingEvent event)
     {
         // cancel in-game scrolling when raytraced gui has scrolling list
-        event.setCanceled(HookManager.onScroll(event.getScrollDelta()));
+        event.setCanceled(HookManager.onScroll(event.getScrollDeltaX(), event.getScrollDeltaY()));
     }
 
     /**
@@ -127,18 +173,11 @@ public class ClientEventSubscriber
     }
 
     @SubscribeEvent
-    public static void renderOverlay(final RenderGuiOverlayEvent event)
+    public static void renderOverlay(final RenderGuiLayerEvent.Pre event)
     {
-        if (Minecraft.getInstance().screen instanceof BOScreen && event.getOverlay() == VanillaGuiOverlay.CROSSHAIR.type())
+        if (Minecraft.getInstance().screen instanceof BOScreen && event.getName().equals(VanillaGuiLayers.CROSSHAIR))
         {
             event.setCanceled(true);
         }
-    }
-
-    @SubscribeEvent
-    public static void onModMismatch(final ModMismatchEvent event)
-    {
-        // there are no world data and rest is mod compat anyway
-        event.markResolved(BlockUI.MOD_ID);
     }
 }
