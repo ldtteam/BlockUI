@@ -54,7 +54,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.ticks.BlackholeTickAccess;
 import net.minecraft.world.ticks.LevelTickAccess;
-import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.client.model.data.ModelData;
 import net.neoforged.neoforge.client.model.data.ModelDataManager;
 import org.jetbrains.annotations.Nullable;
@@ -805,26 +804,6 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
     public void updateSkyBrightness()
     {
         // Noop
-    }
-
-    @Override
-    @Nullable
-    public <T, C> T getCapability(BlockCapability<T, C> cap, BlockPos pos, C context)
-    {
-        // Noop
-        return null;
-    }
-
-    @Override
-    @Nullable
-    public <T, C> T getCapability(BlockCapability<T, C> cap,
-        BlockPos pos,
-        @Nullable BlockState state,
-        @Nullable BlockEntity blockEntity,
-        C context)
-    {
-        // Noop
-        return null;
     }
 
     @Override
@@ -2089,6 +2068,67 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
     public <T> @Nullable T removeData(Supplier<AttachmentType<T>> type)
     {
         return super.removeData(type);
+    }
+
+    @Override
+    protected long advanceDaytime()
+    {
+        return super.advanceDaytime();
+    }
+
+    @Override
+    public <T> Optional<Reference<T>> holder(ResourceKey<T> key)
+    {
+        return super.holder(key);
+    }
+
+    @Override
+    public <T> Holder<T> holderOrThrow(ResourceKey<T> key)
+    {
+        return super.holderOrThrow(key);
+    }
+
+    @Override
+    public Component getDescription()
+    {
+        return super.getDescription();
+    }
+
+    @Override
+    public String getDescriptionKey()
+    {
+        return super.getDescriptionKey();
+    }
+
+    @Override
+    public <T> @Nullable T getCapability(BlockCapability<T, @Nullable Void> cap, BlockPos pos)
+    {
+        return super.getCapability(cap, pos);
+    }
+
+    @Override
+    public <T, C> @Nullable T getCapability(BlockCapability<T, C> cap, BlockPos pos, C context)
+    {
+        return super.getCapability(cap, pos, context);
+    }
+
+    @Override
+    public <T> @Nullable T getCapability(BlockCapability<T, @Nullable Void> cap,
+        BlockPos pos,
+        @Nullable BlockState state,
+        @Nullable BlockEntity blockEntity)
+    {
+        return super.getCapability(cap, pos, state, blockEntity);
+    }
+
+    @Override
+    public <T, C> @Nullable T getCapability(BlockCapability<T, C> cap,
+        BlockPos pos,
+        @Nullable BlockState state,
+        @Nullable BlockEntity blockEntity,
+        C context)
+    {
+        return super.getCapability(cap, pos, state, blockEntity, context);
     }
     */
 }
