@@ -1,0 +1,117 @@
+package com.ldtteam.blockui.attribute;
+
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
+
+public record TextStyle(int argbColor,
+    boolean isBold,
+    boolean isItalic,
+    boolean isUnderlined,
+    boolean isStrikethrough,
+    boolean isObfuscated)
+{
+
+    public static final TextStyle SIMPLE_WHITE = Builder.ofColor("white").build();
+    public static final TextStyle SIMPLE_BLACK = Builder.ofColor("black").build();
+
+    public Style toStyle()
+    {
+        return new Style(TextColor
+            .fromRgb(argbColor), isBold, isItalic, isUnderlined, isStrikethrough, isObfuscated, null, null, null, null);
+    }
+    public static class Builder
+    {
+        private int argbColor;
+        private boolean isBold;
+        private boolean isItalic;
+        private boolean isUnderlined;
+        private boolean isStrikethrough;
+        private boolean isObfuscated;
+
+        /**
+         * USE name version if not copying
+         */
+        public static Builder ofColor(final int argbColor)
+        {
+            final Builder result = new Builder();
+            result.argbColor = argbColor;
+            return result;
+        }
+
+        public static Builder ofColor(final String colorName)
+        {
+            return ofColor(Colors.byString(colorName));
+        }
+
+        public Builder color(final int argbColor)
+        {
+            this.argbColor = argbColor;
+            return this;
+        }
+
+        public Builder bold(final boolean isBold)
+        {
+            this.isBold = isBold;
+            return this;
+        }
+
+        public Builder italic(final boolean isItalic)
+        {
+            this.isItalic = isItalic;
+            return this;
+        }
+
+        public Builder underlined(final boolean isUnderlined)
+        {
+            this.isUnderlined = isUnderlined;
+            return this;
+        }
+
+        public Builder strikethrough(final boolean isStrikethrough)
+        {
+            this.isStrikethrough = isStrikethrough;
+            return this;
+        }
+
+        public Builder obfuscated(final boolean isObfuscated)
+        {
+            this.isObfuscated = isObfuscated;
+            return this;
+        }
+
+        public Builder color(final String colorName)
+        {
+            return color(Colors.byString(colorName));
+        }
+
+        public Builder bold()
+        {
+            return bold(true);
+        }
+
+        public Builder italic()
+        {
+            return italic(true);
+        }
+
+        public Builder underlined()
+        {
+            return underlined(true);
+        }
+
+        public Builder strikethrough()
+        {
+            return strikethrough(true);
+        }
+
+        public Builder obfuscated()
+        {
+            return obfuscated(true);
+        }
+
+        public TextStyle build()
+        {
+            return new TextStyle(argbColor, isBold, isItalic, isUnderlined, isStrikethrough, isObfuscated);
+        }
+    }
+}
