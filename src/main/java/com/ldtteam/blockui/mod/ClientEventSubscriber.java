@@ -131,7 +131,7 @@ public class ClientEventSubscriber
         final ResourceLocation testGuiResLoc,
         final Consumer<BOWindow>... setups)
     {
-        final Button button = new ButtonImage();
+        final Button button = new ButtonImage(true);
         button.setPosition((order % 2) * (button.getWidth() + 20), (order / 2) * (button.getHeight() + 10));
         button.setText(Component.literal(name));
         button.setHandler(b -> {

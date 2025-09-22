@@ -14,7 +14,6 @@ import net.minecraft.network.chat.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -131,7 +130,6 @@ public class ScrollingListsGui
         window.findPaneOfTypeByID("list4remove", Button.class).setHandler(button -> renderAmount.getAndAdd(-2));
 
         // Case 5: A list that will not update
-        final AtomicBoolean shouldRenderFlag = new AtomicBoolean();
         final ScrollingList list5 = window.findPaneOfTypeByID("list5", ScrollingList.class);
         list5.setDataProvider(new DataProvider()
         {
@@ -144,17 +142,16 @@ public class ScrollingListsGui
             @Override
             public boolean shouldUpdate()
             {
-                return shouldRenderFlag.get();
+                return false;
             }
 
             @Override
             public void updateElement(final int index, final Pane rowPane)
             {
-                shouldRenderFlag.set(false);
                 rowPane.findPaneByType(Text.class).setText(Component.literal("Hi " + index + " " + UUID.randomUUID()));
             }
         });
 
-        window.findPaneOfTypeByID("list5update", Button.class).setHandler(button -> shouldRenderFlag.set(true));
+        window.findPaneOfTypeByID("list5update", Button.class).setHandler(button -> list5.refreshElementPanes(true));
     }
 }
