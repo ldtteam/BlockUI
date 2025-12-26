@@ -498,7 +498,7 @@ public class TextField extends Pane
      */
     public void writeText(final String str)
     {
-        final String filteredStr = filter.filter(str);
+        final String filteredStr = filter.filter(text+str);
 
         final int insertAt = Math.min(cursorPosition, selectionEnd);
         final int insertEnd = Math.max(cursorPosition, selectionEnd);
@@ -509,14 +509,14 @@ public class TextField extends Pane
             return;
         }
 
-                final StringBuilder resultBuffer = new StringBuilder();
+        final StringBuilder resultBuffer = new StringBuilder();
         if (text.length() > 0 && insertAt > 0)
         {
             resultBuffer.append(text.substring(0, insertAt));
         }
 
         final int insertedLength;
-        if (availableChars < filteredStr.length())
+        if (availableChars < (filteredStr.length() - text.length()))
         {
             resultBuffer.append(filteredStr.substring(0, availableChars));
             insertedLength = availableChars;
@@ -524,10 +524,10 @@ public class TextField extends Pane
         else
         {
             resultBuffer.append(filteredStr);
-            insertedLength = filteredStr.length();
+            insertedLength = filteredStr.length() - text.length();
         }
 
-        if (text.length() > 0 && insertEnd < text.length())
+        if (!text.isEmpty() && insertEnd < text.length())
         {
             resultBuffer.append(text.substring(insertEnd));
         }
