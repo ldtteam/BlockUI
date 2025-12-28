@@ -3,16 +3,20 @@ package com.ldtteam.blockui.controls;
 import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
+import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.util.cursor.Cursor;
 import com.ldtteam.blockui.views.View;
-import com.mojang.blaze3d.vertex.*;
-import org.joml.Matrix4f;
 import com.mojang.blaze3d.platform.GlStateManager.LogicOp;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -22,22 +26,22 @@ public class TextField extends Pane
 {
     protected InputHandler handler;
 
-    private static final int RECT_COLOR = -3_092_272;
-    private static final int DEFAULT_MAX_TEXT_LENGTH = 32;
+    private static final int     RECT_COLOR              = -3_092_272;
+    private static final int     DEFAULT_MAX_TEXT_LENGTH = 32;
     // Attributes
-    protected int maxTextLength = DEFAULT_MAX_TEXT_LENGTH;
-    protected int textColor = 0xE0E0E0;
-    protected int textColorDisabled = 0x707070;
-    protected boolean shadow = true;
+    protected            int     maxTextLength           = DEFAULT_MAX_TEXT_LENGTH;
+    protected            int     textColor               = 0xE0E0E0;
+    protected            int     textColorDisabled       = 0x707070;
+    protected            boolean shadow                  = true;
     @Nullable
-    protected String tabNextPaneID = null;
+    protected            String  tabNextPaneID           = null;
     // Runtime
-    protected String text = "";
-    protected Filter filter;
-    protected int cursorPosition = 0;
-    protected int scrollOffset = 0;
-    protected int selectionEnd = 0;
-    protected int cursorBlinkCounter = 0;
+    protected            String  text                    = "";
+    protected            Filter  filter;
+    protected            int     cursorPosition          = 0;
+    protected            int     scrollOffset            = 0;
+    protected            int     selectionEnd            = 0;
+    protected            int     cursorBlinkCounter      = 0;
 
     /**
      * Simple public constructor to instantiate.
@@ -198,7 +202,7 @@ public class TextField extends Pane
         }
     }
 
-        public String getSelectedText()
+    public String getSelectedText()
     {
         final int start = Math.min(cursorPosition, selectionEnd);
         final int end = Math.max(cursorPosition, selectionEnd);
@@ -494,11 +498,20 @@ public class TextField extends Pane
     /**
      * Write text into the field.
      *
-     * @param str the string to write.
+     * @param input the string to write.
      */
-    public void writeText(final String str)
+    public void writeText(String input)
     {
-        final String filteredStr = filter.filter(str);
+        final char[] chars = input.toCharArray();
+        final StringBuilder strBuilder = new StringBuilder();
+        for (final char aChar : chars)
+        {
+            if (filter.isAllowedCharacter(aChar))
+            {
+                strBuilder.append(aChar);
+            }
+        }
+        input = strBuilder.toString();
 
         final int insertAt = Math.min(cursorPosition, selectionEnd);
         final int insertEnd = Math.max(cursorPosition, selectionEnd);
@@ -509,30 +522,10 @@ public class TextField extends Pane
             return;
         }
 
-                final StringBuilder resultBuffer = new StringBuilder();
-        if (text.length() > 0 && insertAt > 0)
-        {
-            resultBuffer.append(text.substring(0, insertAt));
-        }
-
-        final int insertedLength;
-        if (availableChars < filteredStr.length())
-        {
-            resultBuffer.append(filteredStr.substring(0, availableChars));
-            insertedLength = availableChars;
-        }
-        else
-        {
-            resultBuffer.append(filteredStr);
-            insertedLength = filteredStr.length();
-        }
-
-        if (text.length() > 0 && insertEnd < text.length())
-        {
-            resultBuffer.append(text.substring(insertEnd));
-        }
-
-        text = resultBuffer.toString();
+        String filteredText = filter.filter(text.substring(0, insertAt) + input + text.substring(insertEnd));
+        filteredText = (filteredText.substring(0, Math.min(filteredText.length(), maxTextLength)));
+        final int insertedLength = filteredText.length() - text.length();
+        text = filteredText;
         moveCursorBy((insertAt - selectionEnd) + insertedLength);
 
         triggerHandler();
@@ -604,7 +597,7 @@ public class TextField extends Pane
             final boolean backwards = count < 0;
             final int start = backwards ? (this.cursorPosition + count) : this.cursorPosition;
             final int end = backwards ? this.cursorPosition : (this.cursorPosition + count);
-                        String result = "";
+            String result = "";
 
             if (start > 0)
             {
@@ -616,7 +609,7 @@ public class TextField extends Pane
                 result = result + text.substring(end);
             }
 
-            text = result;
+            text = filter.filter(result);
 
             if (backwards)
             {
