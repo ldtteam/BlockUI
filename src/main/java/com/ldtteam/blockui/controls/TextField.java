@@ -290,7 +290,14 @@ public class TextField extends Pane
         }
         else
         {
-            moveCursorBy(direction);
+            if (direction == -1)
+            {
+                setCursorPosition(Math.min(cursorPosition, selectionEnd) - 1);
+            }
+            else
+            {
+                setCursorPosition(Math.max(cursorPosition, selectionEnd) + 1);
+            }
         }
         return true;
     }
@@ -527,9 +534,9 @@ public class TextField extends Pane
 
         String filteredText = filter.filter(text.substring(0, insertAt) + input + text.substring(insertEnd));
         filteredText = (filteredText.substring(0, Math.min(filteredText.length(), maxTextLength)));
-        final int insertedLength = filteredText.length() - text.length();
+        final int insertedLength = Math.abs(insertAt - insertEnd) + filteredText.length() - text.length();
         text = filteredText;
-        moveCursorBy((insertAt - selectionEnd) + insertedLength);
+        setCursorPosition(insertAt + insertedLength);
 
         triggerHandler();
     }
