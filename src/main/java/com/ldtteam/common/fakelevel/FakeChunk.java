@@ -223,7 +223,12 @@ public class FakeChunk extends LevelChunk
     public LevelChunkSection[] getSections()
     {
         // don't cache them
-        return new LevelChunkSection[0];
+        final FakeLevelChunkSection[] sections = new FakeLevelChunkSection[fakeLevel.getSectionsCount()];
+        for (int i = 0; i < sections.length; i++)
+        {
+            sections[i] = new FakeLevelChunkSection(this, i); 
+        }
+        return sections;
     }
 
     @Override
