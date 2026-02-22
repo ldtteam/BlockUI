@@ -5,15 +5,8 @@ import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.BOScreen;
 import com.ldtteam.blockui.PaneBuilders;
 import com.ldtteam.blockui.PaneParams;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import net.minecraft.client.renderer.GameRenderer;
-import org.joml.Matrix4f;
+import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
+import org.joml.Matrix3x2fStack;
 
 import java.util.Collections;
 
@@ -121,7 +114,7 @@ public class Tooltip extends AbstractTextElement
     @Override
     public void drawSelfLast(final BOGuiGraphics target, final double mx, final double my)
     {
-        final PoseStack ms = target.pose();
+        final Matrix3x2fStack ms = target.guiGraphics().pose();
 
         if (!preparedText.isEmpty() && isEnabled())
         {
@@ -161,43 +154,9 @@ public class Tooltip extends AbstractTextElement
             }
 
             // modified INLINE: vanilla Screen#renderTooltip(MatrixStack, List<? extends IReorderingProcessor>, int, int, FontRenderer)
-            // TODO: update from net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil
-            ms.pushPose();
-            ms.translate(x, y, Z_OFFSET);
+            TooltipRenderUtil.renderTooltipBackground(target.guiGraphics(), x, y, width, height, null);
 
-            final BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-            final Matrix4f mat = ms.last().pose();
-
-            final int bg_a = (BACKGROUND_COLOR >> 24) & 0xff;
-            final int bg_r = (BACKGROUND_COLOR >> 16) & 0xff;
-            final int bg_g = (BACKGROUND_COLOR >> 8) & 0xff;
-            final int bg_b = BACKGROUND_COLOR & 0xff;
-
-            buffer.addVertex(mat, 1, 1, 0).setColor(bg_r, bg_g, bg_b, bg_a);
-            buffer.addVertex(mat, 0, 1, 0).setColor(bg_r, bg_g, bg_b, bg_a);
-            buffer.addVertex(mat, 0, height - 1, 0).setColor(bg_r, bg_g, bg_b, bg_a);
-            buffer.addVertex(mat, 1, height - 1, 0).setColor(bg_r, bg_g, bg_b, bg_a);
-            buffer.addVertex(mat, 1, height, 0).setColor(bg_r, bg_g, bg_b, bg_a);
-            buffer.addVertex(mat, width - 1, height, 0).setColor(bg_r, bg_g, bg_b, bg_a);
-            buffer.addVertex(mat, width - 1, height - 1, 0).setColor(bg_r, bg_g, bg_b, bg_a);
-            buffer.addVertex(mat, width, height - 1, 0).setColor(bg_r, bg_g, bg_b, bg_a);
-            buffer.addVertex(mat, width, 1, 0).setColor(bg_r, bg_g, bg_b, bg_a);
-            buffer.addVertex(mat, width - 1, 1, 0).setColor(bg_r, bg_g, bg_b, bg_a);
-            buffer.addVertex(mat, width - 1, 0, 0).setColor(bg_r, bg_g, bg_b, bg_a);
-            buffer.addVertex(mat, 1, 0, 0).setColor(bg_r, bg_g, bg_b, bg_a);
-
-            RenderSystem.enableBlend();
-            RenderSystem.defaultBlendFunc();
-
-            RenderSystem.setShader(GameRenderer::getPositionColorShader);
-            BufferUploader.drawWithShader(buffer.build());
-            drawLineRectGradient(ms, 1, 1, width - 2, height - 2, BORDER_COLOR_A, BORDER_COLOR_B, 1);
-
-            RenderSystem.disableBlend();
-
-            ms.translate(-x, -y, 0.0d);
             super.innerDrawSelf(target, mx, my);
-            ms.popPose();
         }
     }
 

@@ -1,6 +1,5 @@
 package com.ldtteam.blockui.controls;
 
-import com.ldtteam.blockui.AtlasManager;
 import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
@@ -9,16 +8,11 @@ import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.util.records.SizeI;
 import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
 import com.ldtteam.blockui.util.texture.OutOfJarTexture;
-import com.ldtteam.blockui.util.texture.SpriteTexture;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.systems.RenderSystem;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Tuple;
 import net.neoforged.fml.loading.FMLEnvironment;
@@ -39,7 +33,6 @@ public class Image extends Pane
     protected int v = 0;
     protected int uWidth = 0;
     protected int vHeight = 0;
-    protected ResolvedBlit resolvedBlit = null;
 
     /**
      * Default Constructor.
@@ -124,7 +117,7 @@ public class Image extends Pane
             }
         }
 
-        if (!FMLEnvironment.production)
+        if (!FMLEnvironment.isProduction())
         {
             throw new RuntimeException("Couldn't resolve size for image: " + resourceLocation);
         }
@@ -153,7 +146,6 @@ public class Image extends Pane
         this.v = v;
         this.uWidth = uWidth;
         this.vHeight = vHeight;
-        this.resolvedBlit = null;
     }
 
     /**
@@ -183,73 +175,11 @@ public class Image extends Pane
     @Override
     public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
-        if (!FMLEnvironment.production)
+        if (!FMLEnvironment.isProduction())
         {
             Objects.requireNonNull(resourceLocation, () -> "Missing image source: " + id + " | " + window.getXmlResourceLocation());
         }
 
-        if (resolvedBlit == null)
-        {
-            resolvedBlit = resolveBlit(resourceLocation, u, v, uWidth, vHeight);
-        }
-
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-        resolvedBlit.blit(target.pose(), x, y, width, height);
-        RenderSystem.disableBlend();
-    }
-    
-    /**
-     * @param resLoc texture resource location
-     * @return resolved blit - with precomputed values and detached from all possible instances
-     */
-    public static ResolvedBlit resolveBlit(final Identifier resLoc)
-    {
-        return resolveBlit(resLoc, 0, 0, 0, 0);
-    }
-
-    /**
-     * @param resLoc texture resource location
-     * @param u in texels
-     * @param v in texels
-     * @param uWidth in texels
-     * @param vHeight in texels
-     * @return resolved blit - with precomputed values and detached from all possible instances
-     */
-    public static ResolvedBlit resolveBlit(final Identifier resLoc, final int u, final int v, final int uWidth, final int vHeight)
-    {
-        // if bad input skip resolving
-        if (resLoc == null || resLoc == MissingTextureAtlasSprite.getLocation())
-        {
-            return (ps, x, y, w, h) -> blit(ps, MissingTextureAtlasSprite.getLocation(), x, y, w, h);
-        }
-
-        final TextureAtlasSprite atlasSprite = AtlasManager.INSTANCE.getSprite(resLoc);
-
-        // unless we sprited missing texture pass to sprite blit
-        if (atlasSprite.contents().name() != MissingTextureAtlasSprite.getLocation())
-        {
-            return resolveSprite(atlasSprite, AtlasManager.getSpriteScaling(atlasSprite));
-        }
-        
-        // if our sprite or full blit do normal blit
-        final AbstractTexture texture = OutOfJarTexture.assertLoadedDefaultManagers(resLoc);
-        if (texture instanceof SpriteTexture || (u == 0 && v == 0 && uWidth == 0 && vHeight == 0))
-        {
-            // Mojang bug: if texture is null = nothing is registered to resLoc now
-            // then blit will leak one opengl texture id every time this is null
-            // so if null use missingTexture instead
-            final Identifier notBugged = texture == null ? MissingTextureAtlasSprite.getLocation() : resLoc;
-            return (ps, x, y, w, h) -> blit(ps, notBugged, x, y, w, h);
-        }
-
-        // else map u,v to float
-        final SizeI mapSize = getImageDimensions(resLoc);
-        final float uMin = u / (float) mapSize.width();
-        final float uMax = uWidth == 0 ? 1.0f : uMin + uWidth / (float) mapSize.width();
-        final float vMin = v / (float) mapSize.height();
-        final float vMax = vHeight == 0 ? 1.0f : vMin + vHeight / (float) mapSize.height();
-
-        return (ps, x, y, w, h) -> blit(ps, resLoc, x, y, uWidth, vHeight, uMin, vMin, uMax, vMax);
+        target.guiGraphics().blit(resourceLocation, x, y, u, v, width, height, uWidth, vHeight);
     }
 }

@@ -203,7 +203,7 @@ public class BOWindow extends View
      * @return {@code true} if the key was handled by a Pane.
      */
     @Override
-    public boolean onKeyTyped(final char ch, final int key)
+    public boolean onKeyTyped(final String ch, final int key)
     {
         if (getFocus() != null && getFocus().onKeyTyped(ch, key))
         {

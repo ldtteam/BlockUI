@@ -1,6 +1,5 @@
 package com.ldtteam.blockui.util;
 
-import com.ldtteam.blockui.mod.BlockUI;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -17,7 +16,6 @@ public record SpacerTextComponent(int pixelHeight) implements ComponentContents
     private static final MapCodec<SpacerTextComponent> CODEC = RecordCodecBuilder
         .mapCodec(instance -> instance.group(Codec.INT.fieldOf("pixelHeight").forGetter(SpacerTextComponent::pixelHeight))
             .apply(instance, SpacerTextComponent::new));
-    public static final ComponentContents.Type<SpacerTextComponent> TYPE = new ComponentContents.Type<>(CODEC, BlockUI.MOD_ID + "_spacer");
 
     public static MutableComponent of(final int pixelHeight)
     {
@@ -29,10 +27,11 @@ public record SpacerTextComponent(int pixelHeight) implements ComponentContents
         return new FormattedSpacerComponent(pixelHeight);
     }
 
+
     @Override
-    public Type<?> type()
+    public MapCodec<? extends ComponentContents> codec()
     {
-        return TYPE;
+        return CODEC;
     }
 
     public record FormattedSpacerComponent(int pixelHeight) implements FormattedCharSequence

@@ -6,6 +6,7 @@ import com.ldtteam.blockui.util.records.Pos2i.ImmutablePos2i;
 import com.ldtteam.blockui.util.records.Pos2i.MutablePos2i;
 import com.mojang.blaze3d.vertex.PoseStack;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix3x2fStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -69,15 +70,15 @@ public class View extends Pane
     @Override
     public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
-        final PoseStack ms = target.pose();
+        final Matrix3x2fStack ms = target.guiGraphics().pose();
 
         // Translate the drawing origin to our x,y.
-        ms.pushPose();
+        ms.pushMatrix();
 
         final int paddedX = x + padding;
         final int paddedY = y + padding;
 
-        ms.translate(paddedX, paddedY, 0.0d);
+        ms.translate(paddedX, paddedY);
 
         // Translate Mouse into the View
         final double drawX = mx - paddedX;
@@ -95,7 +96,7 @@ public class View extends Pane
             }
         }
 
-        ms.popPose();
+        ms.popMatrix();
     }
 
     @Override
@@ -110,15 +111,15 @@ public class View extends Pane
     @Override
     public void drawSelfLast(final BOGuiGraphics target, final double mx, final double my)
     {
-        final PoseStack ms = target.pose();
+        final Matrix3x2fStack ms = target.guiGraphics().pose();
 
         // Translate the drawing origin to our x,y.
-        ms.pushPose();
+        ms.pushMatrix();
 
         final int paddedX = x + padding;
         final int paddedY = y + padding;
 
-        ms.translate(paddedX, paddedY, 0.0d);
+        ms.translate(paddedX, paddedY);
 
         // Translate Mouse into the View
         final double drawX = mx - paddedX;
@@ -132,7 +133,7 @@ public class View extends Pane
             }
         }
 
-        ms.popPose();
+        ms.popMatrix();
     }
 
     @Override
@@ -372,9 +373,9 @@ public class View extends Pane
     }
 
     @Override
-    public boolean onMouseDrag(final double x, final double y, final int speed, final double deltaX, final double deltaY)
+    public boolean onMouseDrag(final double x, final double y, final double deltaX, final double deltaY)
     {
-        return mousePointableEventHandler(x, y, (child, mxChild, myChild) -> child.onMouseDrag(mxChild, myChild, speed, deltaX, deltaY), null);
+        return mousePointableEventHandler(x, y, (child, mxChild, myChild) -> child.onMouseDrag(mxChild, myChild, deltaX, deltaY), null);
     }
 
     /**

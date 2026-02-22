@@ -120,79 +120,6 @@ public class UiRenderMacros
         RenderSystem.disableBlend();
     }
 
-    public static void drawLineRect(final PoseStack ps, final int x, final int y, final int w, final int h, final int argbColor)
-    {
-        drawLineRect(ps, x, y, w, h, argbColor, 1);
-    }
-
-    public static void drawLineRect(final PoseStack ps,
-        final int x,
-        final int y,
-        final int w,
-        final int h,
-        final int argbColor,
-        final int lineWidth)
-    {
-        drawLineRect(ps,
-            x,
-            y,
-            w,
-            h,
-            (argbColor >> 16) & 0xff,
-            (argbColor >> 8) & 0xff,
-            argbColor & 0xff,
-            (argbColor >> 24) & 0xff,
-            lineWidth);
-    }
-
-    public static void drawLineRect(final PoseStack ps,
-        final int x,
-        final int y,
-        final int w,
-        final int h,
-        final int red,
-        final int green,
-        final int blue,
-        final int alpha,
-        final int lineWidth)
-    {
-        if (lineWidth < 1 || alpha == 0)
-        {
-            return;
-        }
-
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        if (alpha != 255)
-        {
-            RenderSystem.enableBlend();
-        }
-        else
-        {
-            RenderSystem.disableBlend();
-        }
-
-        final Matrix4f m = ps.last().pose();
-        BufferBuilder buffer = Tesselator.getInstance().begin(Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-        buffer.addVertex(m, x, y, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x, y + h, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x + lineWidth, y + h - lineWidth, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x + lineWidth, y + lineWidth, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x + w - lineWidth, y + lineWidth, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x + w, y, 0).setColor(red, green, blue, alpha);
-        BufferUploader.drawWithShader(buffer.build());
-
-        buffer = Tesselator.getInstance().begin(Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-        buffer.addVertex(m, x + w, y + h, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x + w, y, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x + w - lineWidth, y + lineWidth, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x + w - lineWidth, y + h - lineWidth, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x + lineWidth, y + h - lineWidth, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x, y + h, 0).setColor(red, green, blue, alpha);
-        BufferUploader.drawWithShader(buffer.build());
-
-        RenderSystem.disableBlend();
-    }
-
     public static void fill(final PoseStack ps, final int x, final int y, final int w, final int h, final int argbColor)
     {
         fill(ps, x, y, w, h, (argbColor >> 16) & 0xff, (argbColor >> 8) & 0xff, argbColor & 0xff, (argbColor >> 24) & 0xff);
@@ -669,73 +596,6 @@ public class UiRenderMacros
     }
 
     /**
-     * Render an entity on a GUI.
-     * 
-     * @param poseStack matrix
-     * @param x         horizontal center position
-     * @param y         vertical bottom position
-     * @param scale     scaling factor
-     * @param headYaw   adjusts look rotation
-     * @param yaw       adjusts body rotation
-     * @param pitch     adjusts look rotation
-     * @param entity    the entity to render
-     */
-    public static void drawEntity(final PoseStack poseStack,
-        final int x,
-        final int y,
-        final double scale,
-        final float headYaw,
-        final float yaw,
-        final float pitch,
-        final Entity entity)
-    {
-        // INLINE: vanilla from InventoryScreen
-        final LivingEntity livingEntity = (entity instanceof LivingEntity) ? (LivingEntity) entity : null;
-        final Minecraft mc = Minecraft.getInstance();
-        if (entity.level() == null) return; // this was entity.setLevel, not sure why cuz sus, dont care if entity has no level
-        poseStack.pushPose();
-        poseStack.translate((float) x, (float) y, 1050.0F);
-        poseStack.scale(1.0F, 1.0F, -1.0F);
-        poseStack.translate(0.0D, 0.0D, 1000.0D);
-        poseStack.scale((float) scale, (float) scale, (float) scale);
-        final Quaternionf pitchRotation = Axis.XP.rotationDegrees(pitch);
-        poseStack.mulPose(Axis.ZP.rotationDegrees(180.0F));
-        poseStack.mulPose(pitchRotation);
-        final float oldYaw = entity.getYRot();
-        final float oldPitch = entity.getXRot();
-        final float oldYawOffset = livingEntity == null ? 0F : livingEntity.yBodyRot;
-        final float oldPrevYawHead = livingEntity == null ? 0F : livingEntity.yHeadRotO;
-        final float oldYawHead = livingEntity == null ? 0F : livingEntity.yHeadRot;
-        entity.setYRot(180.0F + (float) headYaw);
-        entity.setXRot(-pitch);
-        if (livingEntity != null)
-        {
-            livingEntity.yBodyRot = 180.0F + yaw;
-            livingEntity.yHeadRot = entity.getYRot();
-            livingEntity.yHeadRotO = entity.getYRot();
-        }
-        Lighting.setupForEntityInInventory();
-        final EntityRenderDispatcher dispatcher = mc.getEntityRenderDispatcher();
-        pitchRotation.conjugate();
-        dispatcher.overrideCameraOrientation(pitchRotation);
-        dispatcher.setRenderShadow(false);
-        final MultiBufferSource.BufferSource buffers = mc.renderBuffers().bufferSource();
-        RenderSystem.runAsFancy(() -> dispatcher.render(entity, 0.0D, 0.0D, 0.0D, 0.0F, 1.0F, poseStack, buffers, 0x00F000F0));
-        buffers.endBatch();
-        dispatcher.setRenderShadow(true);
-        entity.setYRot(oldYaw);
-        entity.setXRot(oldPitch);
-        if (livingEntity != null)
-        {
-            livingEntity.yBodyRot = oldYawOffset;
-            livingEntity.yHeadRotO = oldPrevYawHead;
-            livingEntity.yHeadRot = oldYawHead;
-        }
-        poseStack.popPose();
-        Lighting.setupFor3DItems();
-    }
-
-    /**
      * @return rendering lambda detached from sprite and guiScaling instances
      * @implNote same as logic {@link #blitSprite(PoseStack, TextureAtlasSprite, GuiSpriteScaling, int, int, int, int)}
      */
@@ -786,7 +646,7 @@ public class UiRenderMacros
                 }
             };
         }
-        if (!FMLEnvironment.production)
+        if (!FMLEnvironment.isProduction())
         {
             throw new UnsupportedOperationException("Missing resolver for gui scaling: " + guiScaling.type());
         }

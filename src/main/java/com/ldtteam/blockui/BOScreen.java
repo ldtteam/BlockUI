@@ -2,11 +2,9 @@ package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.util.cursor.CursorUtils;
 import com.ldtteam.blockui.views.BOWindow;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.VertexSorting;
-import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
@@ -14,8 +12,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.client.ClientHooks;
-import net.neoforged.neoforge.client.NeoForgeRenderTypes;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.Objects;
@@ -63,16 +59,12 @@ public class BOScreen extends Screen
         final int guiWidth = Math.max(framebufferWidth, 320);
         final int guiHeight = Math.max(framebufferHeight, 240);
 
-        final boolean oldFilteringValue = NeoForgeRenderTypes.enableTextTextureLinearFiltering;
-        NeoForgeRenderTypes.enableTextTextureLinearFiltering = false;
-
         mcScale = ms.minecraft.getWindow().getGuiScale();
         renderScale = window.getRenderType().calcRenderScale(ms.minecraft.getWindow(), window);
 
         if (window.hasLightbox() && ms.minecraft.screen == this)
         {
-            UiRenderMacros.fillGradient(ms.pose(), 0, 0, framebufferWidth, framebufferHeight, -1072689136, -804253680);
-            //super.renderBackground(ms);
+            ms.fillGradient(0, 0, framebufferWidth, framebufferHeight, -1072689136, -804253680);
         }
 
         width = window.getWidth();
@@ -80,44 +72,22 @@ public class BOScreen extends Screen
         x = Math.floor((guiWidth - width * renderScale) / 2.0d);
         y = Math.floor((guiHeight - height * renderScale) / 2.0d);
 
-        // replace vanilla projection
-        final Matrix4fStack shaderPs = RenderSystem.getModelViewStack();
-        final Matrix4f oldProjection = RenderSystem.getProjectionMatrix();
-        RenderSystem.setProjectionMatrix(
-            new Matrix4f().setOrtho(0.0F, framebufferWidth, framebufferHeight, 0.0F, 1000.0F, ClientHooks.getGuiFarPlane()),
-            VertexSorting.ORTHOGRAPHIC_Z);
-        shaderPs.pushMatrix();
-        shaderPs.identity();
-        shaderPs.translate(0.0f, 0.0f, 10000f - net.neoforged.neoforge.client.ClientHooks.getGuiFarPlane());
-        RenderSystem.applyModelViewMatrix();
-
-        final PoseStack newMs = new PoseStack();
-        newMs.translate(x, y, ms.pose().last().pose().m32());
-        newMs.scale((float) renderScale, (float) renderScale, 1.0f);
-
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.enableDepthTest();
-        RenderSystem.disableBlend();
-        RenderSystem.defaultBlendFunc();
-
         try
         {
-            final BOGuiGraphics target = new BOGuiGraphics(ms.minecraft, newMs, ms.bufferSource());
+            final BOGuiGraphics target = new BOGuiGraphics(ms);
             window.draw(target, calcRelativeX(mx), calcRelativeY(my));
 
             if (ms.minecraft.screen == this)
             {
-                int debugX = (int) (-x / renderScale) + 3;
                 if (Pane.debugging)
                 {
-                    debugX = target.drawString(
+                    target.guiGraphics().drawString(minecraft.font,
                         "XML: %s Scaling: %s (vanilla: %.2f our: %.2f) "
                             .formatted(window.getXmlResourceLocation(), window.getRenderType().name(), mcScale, renderScale),
-                        debugX,
+                        (int) (-x / renderScale) + 3,
                         -minecraft.font.lineHeight,
                         Color.getByName("white"));
                 }
-                target.applyCursor(debugX);
             }
 
             window.drawLast(target, calcRelativeX(mx), calcRelativeY(my));
@@ -132,33 +102,24 @@ public class BOScreen extends Screen
             category.setDetail("BO gui scale", () -> Double.toString(renderScale));
             throw new ReportedException(crashReport);
         }
-        finally
-        {
-            // restore vanilla state
-            shaderPs.popMatrix();
-            RenderSystem.setProjectionMatrix(oldProjection, VertexSorting.ORTHOGRAPHIC_Z);
-            RenderSystem.applyModelViewMatrix();
-
-            NeoForgeRenderTypes.enableTextTextureLinearFiltering = oldFilteringValue;
-        }
     }
 
     @Override
-    public boolean keyPressed(final int key, final int scanCode, final int modifiers)
+    public boolean keyPressed(final KeyEvent event)
     {
         // keys without printable representation
-        if (key >= 0 && key <= GLFW.GLFW_KEY_LAST)
+        if (event.key() >= 0 && event.key() <= GLFW.GLFW_KEY_LAST)
         {
             try
             {
-                return window.onKeyTyped('\0', key);
+                return window.onKeyTyped(String.valueOf('\0'), event.key());
             }
             catch (final Exception e)
             {
                 final CrashReport crashReport = CrashReport.forThrowable(e, "KeyPressed event for BO screen");
                 final CrashReportCategory category = crashReport.addCategory("BO screen key event details");
                 category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
-                category.setDetail("GLFW key value", () -> Integer.toString(key));
+                category.setDetail("GLFW key value", () -> Integer.toString(event.key()));
                 throw new ReportedException(crashReport);
             }
         }
@@ -166,36 +127,36 @@ public class BOScreen extends Screen
     }
 
     @Override
-    public boolean charTyped(final char ch, final int key)
+    public boolean charTyped(final CharacterEvent event)
     {
         try
         {
-            return window.onKeyTyped(ch, key);
+            return window.onKeyTyped(event.codepointAsString(), event.codepoint());
         }
         catch (final Exception e)
         {
             final CrashReport crashReport = CrashReport.forThrowable(e, "CharTyped event for BO screen");
             final CrashReportCategory category = crashReport.addCategory("BO screen char event details");
             category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
-            category.setDetail("Char value", () -> Character.toString(ch));
+            category.setDetail("Char value", () -> event.codepointAsString());
             throw new ReportedException(crashReport);
         }
     }
 
     @Override
-    public boolean mouseClicked(final double mxIn, final double myIn, final int keyCode)
+    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick)
     {
-        final double mx = calcRelativeX(mxIn);
-        final double my = calcRelativeY(myIn);
+        final double mx = calcRelativeX(event.x());
+        final double my = calcRelativeY(event.y());
         try
         {
-            if (keyCode == GLFW.GLFW_MOUSE_BUTTON_LEFT)
+            if (event.isLeft())
             {
                 // Adjust coordinate to origin of window
                 isMouseLeftDown = true;
                 return window.click(mx, my);
             }
-            else if (keyCode == GLFW.GLFW_MOUSE_BUTTON_RIGHT)
+            else if (event.isRight())
             {
                 return window.rightClick(mx, my);
             }
@@ -205,7 +166,7 @@ public class BOScreen extends Screen
             final CrashReport crashReport = CrashReport.forThrowable(e, "MousePressed event for BO screen");
             final CrashReportCategory category = crashReport.addCategory("BO screen mouse event details");
             category.setDetail("XML res loc", () -> Objects.toString(window.getXmlResourceLocation()));
-            category.setDetail("GLFW mouse key value", () -> Integer.toString(keyCode));
+            category.setDetail("GLFW mouse key value", () -> Integer.toString(event.input()));
             throw new ReportedException(crashReport);
         }
         return false;
@@ -233,11 +194,11 @@ public class BOScreen extends Screen
     }
 
     @Override
-    public boolean mouseDragged(final double xIn, final double yIn, final int speed, final double deltaX, final double deltaY)
+    public boolean mouseDragged(final MouseButtonEvent event, final double dx, final double dy)
     {
         try
         {
-            return window.onMouseDrag(calcRelativeX(xIn), calcRelativeY(yIn), speed, deltaX, deltaY);
+            return window.onMouseDrag(calcRelativeX(event.x()), calcRelativeY(event.y()), dx, dy);
         }
         catch (final Exception e)
         {
@@ -249,22 +210,22 @@ public class BOScreen extends Screen
     }
 
     @Override
-    public boolean mouseReleased(final double mxIn, final double myIn, final int keyCode)
+    public boolean mouseReleased(final MouseButtonEvent event)
     {
-        if (keyCode == GLFW.GLFW_MOUSE_BUTTON_LEFT)
+        if (event.isLeft())
         {
             // Adjust coordinate to origin of window
             isMouseLeftDown = false;
             try
             {
-                return window.onMouseReleased(calcRelativeX(mxIn), calcRelativeY(myIn));
+                return window.onMouseReleased(calcRelativeX(event.x()), calcRelativeY(event.y()));
             }
             catch (final Exception e)
             {
                 final CrashReport crashReport = CrashReport.forThrowable(e, "MouseReleased event for BO screen");
                 final CrashReportCategory category = crashReport.addCategory("BO screen mouse event details");
                 category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
-                category.setDetail("GLFW mouse key value", () -> Integer.toString(keyCode));
+                category.setDetail("GLFW mouse key value", () -> Integer.toString(event.input()));
                 throw new ReportedException(crashReport);
             }
         }

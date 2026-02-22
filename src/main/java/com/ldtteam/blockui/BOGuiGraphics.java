@@ -1,46 +1,26 @@
 package com.ldtteam.blockui;
 
-import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
 import com.ldtteam.blockui.util.SingleBlockGetter.SingleBlockNeighborhood;
-import com.ldtteam.blockui.util.cursor.Cursor;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Axis;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.material.FluidState;
-import net.neoforged.neoforge.client.ClientHooks;
-import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
-import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix3f;
 
-public class BOGuiGraphics extends GuiGraphics
+public class BOGuiGraphics
 {
     // Static instance should be fine since gui rendering is on single thread
     private static final SingleBlockNeighborhood NEIGHBORHOOD = new SingleBlockNeighborhood();
 
-    private int cursorMaxDepth = -1;
-    private Cursor selectedCursor = Cursor.DEFAULT;
+    private GuiGraphics guiGraphics;
 
-    public BOGuiGraphics(final Minecraft mc, final PoseStack ps, final BufferSource buffers)
+    public BOGuiGraphics(final GuiGraphics ms)
     {
-        super(mc, ps, buffers);
+        guiGraphics = ms;
     }
 
-    private Font getFont(@Nullable final ItemStack itemStack)
+    public GuiGraphics guiGraphics()
+    {
+        return guiGraphics;
+    }
+
+    /*private Font getFont(@Nullable final ItemStack itemStack)
     {
         if (itemStack != null)
         {
@@ -75,17 +55,17 @@ public class BOGuiGraphics extends GuiGraphics
 
     public void setCursor(final Cursor cursor)
     {
-        if (pose().poseStack.size() >= cursorMaxDepth)
+        if (guiGraphics.requestCursor(cu).pose().poseStack.size() >= cursorMaxDepth)
         {
             cursorMaxDepth = pose().poseStack.size();
             selectedCursor = cursor;
         }
-    }
+    }*/
 
     /**
      * @param debugXoffset debug string x offset
      */
-    public void applyCursor(final int debugXoffset)
+    /*public void applyCursor(final int debugXoffset)
     {
         selectedCursor.apply();
 
@@ -101,7 +81,7 @@ public class BOGuiGraphics extends GuiGraphics
      * @param data      blockState rendering data
      * @param itemStack backing itemStack for given blockState
      */
-    public void renderBlockStateAsItem(final BlockStateRenderingData data, final ItemStack itemStack)
+    /*public void renderBlockStateAsItem(final BlockStateRenderingData data, final ItemStack itemStack)
     {
         BakedModel itemModel = minecraft.getItemRenderer().getModel(itemStack, null, null, 0);
         if (!itemModel.isGui3d() || data.blockState().getRenderShape() == RenderShape.INVISIBLE)
@@ -190,4 +170,5 @@ public class BOGuiGraphics extends GuiGraphics
     {
         return Screen.hasAltDown() ? 5 : 1;
     }
+    */
 }

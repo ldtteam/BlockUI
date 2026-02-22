@@ -192,7 +192,7 @@ public class Scrollbar extends Pane
     }
 
     @Override
-    public boolean onMouseDrag(final double mx, final double my, final int speed, final double deltaX, final double deltaY)
+    public boolean onMouseDrag(final double mx, final double my, final double deltaX, final double deltaY)
     {
         return true;
     }

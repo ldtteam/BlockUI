@@ -4,12 +4,13 @@ import com.ldtteam.blockui.Alignment;
 import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.Parsers;
-import com.ldtteam.blockui.util.texture.ResolvedWidgetSprites;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.neoforged.fml.loading.FMLEnvironment;
 
@@ -32,7 +33,6 @@ public class ButtonImage extends Button
     public static final int DEFAULT_DISABLED_COLOR = 0xA0A0A0;
 
     protected WidgetSprites textures = VANILLA_BUTTON;
-    protected ResolvedWidgetSprites resolvedTextures = null;
 
     /**
      * Default constructor. Makes a small square button.
@@ -132,7 +132,6 @@ public class ButtonImage extends Button
     public void setTextures(final WidgetSprites buttonTextures)
     {
         this.textures = buttonTextures;
-        this.resolvedTextures = null;
     }
 
     /**
@@ -225,24 +224,13 @@ public class ButtonImage extends Button
     @Override
     public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
-        if (!FMLEnvironment.production)
+        if (!FMLEnvironment.isProduction())
         {
             Objects.requireNonNull(textures.enabled(), () -> id + " | " + window.getXmlResourceLocation());
         }
 
-        if (resolvedTextures == null)
-        {
-            resolvedTextures = ResolvedWidgetSprites.fromUnresolved(textures, Image::resolveBlit);
-        }
-
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-
-        resolvedTextures.getAndPrepare(isEnabled(), wasCursorInPane).blit(target.pose(), x, y, width, height);
+        target.guiGraphics().blitSprite(RenderPipelines.GUI_TEXTURED, textures.get(enabled, wasCursorInPane), x, y, width, height, ARGB.white(1));
         postDrawBackground(target, mx, my);
-
-        RenderSystem.disableBlend();
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         super.drawSelf(target, mx, my);
     }

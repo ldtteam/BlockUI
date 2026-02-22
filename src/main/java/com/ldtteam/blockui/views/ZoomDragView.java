@@ -228,9 +228,9 @@ public class ZoomDragView extends View
     }
 
     @Override
-    public boolean onMouseDrag(final double startX, final double startY, final int speed, final double x, final double y)
+    public boolean onMouseDrag(final double startX, final double startY, final double x, final double y)
     {
-        final boolean childResult = super.onMouseDrag(startX, startY, speed, calcRelativeX(x), calcRelativeY(y));
+        final boolean childResult = super.onMouseDrag(startX, startY, calcRelativeX(x), calcRelativeY(y));
         if (!childResult && dragEnabled)
         {
             setScrollX(scrollX - x * dragFactor * BOGuiGraphics.getAltSpeedFactor());

@@ -3,7 +3,6 @@ package com.ldtteam.blockui.controls;
 import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
-import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.util.cursor.Cursor;
 import com.ldtteam.blockui.views.View;
 import com.mojang.blaze3d.platform.GlStateManager.LogicOp;
@@ -469,7 +468,7 @@ public class TextField extends Pane
     }
 
     @Override
-    public boolean onKeyTyped(final char c, final int key)
+    public boolean onKeyTyped(final String c, final int key)
     {
         if (Screen.isCopy(key))
         {

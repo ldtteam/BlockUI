@@ -65,7 +65,7 @@ public class OverlayView extends View
      * @return false at all times - do nothing.
      */
     @Override
-    public boolean onKeyTyped(final char ch, final int key)
+    public boolean onKeyTyped(final String ch, final int key)
     {
         if (isVisible() && key == GLFW.GLFW_KEY_ESCAPE)
         {

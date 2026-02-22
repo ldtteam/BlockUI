@@ -9,25 +9,24 @@ import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
 import com.ldtteam.blockui.util.SpacerTextComponent;
 import com.ldtteam.blockui.util.ToggleableTextComponent;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.Item;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.Item.TooltipContext;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.block.AirBlock;
 import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix3x2fStack;
+
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Class of itemIcons in our GUIs.
@@ -69,10 +68,10 @@ public class ItemIcon extends Pane
         final Identifier itemName = params.getResource("item");
         if (itemName != null)
         {
-            final Item item = BuiltInRegistries.ITEM.get(itemName);
-            if (item != null)
+            final Optional<Holder.Reference<Item>> item = BuiltInRegistries.ITEM.get(itemName);
+            if (item.isPresent())
             {
-                setItem(item.getDefaultInstance());
+                setItem(item.get().value().getDefaultInstance());
             }
         }
 
@@ -143,7 +142,7 @@ public class ItemIcon extends Pane
         }
         if (!itemStack.isEmpty() && blockStateExtension.blockEntity() != null)
         {
-            blockStateExtension.blockEntity().saveToItem(itemStack, mc.level.registryAccess());
+            blockStateExtension.blockState().item.blockEntity().saveToItem(itemStack, mc.level.registryAccess());
         }
         onItemUpdate();
     }
@@ -185,21 +184,18 @@ public class ItemIcon extends Pane
         updateTooltipIfNeeded();
         if (!isDataEmpty())
         {
-            final PoseStack ms = target.pose();
-            ms.pushPose();
-            ms.translate(x, y, 0.0f);
-            ms.scale(this.getWidth() / DEFAULT_ITEMSTACK_SIZE, this.getHeight() / DEFAULT_ITEMSTACK_SIZE, 1.0f);
+            final Matrix3x2fStack ms = target.guiGraphics().pose();
+            ms.pushMatrix();
+            ms.translate(x, y);
+            ms.scale(this.getWidth() / DEFAULT_ITEMSTACK_SIZE, this.getHeight() / DEFAULT_ITEMSTACK_SIZE);
 
-            ms.last().normal().identity(); // reset normals cuz lighting
-            target.renderItem(itemStack, 0, 0);
+            target.guiGraphics().renderItem(itemStack, 0, 0);
             if (renderItemDecorations)
             {
-                target.renderItemDecorations(itemStack, 0, 0);
+                target.guiGraphics().renderItemDecorations(mc.font, itemStack, 0, 0);
             }
 
-            RenderSystem.defaultBlendFunc();
-            RenderSystem.disableBlend();
-            ms.popPose();
+            ms.popMatrix();
         }
     }
 
@@ -288,8 +284,8 @@ public class ItemIcon extends Pane
         if (prevTooltipSize != tooltipList.size())
         {
             // add "show more info" text
-            tooltipList.add(ToggleableTextComponent.ofNegated(Screen::hasShiftDown, Component.empty()));
-            tooltipList.add(ToggleableTextComponent.ofNegated(Screen::hasShiftDown,
+            tooltipList.add(ToggleableTextComponent.ofNegated(mc::hasShiftDown, Component.empty()));
+            tooltipList.add(ToggleableTextComponent.ofNegated(mc::hasShiftDown,
                 Component.translatable("blockui.tooltip.item_additional_info", Component.translatable("key.keyboard.left.shift"))
                     .withStyle(ChatFormatting.GOLD)));
         }
@@ -300,11 +296,11 @@ public class ItemIcon extends Pane
 
     protected static MutableComponent wrapShift(final MutableComponent wrapped)
     {
-        return ToggleableTextComponent.of(Screen::hasShiftDown, wrapped);
+        return ToggleableTextComponent.of(Minecraft.getInstance()::hasShiftDown, wrapped);
     }
 
     protected static MutableComponent wrapShift(final MutableComponent wrapped, final boolean shouldWrap)
     {
-        return shouldWrap ? ToggleableTextComponent.of(Screen::hasShiftDown, wrapped) : wrapped;
+        return shouldWrap ? ToggleableTextComponent.of(Minecraft.getInstance()::hasShiftDown, wrapped) : wrapped;
     }
 }

@@ -1,31 +1,21 @@
 package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.controls.AbstractTextBuilder.TooltipBuilder;
-import com.ldtteam.blockui.mod.BlockUI;
-import com.ldtteam.blockui.util.cursor.Cursor;
-import com.ldtteam.blockui.util.cursor.CursorUtils;
-import com.ldtteam.blockui.util.cursor.CursorUtils.StandardCursor;
 import com.ldtteam.blockui.views.View;
 import com.ldtteam.blockui.views.BOWindow;
-import com.mojang.blaze3d.vertex.*;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.platform.cursor.CursorType;
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.Mth;
-import org.joml.Vector4f;
 import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
 /**
  * A Pane is the root of all UI objects.
  */
 public class Pane extends UiRenderMacros
 {
-    private static final Deque<ScissorsInfo> scissorsInfoStack = new ConcurrentLinkedDeque<>();
     protected static Pane lastClickedPane;
     protected static Pane focus;
     protected Pane onHover;
@@ -41,7 +31,7 @@ public class Pane extends UiRenderMacros
     protected boolean visible = true;
     protected boolean enabled = true;
     protected String onHoverId = "";
-    protected Cursor cursor = Cursor.DEFAULT;
+    protected CursorType cursor = CursorType.DEFAULT;
     // Runtime
     protected BOWindow window;
     protected View parent;
@@ -87,13 +77,6 @@ public class Pane extends UiRenderMacros
         enabled = params.getBoolean("enabled", enabled);
         onHoverId = params.getString("onHoverId", onHoverId);
         toolTipLines = params.getMultilineText("tooltip", toolTipLines);
-
-        params.getResource("cursor", resLoc -> {
-            cursor = (BlockUI.MOD_ID + "_std").equalsIgnoreCase(resLoc.getNamespace()) ?
-                // do not use Cursor instances, there are instance equality checks
-                () -> CursorUtils.setStandardCursor(StandardCursor.valueOf(resLoc.getPath().toUpperCase())) :
-                Cursor.of(resLoc);
-        });
     }
 
     /**
@@ -319,22 +302,6 @@ public class Pane extends UiRenderMacros
     }
 
     /**
-     * Used mostly for overrides for default logics like {@link com.ldtteam.blockui.views.ZoomDragView#getCursor ZoomDragView}
-     */
-    public Cursor getCursor()
-    {
-        return cursor;
-    }
-
-    /**
-     * @param cursor use {@link Cursor} instances for default behaviour (or new instances to prevent it)
-     */
-    public void setCursor(final Cursor cursor)
-    {
-        this.cursor = cursor;
-    }
-
-    /**
      * Draw the current Pane if visible.
      *
      * @param mx mouse x.
@@ -348,24 +315,18 @@ public class Pane extends UiRenderMacros
 
         if (shouldDraw())
         {
-            if (wasCursorInPane && isEnabled())
-            {
-                // intentional getter cuz overrides
-                target.setCursor(getCursor());
-            }
-
             drawSelf(target, mx, my);
 
             if (debugging)
             {
                 final int color = wasCursorInPane ? 0xFF00FF00 : 0xFF0000FF;
 
-                drawLineRect(target.pose(), x, y, width, height, color);
+                target.guiGraphics().renderOutline(x, y, width, height, color);
 
                 if (wasCursorInPane && !id.isEmpty())
                 {
                     final int stringWidth = mc.font.width(id) + 1;
-                    target.drawString(id, x + getWidth() - stringWidth, y + getHeight() - mc.font.lineHeight, color);
+                    target.guiGraphics().drawString(mc.font, id, x + getWidth() - stringWidth, y + getHeight() - mc.font.lineHeight, color);
                 }
             }
         }
@@ -671,7 +632,7 @@ public class Pane extends UiRenderMacros
      * @param key the key
      * @return true if event was used or propagation needs to be stopped
      */
-    public boolean onKeyTyped(final char ch, final int key)
+    public boolean onKeyTyped(final String ch, final int key)
     {
         return false;
     }
@@ -682,48 +643,6 @@ public class Pane extends UiRenderMacros
     public void onUpdate()
     {
         // Can be overloaded
-    }
-
-    // TODO: refactor: move logic to macros, keep local override here
-    // TODO: move to stencil test? especially scissors can't be used in world gui
-    protected synchronized void scissorsStart(final PoseStack ms, final int contentWidth, final int contentHeight)
-    {
-        final int fbWidth = mc.getWindow().getWidth();
-        final int fbHeight = mc.getWindow().getHeight();
-
-        final Vector4f start = new Vector4f(x, y, 0.0f, 1.0f);
-        final Vector4f end = new Vector4f(x + width, y + height, 0.0f, 1.0f);
-        ms.last().pose().transform(start);
-        ms.last().pose().transform(end);
-
-        int scissorsXstart = Mth.clamp((int) Math.floor(start.x()), 0, fbWidth);
-        int scissorsXend = Mth.clamp((int) Math.floor(end.x()), 0, fbWidth);
-
-        int scissorsYstart = Mth.clamp((int) Math.floor(start.y()), 0, fbHeight);
-        int scissorsYend = Mth.clamp((int) Math.floor(end.y()), 0, fbHeight);
-
-        // negate bottom top (opengl things)
-        final int temp = scissorsYstart;
-        scissorsYstart = fbHeight - scissorsYend;
-        scissorsYend = fbHeight - temp;
-
-        if (!scissorsInfoStack.isEmpty())
-        {
-            final ScissorsInfo parentInfo = scissorsInfoStack.peek();
-
-            scissorsXstart = Math.max(scissorsXstart, parentInfo.xStart);
-            scissorsXend = Math.max(scissorsXstart, Math.min(parentInfo.xEnd, scissorsXend));
-
-            scissorsYstart = Math.max(scissorsYstart, parentInfo.yStart);
-            scissorsYend = Math.max(scissorsYstart, Math.min(parentInfo.yEnd, scissorsYend));
-        }
-
-        final ScissorsInfo info = new ScissorsInfo(scissorsXstart, scissorsXend, scissorsYstart, scissorsYend, window.getScreen().width, window.getScreen().height);
-        scissorsInfoStack.push(info);
-        window.getScreen().width = contentWidth;
-        window.getScreen().height = contentHeight;
-
-        RenderSystem.enableScissor(scissorsXstart, scissorsYstart, scissorsXend - scissorsXstart, scissorsYend - scissorsYstart);
     }
 
     /**
@@ -744,45 +663,6 @@ public class Pane extends UiRenderMacros
     public int getY()
     {
         return y;
-    }
-
-    protected synchronized void scissorsEnd(final BOGuiGraphics target)
-    {
-        final PoseStack ms = target.pose();
-        final ScissorsInfo popped = scissorsInfoStack.pop();
-        if (debugging)
-        {
-            final int color = 0xffff0000;
-            final int w = popped.xEnd - popped.xStart;
-            final int h = popped.yEnd - popped.yStart;
-
-            final int yStart = mc.getWindow().getHeight() - popped.yEnd;
-
-            ms.pushPose();
-            ms.setIdentity();
-            drawLineRect(ms, popped.xStart, yStart, w, h, color, 2);
-
-            final String scId = "scissor_" + (id.isEmpty() ? this.toString() : id);
-            final int stringWidth = mc.font.width(scId) + 1;
-            target.drawString(scId,
-                popped.xStart + w - stringWidth,
-                yStart + h - 2 * mc.font.lineHeight,
-                color);
-            ms.popPose();
-        }
-
-        window.getScreen().width = popped.oldGuiWidth;
-        window.getScreen().height = popped.oldGuiHeight;
-
-        if (!scissorsInfoStack.isEmpty())
-        {
-            final ScissorsInfo info = scissorsInfoStack.peek();
-            RenderSystem.enableScissor(info.xStart, info.yStart, info.xEnd - info.xStart, info.yEnd - info.yStart);
-        }
-        else
-        {
-            RenderSystem.disableScissor();
-        }
     }
 
     /**
@@ -808,26 +688,6 @@ public class Pane extends UiRenderMacros
     public void setParentView(final View view)
     {
         this.parent = view;
-    }
-
-    private static class ScissorsInfo
-    {
-        private final int xStart;
-        private final int yStart;
-        private final int xEnd;
-        private final int yEnd;
-        private final int oldGuiWidth;
-        private final int oldGuiHeight;
-
-        ScissorsInfo(final int xStart, final int xEnd, final int yStart, final int yEnd, final int oldGuiWidth, final int oldGuiHeight)
-        {
-            this.xStart = xStart;
-            this.xEnd = xEnd;
-            this.yStart = yStart;
-            this.yEnd = yEnd;
-            this.oldGuiWidth = oldGuiWidth;
-            this.oldGuiHeight = oldGuiHeight;
-        }
     }
 
     /**
@@ -897,12 +757,11 @@ public class Pane extends UiRenderMacros
      *
      * @param mx     mouse start x
      * @param my     mouse start y
-     * @param speed  drag speed
      * @param deltaX relative x
      * @param deltaY relative y
      * @return true if event was used or propagation needs to be stopped
      */
-    public boolean onMouseDrag(final double mx, final double my, final int speed, final double deltaX, final double deltaY)
+    public boolean onMouseDrag(final double mx, final double my, final double deltaX, final double deltaY)
     {
         return false;
     }

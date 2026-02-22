@@ -17,6 +17,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.FormattedCharSequence;
 import net.neoforged.neoforge.client.NeoForgeRenderTypes;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix3x2fStack;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
 
@@ -279,7 +280,7 @@ public abstract class AbstractTextElement extends Pane
 
     protected void innerDrawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
-        final PoseStack ms = target.pose();
+        final Matrix3x2fStack ms = target.pose();
 
         final int color = isEnabled() ? (wasCursorInPane ? textHoverColor : textColor) : textDisabledColor;
 
@@ -305,8 +306,8 @@ public abstract class AbstractTextElement extends Pane
         }
 
         ms.pushPose();
-        ms.translate(x + offsetX, y + offsetY, 0.0d);
-        ms.scale((float) textScale, (float) textScale, 1.0f);
+        ms.translate(x + offsetX, y + offsetY);
+        ms.scale((float) textScale, (float) textScale);
 
         final Matrix4f matrix4f = ms.last().pose();
 

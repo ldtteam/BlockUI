@@ -15,7 +15,7 @@ public class SafeError
      */
     public static void throwInDev(final RuntimeException exception)
     {
-        if (FMLEnvironment.production)
+        if (FMLEnvironment.isProduction())
         {
             Log.getLogger().error(exception.getMessage(), exception);
         }
