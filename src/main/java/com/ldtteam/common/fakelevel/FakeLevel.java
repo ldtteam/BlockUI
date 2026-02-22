@@ -8,19 +8,24 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.particles.ExplosionParticleInfo;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.AbortableIterationConsumer.Continuation;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.util.random.WeightedList;
 import net.minecraft.world.TickRateManager;
+import net.minecraft.world.attribute.EnvironmentAttributeSystem;
+import net.minecraft.world.clock.ClockManager;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageSources;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.alchemy.PotionBrewing;
+import net.minecraft.world.item.crafting.RecipeAccess;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Explosion;
@@ -32,6 +37,7 @@ import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.FuelValues;
 import net.minecraft.world.level.block.entity.TickingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
@@ -50,12 +56,14 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
+import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.ticks.BlackholeTickAccess;
 import net.minecraft.world.ticks.LevelTickAccess;
-import net.neoforged.neoforge.client.model.data.ModelData;
-import net.neoforged.neoforge.client.model.data.ModelDataManager;
+import net.neoforged.neoforge.entity.PartEntity;
+import net.neoforged.neoforge.model.data.ModelData;
+import net.neoforged.neoforge.model.data.ModelDataManager;
 import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -96,9 +104,9 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
     protected final boolean overrideBeLevel;
 
     protected final FakeChunkSource chunkSource;
-    protected final FakeLevelLightEngine lightEngine;
-    protected final ModelDataManager modelDataManager;
-    protected FakeLevelEntityGetterAdapter levelEntityGetter = FakeLevelEntityGetterAdapter.EMPTY;
+    protected final FakeLevelLightEngine         lightEngine;
+    protected final ModelDataManager             modelDataManager;
+    protected       FakeLevelEntityGetterAdapter levelEntityGetter = FakeLevelEntityGetterAdapter.EMPTY;
     // TODO: this is currently manually filled by class user - ideally if not filled yet this should get constructed from levelSource
     // manually
     protected Map<BlockPos, BlockEntity> blockEntities = Collections.emptyMap();
@@ -133,7 +141,6 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
             realLevel.dimension(),
             realLevel.registryAccess(),
             realLevel.dimensionTypeRegistration(),
-            realLevel.getProfilerSupplier(),
             realLevel.isClientSide(),
             false,
             0,
@@ -162,9 +169,9 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
             return;
         }
 
-        if (realLevel != null && realLevel.isClientSide != this.isClientSide)
+        if (realLevel != null && realLevel.isClientSide() != this.isClientSide())
         {
-            throw new IllegalArgumentException("Received wrong sided realLevel - fakeLevel.isClientSide = " + this.isClientSide);
+            throw new IllegalArgumentException("Received wrong sided realLevel - fakeLevel.isClientSide = " + this.isClientSide());
         }
 
         this.realLevel = realLevel;
@@ -250,18 +257,6 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
     }
 
     @Override
-    public ProfilerFiller getProfiler()
-    {
-        return realLevel() != null ? realLevel().getProfiler() : super.getProfiler();
-    }
-
-    @Override
-    public Supplier<ProfilerFiller> getProfilerSupplier()
-    {
-        return realLevel() != null ? realLevel().getProfilerSupplier() : super.getProfilerSupplier();
-    }
-
-    @Override
     public DimensionType dimensionType()
     {
         return realLevel() != null ? realLevel().dimensionType() : super.dimensionType();
@@ -276,7 +271,7 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
     @Override
     public WorldBorder getWorldBorder()
     {
-        return realLevel() != null ? realLevel().getWorldBorder() : super.getWorldBorder();
+        return realLevel() != null ? realLevel().getWorldBorder() : new WorldBorder();
     }
 
     // ========================================
@@ -342,12 +337,6 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
     }
 
     @Override
-    public boolean isDay()
-    {
-        return !this.dimensionType().hasFixedTime() && this.getSkyDarken() < 4;
-    }
-
-    @Override
     public Scoreboard getScoreboard()
     {
         return scoreboard == null ? realLevel().getScoreboard() : scoreboard;
@@ -363,12 +352,6 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
     public int getHeight()
     {
         return levelSource.getHeight();
-    }
-
-    @Override
-    public int getMinBuildHeight()
-    {
-        return levelSource.getMinBuildHeight();
     }
 
     @Override
@@ -416,7 +399,7 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
 
         if (levelSource.isPosInside(pos))
         {
-            for (int y = levelSource.getMaxBuildHeight() - 1; y >= levelSource.getMinBuildHeight(); y--)
+            for (int y = levelSource.getMaxY() - 1; y >= levelSource.getMinBuildHeight(); y--)
             {
                 pos.setY(y);
                 if (heightmapType.isOpaque().test(levelSource.getBlockState(pos)))
@@ -479,12 +462,6 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
     }
 
     @Override
-    public RecipeManager getRecipeManager()
-    {
-        return realLevel().getRecipeManager();
-    }
-
-    @Override
     public FeatureFlagSet enabledFeatures()
     {
         return realLevel().enabledFeatures();
@@ -515,38 +492,23 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
     }
 
     @Override
-    public float getDayTimeFraction()
+    public RecipeAccess recipeAccess()
     {
-        return realLevel().getDayTimeFraction();
+        return realLevel.recipeAccess();
     }
 
     @Override
-    public float getDayTimePerTick()
+    public ClockManager clockManager()
     {
-        return realLevel().getDayTimePerTick();
+        return realLevel.clockManager();
     }
 
     // ========================================
     // ======= NOOP UNSAFE NULL METHODS =======
     // ========================================
 
-    @Override
-    public Explosion explode(@Nullable Entity p_311934_,
-        @Nullable DamageSource p_312790_,
-        @Nullable ExplosionDamageCalculator p_311975_,
-        double p_312493_,
-        double p_312456_,
-        double p_312719_,
-        float p_312292_,
-        boolean p_312144_,
-        Level.ExplosionInteraction p_312265_,
-        boolean p_312145_,
-        ParticleOptions p_312842_,
-        ParticleOptions p_312060_,
-        Holder<SoundEvent> p_320283_)
-    {
-        throw new UnsupportedOperationException("Structurize fake immutable level - no explosions possible!");
-    }
+
+
 
     // ========================================
     // ========== PERMANENT SETTINGS ==========
@@ -603,12 +565,6 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
     }
 
     @Override
-    public MapId getFreeMapId()
-    {
-        return new MapId(0);
-    }
-
-    @Override
     public MapItemSavedData getMapData(MapId p_324234_)
     {
         // Noop - null safe
@@ -616,39 +572,7 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
     }
 
     @Override
-    public void playSeededSound(@javax.annotation.Nullable Player p_220372_,
-        Entity p_220373_,
-        Holder<SoundEvent> p_263500_,
-        SoundSource p_220375_,
-        float p_220376_,
-        float p_220377_,
-        long p_220378_)
-    {
-        // Noop
-    }
-
-    @Override
-    public void playSeededSound(@javax.annotation.Nullable Player p_262953_,
-        double p_263004_,
-        double p_263398_,
-        double p_263376_,
-        Holder<SoundEvent> p_263359_,
-        SoundSource p_263020_,
-        float p_263055_,
-        float p_262914_,
-        long p_262991_)
-    {
-        // Noop
-    }
-
-    @Override
     public void sendBlockUpdated(BlockPos p_46612_, BlockState p_46613_, BlockState p_46614_, int p_46615_)
-    {
-        // Noop
-    }
-
-    @Override
-    public void setMapData(MapId p_324009_, MapItemSavedData p_151534_)
     {
         // Noop
     }
@@ -671,12 +595,6 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
     {
         // Noop
         return BlackholeTickAccess.emptyLevelList();
-    }
-
-    @Override
-    public void levelEvent(@javax.annotation.Nullable Player p_46771_, int p_46772_, BlockPos p_46773_, int p_46774_)
-    {
-        // Noop
     }
 
     // ========================================
@@ -726,24 +644,6 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
     }
 
     @Override
-    public boolean mayInteract(Player p_46557_, BlockPos p_46558_)
-    {
-        // Noop
-        return false;
-    }
-
-    @Override
-    public void neighborShapeChanged(Direction p_220385_,
-        BlockState p_220386_,
-        BlockPos p_220387_,
-        BlockPos p_220388_,
-        int p_220389_,
-        int p_220390_)
-    {
-        // Noop
-    }
-
-    @Override
     public boolean removeBlock(BlockPos p_46623_, boolean p_46624_)
     {
         return false;
@@ -758,12 +658,6 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
 
     @Override
     public void setRainLevel(float p_46735_)
-    {
-        // Noop
-    }
-
-    @Override
-    public void setSpawnSettings(boolean p_46704_, boolean p_46705_)
     {
         // Noop
     }
@@ -786,12 +680,6 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
     {
         // Noop
         return false;
-    }
-
-    @Override
-    protected void tickBlockEntities()
-    {
-        // Noop
     }
 
     @Override
@@ -819,15 +707,101 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
     }
 
     @Override
-    public void setDayTimeFraction(final float v)
+    public void playSeededSound(
+        @org.jspecify.annotations.Nullable final Entity except,
+        final Entity sourceEntity,
+        final Holder<SoundEvent> sound,
+        final SoundSource source,
+        final float volume,
+        final float pitch,
+        final long seed)
     {
         // Noop
     }
 
     @Override
-    public void setDayTimePerTick(final float v)
+    public void playSeededSound(
+        @org.jspecify.annotations.Nullable final Entity except,
+        final double x,
+        final double y,
+        final double z,
+        final Holder<SoundEvent> sound,
+        final SoundSource source,
+        final float volume,
+        final float pitch,
+        final long seed)
     {
         // Noop
+    }
+
+    @Override
+    public void playSeededSound(
+        @org.jspecify.annotations.Nullable final Entity except,
+        final double x,
+        final double y,
+        final double z,
+        final SoundEvent sound,
+        final SoundSource source,
+        final float volume,
+        final float pitch,
+        final long seed)
+    {
+        // Noop
+    }
+
+    @Override
+    public void levelEvent(@org.jspecify.annotations.Nullable final Entity source, final int type, final BlockPos pos, final int data)
+    {
+        // Noop
+    }
+
+    @Override
+    public void explode(
+        @org.jspecify.annotations.Nullable final Entity source,
+        @org.jspecify.annotations.Nullable final DamageSource damageSource,
+        @org.jspecify.annotations.Nullable final ExplosionDamageCalculator damageCalculator,
+        final double x,
+        final double y,
+        final double z,
+        final float r,
+        final boolean fire,
+        final ExplosionInteraction interactionType,
+        final ParticleOptions smallExplosionParticles,
+        final ParticleOptions largeExplosionParticles,
+        final WeightedList<ExplosionParticleInfo> blockParticles,
+        final Holder<SoundEvent> explosionSound)
+    {
+        // Noop
+    }
+
+    @Override
+    public Collection<PartEntity<?>> dragonParts()
+    {
+        return List.of();
+    }
+
+    @Override
+    public LevelData.RespawnData getRespawnData()
+    {
+        return LevelData.RespawnData.DEFAULT;
+    }
+
+    @Override
+    public void setRespawnData(final LevelData.RespawnData respawnData)
+    {
+        // Noop
+    }
+
+    @Override
+    public FuelValues fuelValues()
+    {
+        return realLevel.fuelValues();
+    }
+
+    @Override
+    public EnvironmentAttributeSystem environmentAttributes()
+    {
+        return realLevel.environmentAttributes();
     }
 
     // ========================================

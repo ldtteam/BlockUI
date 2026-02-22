@@ -12,7 +12,6 @@ import net.neoforged.neoforge.common.ModConfigSpec.EnumValue;
 import net.neoforged.neoforge.common.ModConfigSpec.IntValue;
 import net.neoforged.neoforge.common.ModConfigSpec.LongValue;
 import net.neoforged.neoforge.common.ModConfigSpec.RestartType;
-import net.neoforged.neoforge.common.util.LogicalSidedProvider;
 import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -281,7 +280,7 @@ public abstract class AbstractConfiguration
 
             if (!Objects.equals(newValue, lastValue))
             {
-                LogicalSidedProvider.WORKQUEUE.get(FMLEnvironment.dist.isClient() ? LogicalSide.CLIENT : LogicalSide.SERVER)
+                LogicalSidedProvider.WORKQUEUE.get(FMLEnvironment.getDist().isClient() ? LogicalSide.CLIENT : LogicalSide.SERVER)
                     .tell(new TickTask(0, () -> listener.onChange(lastValue, newValue)));
                 lastValue = newValue;
             }

@@ -5,7 +5,6 @@ import com.ldtteam.blockui.MouseEventCallback;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.controls.AbstractTextElement;
-import com.ldtteam.blockui.util.cursor.Cursor;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.util.Mth;
 
