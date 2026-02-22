@@ -11,7 +11,7 @@ import net.minecraft.client.renderer.texture.SimpleTexture;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import net.minecraft.client.resources.metadata.texture.TextureMetadataSection;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.neoforged.fml.loading.FMLEnvironment;
@@ -72,7 +72,7 @@ public class OutOfJarTexture extends AbstractTexture
         }
     }
 
-    public static AbstractTexture assertLoadedDefaultManagers(final ResourceLocation resLoc)
+    public static AbstractTexture assertLoadedDefaultManagers(final Identifier resLoc)
     {
         return assertLoaded(resLoc, Minecraft.getInstance().getTextureManager(), Minecraft.getInstance().getResourceManager());
     }
@@ -82,7 +82,7 @@ public class OutOfJarTexture extends AbstractTexture
      * 
      * @return valid texture instance (including missing texture)
      */
-    public static AbstractTexture assertLoaded(final ResourceLocation resLoc, final TextureManager textureManager, final ResourceManager resourceManager)
+    public static AbstractTexture assertLoaded(final Identifier resLoc, final TextureManager textureManager, final ResourceManager resourceManager)
     {
         if (!(resLoc instanceof final OutOfJarResourceLocation outOfJarResLoc))
         {

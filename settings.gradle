@@ -1,4 +1,23 @@
-gradle.startParameter.setProjectProperties(new HashMap<>(gradle.startParameter.getProjectProperties()))
-gradle.startParameter.getProjectProperties().put("build.start", Long.toString(System.currentTimeMillis()))
+pluginManagement {
+    repositories {
+        mavenLocal()
+        gradlePluginPortal()
+        maven {
+            url = uri('https://ldtteam.jfrog.io/artifactory/tableau/')
+            name = 'Tableau'
+        }
+    }
+}
 
-rootProject.name = "blockui"
+plugins {
+    id 'com.ldtteam.tableau' version '0.0.87'
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
+rootProject.name = 'blockui'
+
+features {
+    usesGit = true
+    usesCurse = true
+    usesParchment = true
+}

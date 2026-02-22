@@ -4,7 +4,8 @@ import com.ldtteam.blockui.mod.Log;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -58,7 +59,7 @@ public abstract class HookManager<T, U, K>
      */
     @SuppressWarnings("unchecked")
     protected void registerInternal(final U targetThing,
-        final ResourceLocation guiLoc,
+        final Identifier guiLoc,
         final long expirationTime,
         final TriggerMechanism trigger,
         final BiPredicate<? extends T, TriggerMechanism> shouldOpen,
@@ -72,7 +73,7 @@ public abstract class HookManager<T, U, K>
         final BiPredicate<T, TriggerMechanism> shouldOpenTest = Objects.requireNonNullElse((BiPredicate<T, TriggerMechanism>) shouldOpen, (t, tt) -> true);
         final IGuiActionCallback<T> onOpenListener = Objects.requireNonNullElse((IGuiActionCallback<T>) onOpen, IGuiActionCallback.noAction());
         final IGuiActionCallback<T> onClosedListener = Objects.requireNonNullElse((IGuiActionCallback<T>) onClose, IGuiActionCallback.noAction());
-        final ResourceLocation registryKey = typeRegistryReference.getKey(targetThing);
+        final Identifier registryKey = typeRegistryReference.getKey(targetThing);
 
         final Optional<HookEntry> existing = registry.stream()
             .filter(hook -> hook.getTargetThingRegistryKey().equals(registryKey) && hook.trigger.getClass() == trigger.getClass())
@@ -97,7 +98,7 @@ public abstract class HookManager<T, U, K>
      * @param resLoc registry key to remove
      * @return true if anything got removed
      */
-    public boolean unregister(final ResourceLocation resLoc)
+    public boolean unregister(final Identifier resLoc)
     {
         return registry.removeIf(hook -> hook.getTargetThingRegistryKey().equals(resLoc));
     }
@@ -120,7 +121,7 @@ public abstract class HookManager<T, U, K>
      * @param  triggerType trigger type
      * @return             true if anything got removed
      */
-    public boolean unregister(final ResourceLocation resLoc, final TriggerMechanism triggerType)
+    public boolean unregister(final Identifier resLoc, final TriggerMechanism triggerType)
     {
         return registry.removeIf(hook -> hook.getTargetThingRegistryKey().equals(resLoc) && hook.trigger.getClass() == triggerType.getClass());
     }
@@ -250,16 +251,16 @@ public abstract class HookManager<T, U, K>
      */
     protected class HookEntry
     {
-        protected final U targetThing;
-        protected final ResourceLocation guiLoc;
-        protected final long expirationTime;
+        protected final U          targetThing;
+        protected final Identifier guiLoc;
+        protected final long       expirationTime;
         protected final TriggerMechanism trigger;
         protected final BiPredicate<T, TriggerMechanism> shouldOpen;
         protected final IGuiActionCallback<T> onOpen;
         protected final IGuiActionCallback<T> onClose;
 
         private HookEntry(final U targetThing,
-            final ResourceLocation guiLoc,
+            final Identifier guiLoc,
             final long expirationTime,
             final TriggerMechanism trigger,
             final BiPredicate<T, TriggerMechanism> shouldOpen,
@@ -275,7 +276,7 @@ public abstract class HookManager<T, U, K>
             this.onClose = onClose;
         }
 
-        public ResourceLocation getTargetThingRegistryKey()
+        public Identifier getTargetThingRegistryKey()
         {
             return typeRegistryReference.getKey(targetThing);
         }

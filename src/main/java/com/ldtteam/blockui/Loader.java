@@ -3,7 +3,7 @@ package com.ldtteam.blockui;
 import com.ldtteam.blockui.controls.*;
 import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.views.*;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -23,13 +23,13 @@ import java.util.function.Function;
 /**
  * Utilities to load xml files.
  */
-public final class Loader extends SimplePreparableReloadListener<Map<ResourceLocation, PaneParams>>
+public final class Loader extends SimplePreparableReloadListener<Map<Identifier, PaneParams>>
 {
     public static final Loader INSTANCE = new Loader();
 
     private final Map<String, Function<PaneParams, ? extends Pane>> paneFactories = new HashMap<>();
 
-    private Map<ResourceLocation, PaneParams> xmlCache = new HashMap<>();
+    private Map<Identifier, PaneParams> xmlCache = new HashMap<>();
 
     private Loader()
     {
@@ -148,10 +148,10 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
     /**
      * Parse XML contains in a ResourceLocation into contents for a Window.
      *
-     * @param resource xml as a {@link ResourceLocation}.
+     * @param resource xml as a {@link Identifier}.
      * @param parent   parent view.
      */
-    public static Pane createFromXMLFile(final ResourceLocation resource, final View parent)
+    public static Pane createFromXMLFile(final Identifier resource, final View parent)
     {
         if (INSTANCE.xmlCache.containsKey(resource))
         {
@@ -172,12 +172,12 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
     }
 
     @Override
-    protected Map<ResourceLocation, PaneParams> prepare(final ResourceManager rm, final ProfilerFiller profiler)
+    protected Map<Identifier, PaneParams> prepare(final ResourceManager rm, final ProfilerFiller profiler)
     {
         profiler.startTick();
         profiler.push("BlockUI-xml-lookup-parsing");
 
-        final Map<ResourceLocation, PaneParams> foundXmls = new HashMap<>();
+        final Map<Identifier, PaneParams> foundXmls = new HashMap<>();
         final DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
         final DocumentBuilder documentBuilder;
         try
@@ -213,7 +213,7 @@ public final class Loader extends SimplePreparableReloadListener<Map<ResourceLoc
     }
 
     @Override
-    protected void apply(final Map<ResourceLocation, PaneParams> foundXmls, final ResourceManager rm, final ProfilerFiller profiler)
+    protected void apply(final Map<Identifier, PaneParams> foundXmls, final ResourceManager rm, final ProfilerFiller profiler)
     {
         xmlCache = foundXmls;
     }

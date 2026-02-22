@@ -10,7 +10,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.NativeImage.Format;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -31,8 +31,8 @@ import java.io.IOException;
  */
 public class CursorTexture extends AbstractTexture
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(CursorTexture.class);
-    private final ResourceLocation resourceLocation;
+    private static final Logger     LOGGER = LoggerFactory.getLogger(CursorTexture.class);
+    private final        Identifier resourceLocation;
 
     private int hotspotX = 0;
     private int hotspotY = 0;
@@ -40,7 +40,7 @@ public class CursorTexture extends AbstractTexture
     @Nullable
     protected NativeImage nativeImage = null;
 
-    public CursorTexture(final ResourceLocation resLoc)
+    public CursorTexture(final Identifier resLoc)
     {
         this.resourceLocation = resLoc;
     }

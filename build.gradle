@@ -1,1 +1,30 @@
-apply from: 'https://raw.githubusercontent.com/ldtteam/OperaPublicaCreator/ng7/gradle/mod.gradle'
+tableau {
+    project {
+        group = "com.ldtteam"
+        publisher = "LDTTeam"
+        modId = "domum_ornamentum"
+    }
+
+    sourceSets {
+        api {
+            isPartOfPrimaryJar = true
+            neogradle {
+                isModSource = true
+            }
+        }
+        main {
+            dependencies {
+                implementation sourceSets.named('api')
+            }
+        }
+    }
+
+    maven {
+        publishAsLDTTeamMod()
+        publishLocally()
+        pom({
+            usingGnu3License()
+            usingGit()
+        })
+    }
+}

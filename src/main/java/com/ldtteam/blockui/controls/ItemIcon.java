@@ -17,7 +17,7 @@ import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Item.TooltipContext;
@@ -66,7 +66,7 @@ public class ItemIcon extends Pane
     {
         super(params);
 
-        final ResourceLocation itemName = params.getResource("item");
+        final Identifier itemName = params.getResource("item");
         if (itemName != null)
         {
             final Item item = BuiltInRegistries.ITEM.get(itemName);

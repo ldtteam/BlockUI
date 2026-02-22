@@ -1,28 +1,12 @@
-modLoader="javafml"
-loaderVersion="${fml_range}"
+modLoader="javafml" #mandatory
 license="GPL3"
+loaderVersion="[4,)" #mandatory
 issueTrackerURL="https://github.com/ldtteam/BlockUI/issues/new/choose"
-
-[[mods]]
-modId="blockui"
-version="${version}"
-displayName="UI Library Mod"
-credits="LDT Team"
-authors="LDT Team"
+[[mods]] #mandatory
+modId="blockui" #mandatory
+version="${file.jarVersion}" #mandatory
+displayName="BlockUI" #mandatory
+authors="LDTTeam" #optional
 description='''
-UI Library mod, use ctrl+alt+shift+x to open a test-ui
+XML Based Minecraft UI Library
 '''
-
-[[dependencies.blockui]]
-    modId="neoforge"
-    type="required"
-    versionRange="${forge_range}"
-    ordering="NONE"
-    side="BOTH"
-
-[[dependencies.blockui]]
-    modId="minecraft"
-    type="required"
-    versionRange="${minecraft_range}"
-    ordering="NONE"
-    side="BOTH"

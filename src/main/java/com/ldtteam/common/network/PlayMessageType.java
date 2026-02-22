@@ -4,7 +4,7 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload.Type;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
@@ -66,7 +66,7 @@ public record PlayMessageType<T extends AbstractUnsidedPlayMessage>(Type<T> id,
         final boolean playerNullable,
         final boolean executeOnNetworkThread)
     {
-        return codecise(new Type<>(ResourceLocation.fromNamespaceAndPath(modId, messageName)),
+        return codecise(new Type<>(Identifier.fromNamespaceAndPath(modId, messageName)),
             messageFactory,
             playerNullable,
             threadRedirect(AbstractClientPlayMessage::onExecute, executeOnNetworkThread),
@@ -85,7 +85,7 @@ public record PlayMessageType<T extends AbstractUnsidedPlayMessage>(Type<T> id,
         final boolean playerNullable,
         final boolean executeOnNetworkThread)
     {
-        return codecise(new Type<>(ResourceLocation.fromNamespaceAndPath(modId, messageName)),
+        return codecise(new Type<>(Identifier.fromNamespaceAndPath(modId, messageName)),
             messageFactory,
             playerNullable,
             null,
@@ -104,7 +104,7 @@ public record PlayMessageType<T extends AbstractUnsidedPlayMessage>(Type<T> id,
         final boolean playerNullable,
         final boolean executeOnNetworkThread)
     {
-        return codecise(new Type<>(ResourceLocation.fromNamespaceAndPath(modId, messageName)),
+        return codecise(new Type<>(Identifier.fromNamespaceAndPath(modId, messageName)),
             messageFactory,
             playerNullable,
             threadRedirect(AbstractPlayMessage::onClientExecute, executeOnNetworkThread),
@@ -155,7 +155,7 @@ public record PlayMessageType<T extends AbstractUnsidedPlayMessage>(Type<T> id,
         final boolean playerNullable,
         final boolean executeOnNetworkThread)
     {
-        return new PlayMessageType<>(new Type<>(ResourceLocation.fromNamespaceAndPath(modId, messageName)),
+        return new PlayMessageType<>(new Type<>(Identifier.fromNamespaceAndPath(modId, messageName)),
             codec,
             playerNullable,
             threadRedirect(AbstractClientPlayMessage::onExecute, executeOnNetworkThread),
@@ -174,7 +174,7 @@ public record PlayMessageType<T extends AbstractUnsidedPlayMessage>(Type<T> id,
         final boolean playerNullable,
         final boolean executeOnNetworkThread)
     {
-        return new PlayMessageType<>(new Type<>(ResourceLocation.fromNamespaceAndPath(modId, messageName)),
+        return new PlayMessageType<>(new Type<>(Identifier.fromNamespaceAndPath(modId, messageName)),
             codec,
             playerNullable,
             null,
@@ -193,7 +193,7 @@ public record PlayMessageType<T extends AbstractUnsidedPlayMessage>(Type<T> id,
         final boolean playerNullable,
         final boolean executeOnNetworkThread)
     {
-        return new PlayMessageType<>(new Type<>(ResourceLocation.fromNamespaceAndPath(modId, messageName)),
+        return new PlayMessageType<>(new Type<>(Identifier.fromNamespaceAndPath(modId, messageName)),
             codec,
             playerNullable,
             threadRedirect(AbstractPlayMessage::onClientExecute, executeOnNetworkThread),

@@ -9,7 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.fml.loading.FMLEnvironment;
 import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
@@ -30,9 +30,9 @@ public class CursorUtils
      *
      * @param  rl image resource location
      * @return    cursor texture reference
-     * @see #loadCursorTexture(ResourceLocation)
+     * @see #loadCursorTexture(Identifier)
      */
-    public static CursorTexture setCursorImage(final ResourceLocation rl)
+    public static CursorTexture setCursorImage(final Identifier rl)
     {
         AbstractTexture texture = Minecraft.getInstance().getTextureManager().getTexture(rl);
         if (texture == MissingTextureAtlasSprite.getTexture())
@@ -54,7 +54,7 @@ public class CursorUtils
      *
      * @param resLoc cursor file location
      */
-    public static void loadCursorTexture(final ResourceLocation resLoc)
+    public static void loadCursorTexture(final Identifier resLoc)
     {
         final TextureManager texManager = Minecraft.getInstance().getTextureManager();
         final AbstractTexture texture = texManager.getTexture(resLoc, null);

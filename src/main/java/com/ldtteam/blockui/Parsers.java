@@ -4,7 +4,7 @@ import com.ldtteam.blockui.mod.Log;
 import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -32,7 +32,7 @@ public final class Parsers
     public static Function<String, Double> DOUBLE = Double::parseDouble;
 
     /** Parses a resource location, include shorthand tricks */
-    public static Function<String, ResourceLocation> RESOURCE = ResourceLocation::tryParse;
+    public static Function<String, Identifier> RESOURCE = Identifier::tryParse;
 
     /** Parses a potentially translatable portion of text as a component */
     private static Function<String, String> RAW_TEXT = v -> {

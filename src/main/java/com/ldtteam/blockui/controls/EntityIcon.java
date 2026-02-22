@@ -9,7 +9,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.AABB;
@@ -37,7 +37,7 @@ public class EntityIcon extends Pane
     {
         super(params);
 
-        final ResourceLocation entityName = params.getResource("entity");
+        final Identifier entityName = params.getResource("entity");
         if (entityName != null)
         {
             setEntity(entityName);
@@ -49,7 +49,7 @@ public class EntityIcon extends Pane
         this.headyaw = params.getFloat("head", this.headyaw);
     }
 
-    public void setEntity(@NotNull ResourceLocation entityId)
+    public void setEntity(@NotNull Identifier entityId)
     {
         final EntityType<?> entityType = BuiltInRegistries.ENTITY_TYPE.get(entityId);
         if (entityType != null)

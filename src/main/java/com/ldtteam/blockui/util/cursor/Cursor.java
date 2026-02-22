@@ -1,7 +1,7 @@
 package com.ldtteam.blockui.util.cursor;
 
 import com.ldtteam.blockui.util.cursor.CursorUtils.StandardCursor;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * Interface to wrap various cursors
@@ -19,7 +19,7 @@ public interface Cursor
     public static final Cursor VERTICAL_RESIZE = named(() -> CursorUtils.setStandardCursor(StandardCursor.VERTICAL_RESIZE), StandardCursor.VERTICAL_RESIZE);
     public static final Cursor RESIZE = named(() -> CursorUtils.setStandardCursor(StandardCursor.RESIZE), StandardCursor.RESIZE);
 
-    public static Cursor of(final ResourceLocation resLoc)
+    public static Cursor of(final Identifier resLoc)
     {
         CursorUtils.loadCursorTexture(resLoc);
         return named(() -> CursorUtils.setCursorImage(resLoc), resLoc);

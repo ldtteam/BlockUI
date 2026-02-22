@@ -8,7 +8,7 @@ import net.minecraft.client.renderer.texture.SpriteLoader;
 import net.minecraft.client.renderer.texture.SpriteTicker;
 import net.minecraft.client.renderer.texture.Tickable;
 import net.minecraft.client.renderer.texture.atlas.SpriteResourceLoader;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import java.io.FileNotFoundException;
@@ -19,7 +19,7 @@ import java.io.IOException;
  */
 public class SpriteTexture extends AbstractTexture implements Tickable
 {
-    private final ResourceLocation resourceLocation;
+    private final Identifier resourceLocation;
 
     private SpriteContents sprite;
     private SpriteTicker ticker;

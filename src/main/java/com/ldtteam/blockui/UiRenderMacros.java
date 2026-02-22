@@ -18,7 +18,7 @@ import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling.NineSlice;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling.Tile;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling.Type;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.fml.loading.FMLEnvironment;
@@ -371,7 +371,7 @@ public class UiRenderMacros
     }
 
     public static void blit(final PoseStack ps,
-        final ResourceLocation rl,
+        final Identifier rl,
         final int x,
         final int y,
         final int w,
@@ -385,7 +385,7 @@ public class UiRenderMacros
     }
 
     public static void blit(final PoseStack ps,
-        final ResourceLocation rl,
+        final Identifier rl,
         final int x,
         final int y,
         final int w,
@@ -408,7 +408,7 @@ public class UiRenderMacros
         final int w,
         final int h)
     {
-        final ResourceLocation atlasLocation = sprite.atlasLocation();
+        final Identifier atlasLocation = sprite.atlasLocation();
         final float u0 = sprite.getU0();
         final float v0 = sprite.getV0();
         final float u1 = sprite.getU1();
@@ -461,13 +461,13 @@ public class UiRenderMacros
         blit(ps, sprite.atlasLocation(), x, y, w, h, sprite.getU0(), sprite.getV0(), sprite.getU1(), sprite.getV1());
     }
 
-    public static void blit(final PoseStack ps, final ResourceLocation rl, final int x, final int y, final int w, final int h)
+    public static void blit(final PoseStack ps, final Identifier rl, final int x, final int y, final int w, final int h)
     {
         blit(ps, rl, x, y, w, h, 0.0f, 0.0f, 1.0f, 1.0f);
     }
 
     public static void blit(final PoseStack ps,
-        final ResourceLocation rl,
+        final Identifier rl,
         final int x,
         final int y,
         final int w,
@@ -511,7 +511,7 @@ public class UiRenderMacros
      * @param repeatBoxHeight size of entire repeatable box (borders + repeat part) [texels]
      */
     protected static void blitRepeatable(final PoseStack ps,
-        final ResourceLocation rl,
+        final Identifier rl,
         final int x,
         final int y,
         final int width,
@@ -741,7 +741,7 @@ public class UiRenderMacros
      */
     public static ResolvedBlit resolveSprite(final TextureAtlasSprite sprite, final GuiSpriteScaling guiScaling)
     {
-        final ResourceLocation atlasLocation = sprite.atlasLocation();
+        final Identifier atlasLocation = sprite.atlasLocation();
         final float u0 = sprite.getU0();
         final float v0 = sprite.getV0();
         final float u1 = sprite.getU1();
