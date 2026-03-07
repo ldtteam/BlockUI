@@ -18,7 +18,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
@@ -30,7 +30,7 @@ import java.util.Set;
 
 public class ContainerHook
 {
-    public static TagKey<BlockEntityType<?>> CONTAINER_TAG = TagKey.create(Registries.BLOCK_ENTITY_TYPE, ResourceLocation.fromNamespaceAndPath(BlockUI.MOD_ID, "container_gui"));
+    public static TagKey<BlockEntityType<?>> CONTAINER_TAG = TagKey.create(Registries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(BlockUI.MOD_ID, "container_gui"));
 
     public static void init()
     {
@@ -39,7 +39,7 @@ public class ContainerHook
             return;
         }
 
-        final ResourceLocation gui_loc = ResourceLocation.fromNamespaceAndPath(BlockUI.MOD_ID, "gui/container.xml");
+        final Identifier gui_loc = Identifier.fromNamespaceAndPath(BlockUI.MOD_ID, "gui/container.xml");
         // TODO: properly support tag reloading
         for (final Holder<BlockEntityType<?>> beType : BuiltInRegistries.BLOCK_ENTITY_TYPE.getTagOrEmpty(CONTAINER_TAG))
         {

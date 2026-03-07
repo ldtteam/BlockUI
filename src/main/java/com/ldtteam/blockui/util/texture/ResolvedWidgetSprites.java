@@ -3,7 +3,7 @@ package com.ldtteam.blockui.util.texture;
 import com.ldtteam.blockui.UiRenderMacros.ResolvedBlit;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.components.WidgetSprites;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -25,9 +25,9 @@ public record ResolvedWidgetSprites(ResolvedBlit enabled,
      * @return resolve given sprites using given resolver
      */
     public static ResolvedWidgetSprites fromUnresolved(final WidgetSprites widgetSprites,
-        final Function<ResourceLocation, ResolvedBlit> resolver)
+        final Function<Identifier, ResolvedBlit> resolver)
     {
-        final Map<ResourceLocation, ResolvedBlit> resolved = new HashMap<>();
+        final Map<Identifier, ResolvedBlit> resolved = new HashMap<>();
         final ResolvedBlit defaultEnabledBlit = resolver.apply(Objects.requireNonNull(widgetSprites.enabled(), "Forgot to put null check somewhere?"));
         resolved.put(null, defaultEnabledBlit);
         resolved.put(widgetSprites.enabled(), defaultEnabledBlit);

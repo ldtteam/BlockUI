@@ -5,7 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.HttpTexture;
 import net.minecraft.client.resources.PlayerSkin;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.resources.FallbackResourceManager;
 import net.minecraft.server.packs.resources.IoSupplier;
@@ -23,7 +23,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
-public class OutOfJarResourceLocation extends ResourceLocation
+public class OutOfJarResourceLocation extends Identifier
 {
     private final Path nioPath;
 
@@ -56,12 +56,12 @@ public class OutOfJarResourceLocation extends ResourceLocation
      * @param textureSelector null for {@code PlayerSkin#texture()}, or {@code PlayerSkin#capeTexture()} or
      *                        {@code PlayerSkin#elytraTexture()} - both cape and elytry may return null future
      */
-    public static CompletableFuture<ResourceLocation> ofMinecraftSkin(final Minecraft minecraft,
+    public static CompletableFuture<Identifier> ofMinecraftSkin(final Minecraft minecraft,
         final GameProfile gameProfile,
-        @Nullable final Function<PlayerSkin, ResourceLocation> textureSelector)
+        @Nullable final Function<PlayerSkin, Identifier> textureSelector)
     {
         return minecraft.getSkinManager().getOrLoad(gameProfile).thenApply(playerSkin -> {
-            final ResourceLocation skinResLoc = textureSelector == null ? playerSkin.texture() : textureSelector.apply(playerSkin);
+            final Identifier skinResLoc = textureSelector == null ? playerSkin.texture() : textureSelector.apply(playerSkin);
             if (skinResLoc == null)
             {
                 return null;
@@ -82,7 +82,7 @@ public class OutOfJarResourceLocation extends ResourceLocation
         return nioPath;
     }
 
-    public static boolean fileExists(final ResourceLocation resLoc, final ResourceManager fallbackManager)
+    public static boolean fileExists(final Identifier resLoc, final ResourceManager fallbackManager)
     {
         if (resLoc instanceof final OutOfJarResourceLocation nioResLoc)
         {
@@ -91,7 +91,7 @@ public class OutOfJarResourceLocation extends ResourceLocation
         return fallbackManager.getResource(resLoc).isPresent();
     }
 
-    public static Resource getResourceHandle(final ResourceLocation resLoc, final ResourceManager fallbackManager) throws IOException
+    public static Resource getResourceHandle(final Identifier resLoc, final ResourceManager fallbackManager) throws IOException
     {
         if (resLoc instanceof final OutOfJarResourceLocation nioResLoc)
         {
@@ -102,7 +102,7 @@ public class OutOfJarResourceLocation extends ResourceLocation
         return fallbackManager.getResource(resLoc).orElseThrow(() -> new FileNotFoundException("File not found: " + resLoc));
     }
 
-    public static InputStream openStream(final ResourceLocation resLoc, final ResourceManager fallbackManager) throws IOException
+    public static InputStream openStream(final Identifier resLoc, final ResourceManager fallbackManager) throws IOException
     {
         if (resLoc instanceof final OutOfJarResourceLocation nioResLoc)
         {
@@ -111,7 +111,7 @@ public class OutOfJarResourceLocation extends ResourceLocation
         return fallbackManager.open(resLoc);
     }
 
-    public static BufferedReader openReader(final ResourceLocation resLoc, final ResourceManager fallbackManager) throws IOException
+    public static BufferedReader openReader(final Identifier resLoc, final ResourceManager fallbackManager) throws IOException
     {
         if (resLoc instanceof final OutOfJarResourceLocation nioResLoc)
         {
@@ -125,7 +125,7 @@ public class OutOfJarResourceLocation extends ResourceLocation
      */
     @Override
     @Deprecated(forRemoval = false)
-    public ResourceLocation withPath(final String path)
+    public Identifier withPath(final String path)
     {
         return of(getNamespace(), Path.of(path));
     }
@@ -135,7 +135,7 @@ public class OutOfJarResourceLocation extends ResourceLocation
      */
     @Override
     @Deprecated(forRemoval = false)
-    public ResourceLocation withPath(final UnaryOperator<String> op)
+    public Identifier withPath(final UnaryOperator<String> op)
     {
         return of(getNamespace(), Path.of(op.apply(nioPath.toString())));
     }
@@ -144,7 +144,7 @@ public class OutOfJarResourceLocation extends ResourceLocation
      * With path prefix (prefix + current path)
      */
     @Override
-    public ResourceLocation withPrefix(final String prefix)
+    public Identifier withPrefix(final String prefix)
     {
         return of(getNamespace(), Path.of(prefix).resolve(nioPath));
     }
@@ -156,14 +156,14 @@ public class OutOfJarResourceLocation extends ResourceLocation
      * would add file ".foo" in subdirectory. To get same behaviour as {@link Path#resolve(Path)} add '/' to start of parameter
      */
     @Override
-    public ResourceLocation withSuffix(final String suffix)
+    public Identifier withSuffix(final String suffix)
     {
         // in nio resolveSibling(...) = parent + path.of(...) so theoretically should resolve both correctly
         return of(getNamespace(), nioPath.resolveSibling(nioPath.getFileName().toString() + suffix));
     }
 
     @Override
-    public int compareNamespaced(final ResourceLocation o)
+    public int compareNamespaced(final Identifier o)
     {
         if (o instanceof final OutOfJarResourceLocation nioResLoc)
         {
@@ -174,7 +174,7 @@ public class OutOfJarResourceLocation extends ResourceLocation
     }
 
     @Override
-    public int compareTo(final ResourceLocation o)
+    public int compareTo(final Identifier o)
     {
         if (o instanceof final OutOfJarResourceLocation nioResLoc)
         {

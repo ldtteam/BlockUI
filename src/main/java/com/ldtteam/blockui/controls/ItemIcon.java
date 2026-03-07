@@ -17,7 +17,7 @@ import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Item.TooltipContext;
@@ -66,7 +66,7 @@ public class ItemIcon extends Pane
     {
         super(params);
 
-        final ResourceLocation itemName = params.getResource("item");
+        final Identifier itemName = params.getResource("item");
         if (itemName != null)
         {
             final Item item = BuiltInRegistries.ITEM.get(itemName);
@@ -127,7 +127,7 @@ public class ItemIcon extends Pane
 
     /**
      * Sets itemStack from blockState.
-     * 
+     *
      * @see #setItem(ItemStack) equivalent of setItem(ItemStack)
      */
     public void setItemFromBlockState(final BlockStateRenderingData blockStateExtension)
@@ -227,7 +227,7 @@ public class ItemIcon extends Pane
      * prevTooltipSize: This value if for determining whether to append "show more info" text or not.
      * If you add elements which are wrapped via ToggleableTextComponent (and want to show "show more info" text), then add their count to this value.
      * else if you want to hide the text then set this value to {@code tooltipList.size()}
-     * 
+     *
      * @param tooltipList tooltip to modify
      * @param prevTooltipSize tooltip size before any modifications
      * @return new prevTooltipSize
@@ -240,7 +240,7 @@ public class ItemIcon extends Pane
     /**
      * Adds spacer and optional data
      *
-     * INLINE: 
+     * INLINE:
      * @see CreativeModeInventoryScreen#getTooltipFromContainerItem(ItemStack)
      */
     public List<Component> getModifiedItemStackTooltip()

@@ -2,7 +2,7 @@ package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.views.View;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.network.chat.MutableComponent;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -199,9 +199,9 @@ public class PaneParams
      * @return the parsed resource location
      */
     @Nullable
-    public ResourceLocation getResource(final String name)
+    public Identifier getResource(final String name)
     {
-        return getResource(name, (ResourceLocation) null);
+        return getResource(name, (Identifier) null);
     }
 
     /**
@@ -210,7 +210,7 @@ public class PaneParams
      * @param def the default value to fallback to
      * @return the parsed resource location
      */
-    public ResourceLocation getResource(final String name, final ResourceLocation def)
+    public Identifier getResource(final String name, final Identifier def)
     {
         return getProperty(name, Parsers.RESOURCE, def);
     }
@@ -222,9 +222,9 @@ public class PaneParams
      * @return the parsed resource location (or null if it couldn't be parsed)
      */
     @Nullable
-    public ResourceLocation getResource(final String name, final Consumer<ResourceLocation> loader)
+    public Identifier getResource(final String name, final Consumer<Identifier> loader)
     {
-        final ResourceLocation rl = getResource(name);
+        final Identifier rl = getResource(name);
         if (rl != null && !rl.getPath().isEmpty())
         {
             loader.accept(rl);

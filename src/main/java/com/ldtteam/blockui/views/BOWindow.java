@@ -8,7 +8,7 @@ import com.ldtteam.blockui.Parsers;
 import com.mojang.blaze3d.platform.Window;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import org.lwjgl.glfw.GLFW;
@@ -51,14 +51,14 @@ public class BOWindow extends View
      */
     protected WindowRenderType windowRenderType = WindowRenderType.OVERSIZED_VANILLA;
 
-    protected ResourceLocation xmlResourceLocation;
+    protected Identifier xmlResourceLocation;
 
     /**
      * Create a window from an xml file.
      *
-     * @param resource ResourceLocation to get file from.
+     * @param resource Identifier to get file from.
      */
-    public BOWindow(final ResourceLocation resource)
+    public BOWindow(final Identifier resource)
     {
         this();
         this.xmlResourceLocation = resource;
@@ -147,7 +147,7 @@ public class BOWindow extends View
     /**
      * @return xml defining this window
      */
-    public ResourceLocation getXmlResourceLocation()
+    public Identifier getXmlResourceLocation()
     {
         return xmlResourceLocation;
     }

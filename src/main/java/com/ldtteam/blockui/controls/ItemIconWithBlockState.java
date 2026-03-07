@@ -18,7 +18,7 @@ import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.contents.PlainTextContents.LiteralContents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -134,7 +134,7 @@ public class ItemIconWithBlockState extends ItemIcon
             super.drawSelf(target, mx, my);
             return;
         }
-        
+
         final PoseStack ms = target.pose();
         ms.pushPose();
         ms.translate(x, y, 0.0f);
@@ -160,7 +160,7 @@ public class ItemIconWithBlockState extends ItemIcon
     {
         if (blockStateExtension != null)
         {
-            final ResourceLocation key = BuiltInRegistries.BLOCK.getKey(blockStateExtension.blockState().getBlock());
+            final Identifier key = BuiltInRegistries.BLOCK.getKey(blockStateExtension.blockState().getBlock());
             final String nameTKey = Util.makeDescriptionId("block", key);
             final MutableComponent name = Component.translatable(nameTKey);
             final MutableComponent nameKey = Component.literal(key.toString()).withStyle(ChatFormatting.DARK_GRAY);
@@ -176,7 +176,7 @@ public class ItemIconWithBlockState extends ItemIcon
             for (int i = tooltipList.size() - 1; i >= 0; i--)
             {
                 if (tooltipList.get(i).getContents() instanceof final LiteralContents literalContents &&
-                    ResourceLocation.tryParse(literalContents.text()) != null)
+                    Identifier.tryParse(literalContents.text()) != null)
                 {
                     tooltipList.set(i, nameKey);
                     break;

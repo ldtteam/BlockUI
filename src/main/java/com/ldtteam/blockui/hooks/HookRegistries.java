@@ -7,7 +7,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -76,7 +76,7 @@ public final class HookRegistries
          * @see IGuiHookable
          */
         public <T extends Entity & IGuiHookable> void register(final EntityType<T> targetThing,
-            final ResourceLocation guiLoc,
+            final Identifier guiLoc,
             final TriggerMechanism trigger)
         {
             register(targetThing, guiLoc, 0, trigger);
@@ -94,7 +94,7 @@ public final class HookRegistries
          * @see IGuiHookable
          */
         public <T extends Entity & IGuiHookable> void register(final EntityType<T> targetThing,
-            final ResourceLocation guiLoc,
+            final Identifier guiLoc,
             final long expirationTime,
             final TriggerMechanism trigger)
         {
@@ -119,7 +119,7 @@ public final class HookRegistries
          * @see IGuiHookable for gui callbacks
          */
         public <T extends Entity> void register(final EntityType<T> targetThing,
-            final ResourceLocation guiLoc,
+            final Identifier guiLoc,
             final TriggerMechanism trigger,
             @Nullable final BiPredicate<T, TriggerMechanism> shouldOpen,
             @Nullable final IGuiActionCallback<T> onOpen,
@@ -147,7 +147,7 @@ public final class HookRegistries
          * @see IGuiHookable for gui callbacks
          */
         public <T extends Entity> void register(final EntityType<T> targetThing,
-            final ResourceLocation guiLoc,
+            final Identifier guiLoc,
             final long expirationTime,
             final TriggerMechanism trigger,
             @Nullable final BiPredicate<T, TriggerMechanism> shouldOpen,
@@ -219,7 +219,7 @@ public final class HookRegistries
          * @see IGuiHookable
          */
         public <T extends BlockEntity & IGuiHookable> void register(final BlockEntityType<T> targetThing,
-            final ResourceLocation guiLoc,
+            final Identifier guiLoc,
             final TriggerMechanism trigger)
         {
             register(targetThing, guiLoc, 0, trigger);
@@ -237,7 +237,7 @@ public final class HookRegistries
          * @see IGuiHookable
          */
         public <T extends BlockEntity & IGuiHookable> void register(final BlockEntityType<T> targetThing,
-            final ResourceLocation guiLoc,
+            final Identifier guiLoc,
             final long expirationTime,
             final TriggerMechanism trigger)
         {
@@ -262,7 +262,7 @@ public final class HookRegistries
          * @see IGuiHookable for gui callbacks
          */
         public <T extends BlockEntity> void register(final BlockEntityType<T> targetThing,
-            final ResourceLocation guiLoc,
+            final Identifier guiLoc,
             final TriggerMechanism trigger,
             @Nullable final BiPredicate<T, TriggerMechanism> shouldOpen,
             @Nullable final IGuiActionCallback<T> onOpen,
@@ -290,7 +290,7 @@ public final class HookRegistries
          * @see IGuiHookable for gui callbacks
          */
         public <T extends BlockEntity> void register(final BlockEntityType<T> targetThing,
-            final ResourceLocation guiLoc,
+            final Identifier guiLoc,
             final long expirationTime,
             final TriggerMechanism trigger,
             @Nullable final BiPredicate<T, TriggerMechanism> shouldOpen,

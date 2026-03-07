@@ -9,7 +9,7 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.TextureAtlasHolder;
 import net.minecraft.client.resources.metadata.gui.GuiMetadataSection;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import org.slf4j.Logger;
@@ -52,7 +52,7 @@ public class AtlasManager
     /**
      * @return sprite for given resLoc, checks in order: custom mod atlases > vanilla
      */
-    public TextureAtlasSprite getSprite(final ResourceLocation resLoc)
+    public TextureAtlasSprite getSprite(final Identifier resLoc)
     {
         final CustomGuiSpriteManager spriteManager = modAtlases.get(resLoc.getNamespace());
         if (spriteManager != null)
@@ -68,9 +68,9 @@ public class AtlasManager
 
     /**
      * Dump texture content and coordinates description per each registered modid.
-     * 
+     *
      * @param dumpingFolder ideally empty target folder, will be created if doesn't exist
-     * @see TextureAtlas#dumpContents(ResourceLocation, Path)
+     * @see TextureAtlas#dumpContents(Identifier, Path)
      */
     public void dumpAtlases(final Path dumpingFolder)
     {
@@ -107,13 +107,13 @@ public class AtlasManager
         private CustomGuiSpriteManager(final TextureManager textureManager, final String modId)
         {
             super(textureManager,
-                ResourceLocation.fromNamespaceAndPath(modId, "textures/atlas/" + modId + "_gui.png"),
-                ResourceLocation.fromNamespaceAndPath(modId, modId + "_gui"),
+                Identifier.fromNamespaceAndPath(modId, "textures/atlas/" + modId + "_gui.png"),
+                Identifier.fromNamespaceAndPath(modId, modId + "_gui"),
                 GuiSpriteManager.METADATA_SECTIONS);
         }
 
         @Override
-        public TextureAtlasSprite getSprite(final ResourceLocation resLoc)
+        public TextureAtlasSprite getSprite(final Identifier resLoc)
         {
             return super.getSprite(resLoc);
         }

@@ -9,7 +9,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import java.util.Collections;
 import java.util.HashMap;
@@ -22,7 +22,7 @@ import java.util.Objects;
  * <p>
  * Special keys: {@value #NBT_CURRENT_ITEM} - refers to xml item (resolved during parsing not dynamic),
  * {@value #NBT_GENERIC_KEY} - generic properties
- * 
+ *
  * @see ItemProperties
  */
 @SuppressWarnings("deprecation")
@@ -33,9 +33,9 @@ public class ItemIconWithProperties extends ItemIcon
 
     public static final String PARAM_PROPERTIES = "properties";
 
-    protected final Map<ResourceLocation, ItemPropertyFunction> genericPropertyOverrides = new HashMap<>();
-    protected final Map<Item, Map<ResourceLocation, ItemPropertyFunction>> itemPropertyOverrides = new HashMap<>();
-    private Map<ResourceLocation, ItemPropertyFunction> currentItemOverrides = Collections.emptyMap();
+    protected final Map<Identifier, ItemPropertyFunction> genericPropertyOverrides = new HashMap<>();
+    protected final Map<Item, Map<Identifier, ItemPropertyFunction>> itemPropertyOverrides = new HashMap<>();
+    private Map<Identifier, ItemPropertyFunction> currentItemOverrides = Collections.emptyMap();
 
     public ItemIconWithProperties()
     {
@@ -64,13 +64,13 @@ public class ItemIconWithProperties extends ItemIcon
                     final CompoundTag child = tag.getCompound(itemKey);
                     final var itemOverrides = NBT_GENERIC_KEY.equals(itemKey) ? genericPropertyOverrides :
                         itemPropertyOverrides.computeIfAbsent(NBT_CURRENT_ITEM.equals(itemKey) ? itemStack.getItem() :
-                            BuiltInRegistries.ITEM.get(ResourceLocation.parse(itemKey)), i -> new HashMap<>());
+                            BuiltInRegistries.ITEM.get(Identifier.parse(itemKey)), i -> new HashMap<>());
 
                     child.getAllKeys().forEach(key -> {
                         if (child.contains(key, Tag.TAG_ANY_NUMERIC))
                         {
                             final float value = child.getFloat(key); // intentionally ouf of lambda
-                            itemOverrides.put(ResourceLocation.parse(key), (itemStack, level, entity, seee) -> value);
+                            itemOverrides.put(Identifier.parse(key), (itemStack, level, entity, seee) -> value);
                         }
                     });
                 }
@@ -83,7 +83,7 @@ public class ItemIconWithProperties extends ItemIcon
     /**
      * Short call for adding itemProperty to current item
      */
-    public void addPropertyForCurrentItem(final ResourceLocation propertyKey, final ItemPropertyFunction property)
+    public void addPropertyForCurrentItem(final Identifier propertyKey, final ItemPropertyFunction property)
     {
         itemPropertyOverrides
             .computeIfAbsent(Objects.requireNonNull(itemStack, "Call #setItem before this method").getItem(), item -> new HashMap<>())
@@ -93,7 +93,7 @@ public class ItemIconWithProperties extends ItemIcon
     /**
      * @return modifiable all item-based overrides
      */
-    public Map<Item, Map<ResourceLocation, ItemPropertyFunction>> getItemPropertyOverrides()
+    public Map<Item, Map<Identifier, ItemPropertyFunction>> getItemPropertyOverrides()
     {
         return itemPropertyOverrides;
     }
@@ -101,7 +101,7 @@ public class ItemIconWithProperties extends ItemIcon
     /**
      * @return modifiable generic overrides
      */
-    public Map<ResourceLocation, ItemPropertyFunction> getGenericPropertyOverrides()
+    public Map<Identifier, ItemPropertyFunction> getGenericPropertyOverrides()
     {
         return genericPropertyOverrides;
     }
@@ -121,7 +121,7 @@ public class ItemIconWithProperties extends ItemIcon
         final Item item = itemStack.getItem();
 
         // generic
-        final Map<ResourceLocation, ItemPropertyFunction> oldGenericVals =
+        final Map<Identifier, ItemPropertyFunction> oldGenericVals =
             genericPropertyOverrides.isEmpty() ? Collections.emptyMap() : new HashMap<>();
         genericPropertyOverrides.forEach((key, val) -> {
             oldGenericVals.put(key, ItemProperties.getProperty(itemStack, key));
@@ -129,7 +129,7 @@ public class ItemIconWithProperties extends ItemIcon
         });
 
         // item
-        final Map<ResourceLocation, ItemPropertyFunction> oldItemVals =
+        final Map<Identifier, ItemPropertyFunction> oldItemVals =
             currentItemOverrides.isEmpty() ? Collections.emptyMap() : new HashMap<>();
         currentItemOverrides.forEach((key, val) -> {
             oldItemVals.put(key, ItemProperties.getProperty(itemStack, key));
