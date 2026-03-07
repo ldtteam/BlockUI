@@ -67,7 +67,7 @@ public class CursorUtils
 
             texManager.register(resLoc, new CursorTexture(resLoc));
 
-            if (!FMLEnvironment.production && texManager.getTexture(resLoc) == MissingTextureAtlasSprite.getTexture() && !resLoc.getNamespace().equals(BlockUI.MOD_ID))
+            if (!FMLEnvironment.isProduction() && texManager.getTexture(resLoc) == MissingTextureAtlasSprite.getTexture() && !resLoc.getNamespace().equals(BlockUI.MOD_ID))
             {
                 throw new IllegalArgumentException("Missing texture: " + resLoc);
             }

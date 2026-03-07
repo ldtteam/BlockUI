@@ -124,7 +124,7 @@ public class Image extends Pane
             }
         }
 
-        if (!FMLEnvironment.production)
+        if (!FMLEnvironment.isProduction())
         {
             throw new RuntimeException("Couldn't resolve size for image: " + resourceLocation);
         }
@@ -183,7 +183,7 @@ public class Image extends Pane
     @Override
     public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
-        if (!FMLEnvironment.production)
+        if (!FMLEnvironment.isProduction())
         {
             Objects.requireNonNull(resourceLocation, () -> "Missing image source: " + id + " | " + window.getXmlResourceLocation());
         }

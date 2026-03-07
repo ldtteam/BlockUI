@@ -98,7 +98,7 @@ public class OutOfJarTexture extends AbstractTexture
 
         if (current == MissingTextureAtlasSprite.getTexture())
         {
-            if (!FMLEnvironment.production && !resLoc.getNamespace().equals(BlockUI.MOD_ID))
+            if (!FMLEnvironment.isProduction() && !resLoc.getNamespace().equals(BlockUI.MOD_ID))
             {
                 throw new IllegalArgumentException("Missing texture: " + resLoc);
             }

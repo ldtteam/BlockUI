@@ -786,7 +786,7 @@ public class UiRenderMacros
                 }
             };
         }
-        if (!FMLEnvironment.production)
+        if (!FMLEnvironment.isProduction())
         {
             throw new UnsupportedOperationException("Missing resolver for gui scaling: " + guiScaling.type());
         }

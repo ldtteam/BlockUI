@@ -57,7 +57,7 @@ public final class Loader extends SimplePreparableReloadListener<Map<Identifier,
     {
         if (paneParams.hasAttribute(ItemIconWithBlockState.PARAM_NBT))
         {
-            if (!FMLEnvironment.production && paneParams.hasAttribute(ItemIconWithProperties.PARAM_PROPERTIES))
+            if (!FMLEnvironment.isProduction() && paneParams.hasAttribute(ItemIconWithProperties.PARAM_PROPERTIES))
             {
                 throw new IllegalStateException("Must be one of '%s' or '%s'".formatted(ItemIconWithBlockState.PARAM_NBT, ItemIconWithProperties.PARAM_PROPERTIES));
             }

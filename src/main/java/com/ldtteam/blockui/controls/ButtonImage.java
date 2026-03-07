@@ -225,7 +225,7 @@ public class ButtonImage extends Button
     @Override
     public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
-        if (!FMLEnvironment.production)
+        if (!FMLEnvironment.isProduction())
         {
             Objects.requireNonNull(textures.enabled(), () -> id + " | " + window.getXmlResourceLocation());
         }

@@ -92,7 +92,7 @@ public final class LanguageHandler
 
         private void load(final String path)
         {
-            final String locale = FMLEnvironment.dist.isClient() ? ClientLocale.getLocale() : ServerLocale.getLocale();
+            final String locale = FMLEnvironment.getDist().isClient() ? ClientLocale.getLocale() : ServerLocale.getLocale();
 
             InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(String.format(path, locale));
             if (is == null)
