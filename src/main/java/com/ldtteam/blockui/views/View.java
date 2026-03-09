@@ -4,7 +4,7 @@ import com.ldtteam.blockui.*;
 import com.ldtteam.blockui.controls.Tooltip;
 import com.ldtteam.blockui.util.records.Pos2i.ImmutablePos2i;
 import com.ldtteam.blockui.util.records.Pos2i.MutablePos2i;
-import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Matrix3x2fStack;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -69,10 +69,10 @@ public class View extends Pane
     @Override
     public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
-        final PoseStack ms = target.pose();
+        final Matrix3x2fStack ms = target.pose();
 
         // Translate the drawing origin to our x,y.
-        ms.pushPose();
+        ms.pushMatrix();
 
         final int paddedX = x + padding;
         final int paddedY = y + padding;
@@ -95,7 +95,7 @@ public class View extends Pane
             }
         }
 
-        ms.popPose();
+        ms.popMatrix();
     }
 
     @Override
@@ -110,10 +110,10 @@ public class View extends Pane
     @Override
     public void drawSelfLast(final BOGuiGraphics target, final double mx, final double my)
     {
-        final PoseStack ms = target.pose();
+        final Matrix3x2fStack ms = target.pose();
 
         // Translate the drawing origin to our x,y.
-        ms.pushPose();
+        ms.pushMatrix();
 
         final int paddedX = x + padding;
         final int paddedY = y + padding;
@@ -132,7 +132,7 @@ public class View extends Pane
             }
         }
 
-        ms.popPose();
+        ms.popMatrix();
     }
 
     @Override

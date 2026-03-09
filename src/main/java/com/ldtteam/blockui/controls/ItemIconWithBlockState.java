@@ -5,7 +5,7 @@ import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Matrix3x2fStack;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.ChatFormatting;
 import net.minecraft.util.Util;
@@ -135,8 +135,8 @@ public class ItemIconWithBlockState extends ItemIcon
             return;
         }
 
-        final PoseStack ms = target.pose();
-        ms.pushPose();
+        final Matrix3x2fStack ms = target.pose();
+        ms.pushMatrix();
         ms.translate(x, y, 0.0f);
         ms.scale(this.getWidth() / DEFAULT_ITEMSTACK_SIZE, this.getHeight() / DEFAULT_ITEMSTACK_SIZE, 1.0f);
 
@@ -152,7 +152,7 @@ public class ItemIconWithBlockState extends ItemIcon
 
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableBlend();
-        ms.popPose();
+        ms.popMatrix();
     }
 
     @Override

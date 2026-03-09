@@ -5,7 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Matrix3x2fStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 import com.mojang.math.Axis;
@@ -32,7 +32,7 @@ public class UiRenderMacros
 {
     public static final double HALF_BIAS = 0.5;
 
-    public static void drawLineRectGradient(final PoseStack ps,
+    public static void drawLineRectGradient(final Matrix3x2fStack ps,
         final int x,
         final int y,
         final int w,
@@ -43,7 +43,7 @@ public class UiRenderMacros
         drawLineRectGradient(ps, x, y, w, h, argbColorStart, argbColorEnd, 1);
     }
 
-    public static void drawLineRectGradient(final PoseStack ps,
+    public static void drawLineRectGradient(final Matrix3x2fStack ps,
         final int x,
         final int y,
         final int w,
@@ -68,7 +68,7 @@ public class UiRenderMacros
             lineWidth);
     }
 
-    public static void drawLineRectGradient(final PoseStack ps,
+    public static void drawLineRectGradient(final Matrix3x2fStack ps,
         final int x,
         final int y,
         final int w,
@@ -120,12 +120,12 @@ public class UiRenderMacros
         RenderSystem.disableBlend();
     }
 
-    public static void drawLineRect(final PoseStack ps, final int x, final int y, final int w, final int h, final int argbColor)
+    public static void drawLineRect(final Matrix3x2fStack ps, final int x, final int y, final int w, final int h, final int argbColor)
     {
         drawLineRect(ps, x, y, w, h, argbColor, 1);
     }
 
-    public static void drawLineRect(final PoseStack ps,
+    public static void drawLineRect(final Matrix3x2fStack ps,
         final int x,
         final int y,
         final int w,
@@ -145,7 +145,7 @@ public class UiRenderMacros
             lineWidth);
     }
 
-    public static void drawLineRect(final PoseStack ps,
+    public static void drawLineRect(final Matrix3x2fStack ps,
         final int x,
         final int y,
         final int w,
@@ -193,12 +193,12 @@ public class UiRenderMacros
         RenderSystem.disableBlend();
     }
 
-    public static void fill(final PoseStack ps, final int x, final int y, final int w, final int h, final int argbColor)
+    public static void fill(final Matrix3x2fStack ps, final int x, final int y, final int w, final int h, final int argbColor)
     {
         fill(ps, x, y, w, h, (argbColor >> 16) & 0xff, (argbColor >> 8) & 0xff, argbColor & 0xff, (argbColor >> 24) & 0xff);
     }
 
-    public static void fill(final PoseStack ps,
+    public static void fill(final Matrix3x2fStack ps,
         final int x,
         final int y,
         final int w,
@@ -234,7 +234,7 @@ public class UiRenderMacros
         RenderSystem.disableBlend();
     }
 
-    public static void fillGradient(final PoseStack ps,
+    public static void fillGradient(final Matrix3x2fStack ps,
         final int x,
         final int y,
         final int w,
@@ -257,7 +257,7 @@ public class UiRenderMacros
             (argbColorEnd >> 24) & 0xff);
     }
 
-    public static void fillGradient(final PoseStack ps,
+    public static void fillGradient(final Matrix3x2fStack ps,
         final int x,
         final int y,
         final int w,
@@ -297,12 +297,12 @@ public class UiRenderMacros
         RenderSystem.disableBlend();
     }
 
-    public static void hLine(final PoseStack ps, final int x, final int xEnd, final int y, final int argbColor)
+    public static void hLine(final Matrix3x2fStack ps, final int x, final int xEnd, final int y, final int argbColor)
     {
         line(ps, x, y, xEnd, y, (argbColor >> 16) & 0xff, (argbColor >> 8) & 0xff, argbColor & 0xff, (argbColor >> 24) & 0xff);
     }
 
-    public static void hLine(final PoseStack ps,
+    public static void hLine(final Matrix3x2fStack ps,
         final int x,
         final int xEnd,
         final int y,
@@ -314,12 +314,12 @@ public class UiRenderMacros
         line(ps, x, y, xEnd, y, red, green, blue, alpha);
     }
 
-    public static void vLine(final PoseStack ps, final int x, final int y, final int yEnd, final int argbColor)
+    public static void vLine(final Matrix3x2fStack ps, final int x, final int y, final int yEnd, final int argbColor)
     {
         line(ps, x, y, x, yEnd, (argbColor >> 16) & 0xff, (argbColor >> 8) & 0xff, argbColor & 0xff, (argbColor >> 24) & 0xff);
     }
 
-    public static void vLine(final PoseStack ps,
+    public static void vLine(final Matrix3x2fStack ps,
         final int x,
         final int y,
         final int yEnd,
@@ -331,12 +331,12 @@ public class UiRenderMacros
         line(ps, x, y, x, yEnd, red, green, blue, alpha);
     }
 
-    public static void line(final PoseStack ps, final int x, final int y, final int xEnd, final int yEnd, final int argbColor)
+    public static void line(final Matrix3x2fStack ps, final int x, final int y, final int xEnd, final int yEnd, final int argbColor)
     {
         line(ps, x, y, xEnd, yEnd, (argbColor >> 16) & 0xff, (argbColor >> 8) & 0xff, argbColor & 0xff, (argbColor >> 24) & 0xff);
     }
 
-    public static void line(final PoseStack ps,
+    public static void line(final Matrix3x2fStack ps,
         final int x,
         final int y,
         final int xEnd,
@@ -370,7 +370,7 @@ public class UiRenderMacros
         RenderSystem.disableBlend();
     }
 
-    public static void blit(final PoseStack ps,
+    public static void blit(final Matrix3x2fStack ps,
         final Identifier rl,
         final int x,
         final int y,
@@ -384,7 +384,7 @@ public class UiRenderMacros
         blit(ps, rl, x, y, w, h, (float) u / mapW, (float) v / mapH, (float) (u + w) / mapW, (float) (v + h) / mapH);
     }
 
-    public static void blit(final PoseStack ps,
+    public static void blit(final Matrix3x2fStack ps,
         final Identifier rl,
         final int x,
         final int y,
@@ -400,7 +400,7 @@ public class UiRenderMacros
         blit(ps, rl, x, y, w, h, (float) u / mapW, (float) v / mapH, (float) (u + uW) / mapW, (float) (v + vH) / mapH);
     }
 
-    public static void blitSprite(final PoseStack ps,
+    public static void blitSprite(final Matrix3x2fStack ps,
         final TextureAtlasSprite sprite,
         final GuiSpriteScaling guiScaling,
         final int x,
@@ -451,7 +451,7 @@ public class UiRenderMacros
         }
     }
 
-    public static void blitSprite(final PoseStack ps,
+    public static void blitSprite(final Matrix3x2fStack ps,
         final TextureAtlasSprite sprite,
         final int x,
         final int y,
@@ -461,12 +461,12 @@ public class UiRenderMacros
         blit(ps, sprite.atlasLocation(), x, y, w, h, sprite.getU0(), sprite.getV0(), sprite.getU1(), sprite.getV1());
     }
 
-    public static void blit(final PoseStack ps, final Identifier rl, final int x, final int y, final int w, final int h)
+    public static void blit(final Matrix3x2fStack ps, final Identifier rl, final int x, final int y, final int w, final int h)
     {
         blit(ps, rl, x, y, w, h, 0.0f, 0.0f, 1.0f, 1.0f);
     }
 
-    public static void blit(final PoseStack ps,
+    public static void blit(final Matrix3x2fStack ps,
         final Identifier rl,
         final int x,
         final int y,
@@ -510,7 +510,7 @@ public class UiRenderMacros
      * @param repeatBoxWidth  size of entire repeatable box (borders + repeat part) [texels]
      * @param repeatBoxHeight size of entire repeatable box (borders + repeat part) [texels]
      */
-    protected static void blitRepeatable(final PoseStack ps,
+    protected static void blitRepeatable(final Matrix3x2fStack ps,
         final Identifier rl,
         final int x,
         final int y,
@@ -680,7 +680,7 @@ public class UiRenderMacros
      * @param pitch     adjusts look rotation
      * @param entity    the entity to render
      */
-    public static void drawEntity(final PoseStack poseStack,
+    public static void drawEntity(final Matrix3x2fStack poseStack,
         final int x,
         final int y,
         final double scale,
@@ -737,7 +737,7 @@ public class UiRenderMacros
 
     /**
      * @return rendering lambda detached from sprite and guiScaling instances
-     * @implNote same as logic {@link #blitSprite(PoseStack, TextureAtlasSprite, GuiSpriteScaling, int, int, int, int)}
+     * @implNote same as logic {@link #blitSprite(Matrix3x2fStack, TextureAtlasSprite, GuiSpriteScaling, int, int, int, int)}
      */
     public static ResolvedBlit resolveSprite(final TextureAtlasSprite sprite, final GuiSpriteScaling guiScaling)
     {
@@ -801,6 +801,6 @@ public class UiRenderMacros
     {
         public static final ResolvedBlit EMPTY = (ps, x, y, w, h) -> {};
 
-        void blit(PoseStack ps, int x, int y, int w, int h);
+        void blit(Matrix3x2fStack ps, int x, int y, int w, int h);
     }
 }

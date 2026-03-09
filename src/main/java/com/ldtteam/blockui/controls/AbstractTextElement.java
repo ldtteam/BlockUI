@@ -9,7 +9,7 @@ import com.ldtteam.blockui.util.SpacerTextComponent.FormattedSpacerComponent;
 import com.ldtteam.blockui.util.ToggleableTextComponent;
 import com.ldtteam.blockui.util.ToggleableTextComponent.FormattedToggleableCharSequence;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Matrix3x2fStack;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.network.chat.Component;
@@ -279,7 +279,7 @@ public abstract class AbstractTextElement extends Pane
 
     protected void innerDrawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
-        final PoseStack ms = target.pose();
+        final Matrix3x2fStack ms = target.pose();
 
         final int color = isEnabled() ? (wasCursorInPane ? textHoverColor : textColor) : textDisabledColor;
 
@@ -304,7 +304,7 @@ public abstract class AbstractTextElement extends Pane
             offsetY += (textHeight - renderedTextHeight) / 2;
         }
 
-        ms.pushPose();
+        ms.pushMatrix();
         ms.translate(x + offsetX, y + offsetY, 0.0d);
         ms.scale((float) textScale, (float) textScale, 1.0f);
 
@@ -368,7 +368,7 @@ public abstract class AbstractTextElement extends Pane
         NeoForgeRenderTypes.enableTextTextureLinearFiltering = false;
         RenderSystem.disableBlend();
 
-        ms.popPose();
+        ms.popMatrix();
     }
 
     public Alignment getTextAlignment()

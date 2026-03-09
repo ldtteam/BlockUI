@@ -4,7 +4,7 @@ import com.ldtteam.blockui.BOScreen;
 import com.ldtteam.blockui.hooks.TriggerMechanism.RayTraceTriggerMechanism;
 import com.ldtteam.blockui.views.ScrollingList;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Matrix3x2fStack;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
@@ -33,7 +33,7 @@ public class HookScreen extends BOScreen
         render(target.pose());
     }
 
-    public void render(final PoseStack ms)
+    public void render(final Matrix3x2fStack ms)
     {
         if (minecraft == null || !isOpen) // should never happen though
         {

@@ -2,7 +2,7 @@ package com.ldtteam.blockui.controls;
 
 import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.PaneParams;
-import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Matrix3x2fStack;
 
 /**
  * Mimics Vanilla text fields.
@@ -79,7 +79,7 @@ public class TextFieldVanilla extends TextField
     @Override
     public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
-        final PoseStack ms = target.pose();
+        final Matrix3x2fStack ms = target.pose();
 
         if (backgroundEnabled)
         {
@@ -87,7 +87,7 @@ public class TextFieldVanilla extends TextField
             drawLineRect(ms, x - 1, y - 1, width + 2, height + 2, backgroundOuterColor);
             fill(ms, x, y, width, height, backgroundInnerColor);
 
-            ms.pushPose();
+            ms.pushMatrix();
             ms.translate(BACKGROUND_X_TRANSLATE, (height - BACKGROUND_Y_TRANSLATE_OFFSET) / 2, 0);
         }
 
@@ -95,7 +95,7 @@ public class TextFieldVanilla extends TextField
 
         if (backgroundEnabled)
         {
-            ms.popPose();
+            ms.popMatrix();
         }
     }
 

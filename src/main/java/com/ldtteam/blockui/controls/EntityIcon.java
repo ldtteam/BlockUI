@@ -5,7 +5,7 @@ import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.controls.AbstractTextBuilder.AutomaticTooltipBuilder;
 import com.ldtteam.blockui.controls.Tooltip.AutomaticTooltip;
-import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Matrix3x2fStack;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -112,11 +112,11 @@ public class EntityIcon extends Pane
     @Override
     public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
-        final PoseStack ms = target.pose();
+        final Matrix3x2fStack ms = target.pose();
 
         if (this.entity != null)
         {
-            ms.pushPose();
+            ms.pushMatrix();
             ms.translate(x, y, -50);
 
             final AABB bb = this.entity.getBoundingBox();
@@ -145,7 +145,7 @@ public class EntityIcon extends Pane
                 buffer.endBatch();
             }
 
-            ms.popPose();
+            ms.popMatrix();
         }
     }
 

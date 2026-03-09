@@ -10,7 +10,7 @@ import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
 import com.ldtteam.blockui.util.SpacerTextComponent;
 import com.ldtteam.blockui.util.ToggleableTextComponent;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Matrix3x2fStack;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
@@ -185,8 +185,8 @@ public class ItemIcon extends Pane
         updateTooltipIfNeeded();
         if (!isDataEmpty())
         {
-            final PoseStack ms = target.pose();
-            ms.pushPose();
+            final Matrix3x2fStack ms = target.pose();
+            ms.pushMatrix();
             ms.translate(x, y, 0.0f);
             ms.scale(this.getWidth() / DEFAULT_ITEMSTACK_SIZE, this.getHeight() / DEFAULT_ITEMSTACK_SIZE, 1.0f);
 
@@ -199,7 +199,7 @@ public class ItemIcon extends Pane
 
             RenderSystem.defaultBlendFunc();
             RenderSystem.disableBlend();
-            ms.popPose();
+            ms.popMatrix();
         }
     }
 

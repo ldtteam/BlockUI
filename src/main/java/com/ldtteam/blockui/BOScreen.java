@@ -3,7 +3,7 @@ package com.ldtteam.blockui;
 import com.ldtteam.blockui.util.cursor.CursorUtils;
 import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Matrix3x2fStack;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
@@ -91,7 +91,7 @@ public class BOScreen extends Screen
         shaderPs.translate(0.0f, 0.0f, 10000f - net.neoforged.neoforge.client.ClientHooks.getGuiFarPlane());
         RenderSystem.applyModelViewMatrix();
 
-        final PoseStack newMs = new PoseStack();
+        final Matrix3x2fStack newMs = new Matrix3x2fStack();
         newMs.translate(x, y, ms.pose().last().pose().m32());
         newMs.scale((float) renderScale, (float) renderScale, 1.0f);
 

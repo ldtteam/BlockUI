@@ -1,7 +1,7 @@
 package com.ldtteam.blockui.hooks;
 
 import com.ldtteam.blockui.mod.Log;
-import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Matrix3x2fStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.Identifier;
@@ -157,7 +157,7 @@ public abstract class HookManager<T, U, K>
      * @param thing        instance of registered type
      * @param partialTicks partialTicks, see world rendering
      */
-    protected abstract void translateToGuiBottomCenter(final PoseStack ms, final T thing, final float partialTicks);
+    protected abstract void translateToGuiBottomCenter(final Matrix3x2fStack ms, final T thing, final float partialTicks);
 
     protected void tick(final long ticks)
     {
@@ -208,15 +208,15 @@ public abstract class HookManager<T, U, K>
         });
     }
 
-    protected void render(final PoseStack ms, final float partialTicks)
+    protected void render(final Matrix3x2fStack ms, final float partialTicks)
     {
         activeWindows.values().forEach(entry -> {
-            ms.pushPose();
+            ms.pushMatrix();
             translateToGuiBottomCenter(ms, entry.thing, partialTicks);
             ms.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
             ms.scale(-0.01F, -0.01F, 0.01F);
             entry.screen.render(ms);
-            ms.popPose();
+            ms.popMatrix();
         });
     }
 

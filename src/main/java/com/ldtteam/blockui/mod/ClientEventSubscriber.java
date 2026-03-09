@@ -42,13 +42,13 @@ public class ClientEventSubscriber
     /* TODO: fixme
     public static void renderWorldLastEvent(@NotNull final RenderLevelLastEvent event)
     {
-        final PoseStack ps = event.getPoseStack();
+        final Matrix3x2fStack ps = event.getPoseStack();
         final Vec3 viewPosition = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
 
-        ps.pushPose();
+        ps.pushMatrix();
         ps.translate(-viewPosition.x(), -viewPosition.y(), -viewPosition.z());
         HookRegistries.render(ps, event.getPartialTick());
-        ps.popPose();
+        ps.popMatrix();
     }*/
 
     /**

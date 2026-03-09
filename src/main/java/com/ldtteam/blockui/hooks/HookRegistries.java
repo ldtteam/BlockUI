@@ -3,7 +3,7 @@ package com.ldtteam.blockui.hooks;
 import com.google.common.base.Predicates;
 import com.ldtteam.blockui.hooks.TriggerMechanism.RangeTriggerMechanism;
 import com.ldtteam.blockui.hooks.TriggerMechanism.RayTraceTriggerMechanism;
-import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Matrix3x2fStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -50,7 +50,7 @@ public final class HookRegistries
         }
     }
 
-    public static void render(final PoseStack matrixStack, final float partialTicks)
+    public static void render(final Matrix3x2fStack matrixStack, final float partialTicks)
     {
         for (int i = 0; i < REGISTRIES.length; i++)
         {
@@ -192,7 +192,7 @@ public final class HookRegistries
         }
 
         @Override
-        protected void translateToGuiBottomCenter(final PoseStack ms, final Entity entity, final float partialTicks)
+        protected void translateToGuiBottomCenter(final Matrix3x2fStack ms, final Entity entity, final float partialTicks)
         {
             final double x = Mth.lerp(partialTicks, entity.xOld, entity.getX());
             final double y = Mth.lerp(partialTicks, entity.yOld, entity.getY());
@@ -366,7 +366,7 @@ public final class HookRegistries
         }
 
         @Override
-        protected void translateToGuiBottomCenter(final PoseStack ms, final BlockEntity thing, final float partialTicks)
+        protected void translateToGuiBottomCenter(final Matrix3x2fStack ms, final BlockEntity thing, final float partialTicks)
         {
             ms.translate(thing.getBlockPos().getX() + 0.5d, thing.getBlockPos().getY() + 1.1d, thing.getBlockPos().getZ() + 0.5d);
         }

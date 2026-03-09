@@ -11,6 +11,7 @@ import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
+import org.joml.Matrix3x2fStack;
 import org.joml.Vector4f;
 import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.Nullable;
@@ -686,7 +687,7 @@ public class Pane extends UiRenderMacros
 
     // TODO: refactor: move logic to macros, keep local override here
     // TODO: move to stencil test? especially scissors can't be used in world gui
-    protected synchronized void scissorsStart(final PoseStack ms, final int contentWidth, final int contentHeight)
+    protected synchronized void scissorsStart(final Matrix3x2fStack ms, final int contentWidth, final int contentHeight)
     {
         final int fbWidth = mc.getWindow().getWidth();
         final int fbHeight = mc.getWindow().getHeight();
@@ -748,7 +749,7 @@ public class Pane extends UiRenderMacros
 
     protected synchronized void scissorsEnd(final BOGuiGraphics target)
     {
-        final PoseStack ms = target.pose();
+        final Matrix3x2fStack ms = target.pose();
         final ScissorsInfo popped = scissorsInfoStack.pop();
         if (debugging)
         {
@@ -758,7 +759,7 @@ public class Pane extends UiRenderMacros
 
             final int yStart = mc.getWindow().getHeight() - popped.yEnd;
 
-            ms.pushPose();
+            ms.pushMatrix();
             ms.setIdentity();
             drawLineRect(ms, popped.xStart, yStart, w, h, color, 2);
 
@@ -768,7 +769,7 @@ public class Pane extends UiRenderMacros
                 popped.xStart + w - stringWidth,
                 yStart + h - 2 * mc.font.lineHeight,
                 color);
-            ms.popPose();
+            ms.popMatrix();
         }
 
         window.getScreen().width = popped.oldGuiWidth;

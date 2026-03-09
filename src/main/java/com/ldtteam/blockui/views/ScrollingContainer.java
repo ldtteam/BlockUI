@@ -5,7 +5,7 @@ import com.ldtteam.blockui.MouseEventCallback;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.util.records.Pos2i;
-import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Matrix3x2fStack;
 
 /**
  * Basic scrollable pane.
@@ -69,14 +69,14 @@ public class ScrollingContainer extends View
     @Override
     public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
-        final PoseStack ms = target.pose();
+        final Matrix3x2fStack ms = target.pose();
         scissorsStart(ms, width, contentHeight);
 
         // Translate the scroll
-        ms.pushPose();
+        ms.pushMatrix();
         ms.translate(0.0d, -scrollY, 0.0d);
         super.drawSelf(target, mx, my + scrollY);
-        ms.popPose();
+        ms.popMatrix();
 
         scissorsEnd(target);
     }
@@ -84,13 +84,13 @@ public class ScrollingContainer extends View
     @Override
     public void drawSelfLast(final BOGuiGraphics target, final double mx, final double my)
     {
-        final PoseStack ms = target.pose();
+        final Matrix3x2fStack ms = target.pose();
 
         // Translate the scroll
-        ms.pushPose();
+        ms.pushMatrix();
         ms.translate(0.0d, -scrollY, 0.0d);
         super.drawSelfLast(target, mx, my + scrollY);
-        ms.popPose();
+        ms.popMatrix();
     }
 
     @Override

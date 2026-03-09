@@ -9,7 +9,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Matrix3x2fStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.renderer.GameRenderer;
@@ -40,7 +40,7 @@ public class Tooltip extends AbstractTextElement
 
     /**
      * Standard constructor which instantiates the tooltip.
-     * 
+     *
      * @see PaneBuilders#tooltipBuilder()
      * @deprecated {@link PaneBuilders#tooltipBuilder()}
      */
@@ -121,7 +121,7 @@ public class Tooltip extends AbstractTextElement
     @Override
     public void drawSelfLast(final BOGuiGraphics target, final double mx, final double my)
     {
-        final PoseStack ms = target.pose();
+        final Matrix3x2fStack ms = target.pose();
 
         if (!preparedText.isEmpty() && isEnabled())
         {
@@ -162,7 +162,7 @@ public class Tooltip extends AbstractTextElement
 
             // modified INLINE: vanilla Screen#renderTooltip(MatrixStack, List<? extends IReorderingProcessor>, int, int, FontRenderer)
             // TODO: update from net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil
-            ms.pushPose();
+            ms.pushMatrix();
             ms.translate(x, y, Z_OFFSET);
 
             final BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
@@ -197,7 +197,7 @@ public class Tooltip extends AbstractTextElement
 
             ms.translate(-x, -y, 0.0d);
             super.innerDrawSelf(target, mx, my);
-            ms.popPose();
+            ms.popMatrix();
         }
     }
 

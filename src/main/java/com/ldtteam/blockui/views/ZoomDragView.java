@@ -6,7 +6,7 @@ import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.controls.AbstractTextElement;
 import com.ldtteam.blockui.util.cursor.Cursor;
-import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Matrix3x2fStack;
 import net.minecraft.util.Mth;
 
 /**
@@ -52,7 +52,7 @@ public class ZoomDragView extends View
         zoomEnabled = params.getBoolean("zoomenabled", zoomEnabled);
         minScale = params.getDouble("minscale", minScale);
         maxScale = params.getDouble("maxscale", maxScale);
-        
+
         this.cursor = this.cursor == Cursor.DEFAULT ? Cursor.RESIZE : this.cursor;
     }
 
@@ -173,29 +173,29 @@ public class ZoomDragView extends View
         return Math.max(0, (double) contentWidth * scale - getWidth());
     }
 
-    protected void abstractDrawSelfPre(final PoseStack ms, final double mx, final double my)
+    protected void abstractDrawSelfPre(final Matrix3x2fStack ms, final double mx, final double my)
     {
     }
 
-    protected void abstractDrawSelfPost(final PoseStack ms, final double mx, final double my)
+    protected void abstractDrawSelfPost(final Matrix3x2fStack ms, final double mx, final double my)
     {
     }
 
     @Override
     public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
-        final PoseStack ms = target.pose();
+        final Matrix3x2fStack ms = target.pose();
 
         scissorsStart(ms, contentWidth, contentHeight);
 
-        ms.pushPose();
+        ms.pushMatrix();
         ms.translate(-scrollX, -scrollY, 0.0d);
         ms.translate((1 - scale) * x, (1 - scale) * y, 0.0d);
         ms.scale((float) scale, (float) scale, 1.0f);
         abstractDrawSelfPre(ms, mx, my);
         super.drawSelf(target, calcRelativeX(mx), calcRelativeY(my));
         abstractDrawSelfPost(ms, mx, my);
-        ms.popPose();
+        ms.popMatrix();
 
         scissorsEnd(target);
     }
@@ -203,16 +203,16 @@ public class ZoomDragView extends View
     @Override
     public void drawSelfLast(final BOGuiGraphics target, final double mx, final double my)
     {
-        final PoseStack ms = target.pose();
+        final Matrix3x2fStack ms = target.pose();
 
         scissorsStart(ms, contentWidth, contentHeight);
 
-        ms.pushPose();
+        ms.pushMatrix();
         ms.translate(-scrollX, -scrollY, 0.0d);
         ms.translate((1 - scale) * x, (1 - scale) * y, 0.0d);
         ms.scale((float) scale, (float) scale, 1.0f);
         super.drawSelfLast(target, calcRelativeX(mx), calcRelativeY(my));
-        ms.popPose();
+        ms.popMatrix();
 
         scissorsEnd(target);
     }

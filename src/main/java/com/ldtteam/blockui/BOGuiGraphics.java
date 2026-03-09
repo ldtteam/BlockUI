@@ -4,7 +4,7 @@ import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
 import com.ldtteam.blockui.util.SingleBlockGetter.SingleBlockNeighborhood;
 import com.ldtteam.blockui.util.cursor.Cursor;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import org.joml.Matrix3x2fStack;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -35,7 +35,7 @@ public class BOGuiGraphics extends GuiGraphics
     private int cursorMaxDepth = -1;
     private Cursor selectedCursor = Cursor.DEFAULT;
 
-    public BOGuiGraphics(final Minecraft mc, final PoseStack ps, final BufferSource buffers)
+    public BOGuiGraphics(final Minecraft mc, final Matrix3x2fStack ps, final BufferSource buffers)
     {
         super(mc, ps, buffers);
     }
