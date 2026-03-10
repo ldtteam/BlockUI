@@ -23,6 +23,7 @@ public abstract class AbstractTextBuilder<P extends AbstractTextElement, R exten
 
     private int defaultColor = 0;
     private int color = 0;
+    private Integer shadowColor = null;
     private boolean bold = false;
     private boolean italic = false;
     private boolean underlined = false;
@@ -158,7 +159,7 @@ public abstract class AbstractTextBuilder<P extends AbstractTextElement, R exten
     {
         newLine();
 
-        Style style = new Style(Color.toVanilla(color), bold, italic, underlined, strikeThrough, obfuscated, clickEvent, null, insertionEvent, null);
+        Style style = new Style(Color.toVanilla(color), shadowColor, bold, italic, underlined, strikeThrough, obfuscated, clickEvent, null, insertionEvent, null);
         if (style.equals(Style.EMPTY))
         {
             style = Style.EMPTY;
@@ -188,6 +189,7 @@ public abstract class AbstractTextBuilder<P extends AbstractTextElement, R exten
     public R resetStyle()
     {
         color = defaultColor;
+        shadowColor = null;
         bold = false;
         italic = false;
         underlined = false;
@@ -209,6 +211,7 @@ public abstract class AbstractTextBuilder<P extends AbstractTextElement, R exten
         }
 
         color = style.getColor() == null ? defaultColor : style.getColor().getValue();
+        shadowColor = style.getShadowColor();
         bold = style.isBold();
         italic = style.isItalic();
         underlined = style.isUnderlined();
@@ -295,6 +298,52 @@ public abstract class AbstractTextBuilder<P extends AbstractTextElement, R exten
     public R color(final int color)
     {
         this.color = color;
+        return thiz;
+    }
+
+    /**
+     * Sets shadowColor according to vanilla formatting system.
+     * Valid input is anything between 0-9 and a-f/A-F, anything else resets the shadowColor to default.
+     *
+     * @param code char representing vanilla shadowColor code
+     */
+    public R shadowColorVanillaCode(final char code)
+    {
+        final ChatFormatting tf = ChatFormatting.getByCode(code);
+        return shadowColor(tf == null || tf.getColor() == null ? null : tf.getColor());
+    }
+
+    /**
+     * Tries to set shadowColor according the given human-readable color name.
+     * If no color with this name is found in vanilla or our color list then the color remains unchanged.
+     *
+     * @param name human-readable shadowColor name
+     */
+    public R shadowColorName(final String name)
+    {
+        final ChatFormatting tf = ChatFormatting.getByName(name);
+        return shadowColor(Color.getByName(name, tf == null || tf.getColor() == null ? shadowColor : tf.getColor()));
+    }
+
+    /**
+     * Parses shadowColor string using BlockOut xml parser.
+     *
+     * @param colorIn any valid xml color format
+     */
+    public R shadowColorParse(final String colorIn)
+    {
+        return shadowColor(Color.parse(colorIn, shadowColor));
+    }
+
+    public R shadowColor(final Integer shadowColor)
+    {
+        this.shadowColor = shadowColor;
+        return thiz;
+    }
+
+    public R defaultShadowColor()
+    {
+        this.shadowColor = null;
         return thiz;
     }
 
@@ -397,7 +446,7 @@ public abstract class AbstractTextBuilder<P extends AbstractTextElement, R exten
 
     /**
      * Finishes current paragraph and replaces text of given pane.
-     * 
+     *
      * @see #paragraphBreak()
      */
     public R applyToPane(final AbstractTextElement textPane)
@@ -411,7 +460,7 @@ public abstract class AbstractTextBuilder<P extends AbstractTextElement, R exten
 
     /**
      * Finishes current paragraph and appends to current text of given pane.
-     * 
+     *
      * @see #paragraphBreak()
      */
     public R appendToPane(final AbstractTextElement textPane)
