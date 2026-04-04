@@ -470,12 +470,6 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
     }
 
     @Override
-    public float getShade(Direction p_104703_, boolean p_104704_)
-    {
-        return realLevel().getShade(p_104703_, p_104704_);
-    }
-
-    @Override
     public Holder<Biome> getBiome(BlockPos pos)
     {
         return realLevel().getBiome(worldPos.offset(pos));
@@ -1443,12 +1437,6 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
     }
 
     @Override
-    public int getBlockTint(BlockPos p_46836_, ColorResolver p_46837_)
-    {
-        return super.getBlockTint(p_46836_, p_46837_);
-    }
-
-    @Override
     public ChunkAccess getChunk(BlockPos p_46866_)
     {
         return super.getChunk(p_46866_);
@@ -1649,12 +1637,6 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
     public boolean isOutsideBuildHeight(int p_151563_)
     {
         return super.isOutsideBuildHeight(p_151563_);
-    }
-
-    @Override
-    public float getShade(float normalX, float normalY, float normalZ, boolean shade)
-    {
-        return super.getShade(normalX, normalY, normalZ, shade);
     }
 
     @Override
@@ -2120,6 +2102,12 @@ public class FakeLevel<SOURCE extends IFakeLevelBlockGetter> extends Level
     public boolean noEntityCollision(@Nullable Entity entity, AABB aabb)
     {
         return super.noEntityCollision(entity, aabb);
+    }
+
+    @Override
+    public boolean isInsideBuildHeight(BlockPos pos)
+    {
+        return super.isInsideBuildHeight(pos);
     }
     */
 }

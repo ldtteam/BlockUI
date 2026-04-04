@@ -863,5 +863,11 @@ public class FakeChunk extends LevelChunk
     {
         return super.isInsideBuildHeight(blockY);
     }
+
+    @Override
+    public boolean isInsideBuildHeight(BlockPos pos)
+    {
+        return super.isInsideBuildHeight(pos);
+    }
     */
 }

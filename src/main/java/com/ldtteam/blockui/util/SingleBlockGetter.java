@@ -1,19 +1,14 @@
 package com.ldtteam.blockui.util;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.BlockAndLightGetter;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.LightLayer;
-import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.FluidState;
-import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import javax.annotation.Nullable;
 
 /**
@@ -74,7 +69,7 @@ public class SingleBlockGetter implements BlockGetter
     /**
      * Small single blockstate level wrapper. Lighting set to 10, full shading
      */
-    public static class SingleBlockNeighborhood extends SingleBlockGetter implements BlockAndTintGetter
+    public static class SingleBlockNeighborhood extends SingleBlockGetter implements BlockAndLightGetter
     {
         public SingleBlockNeighborhood(final BlockState blockState, final BlockEntity blockEntity)
         {
@@ -92,21 +87,9 @@ public class SingleBlockGetter implements BlockGetter
         }
 
         @Override
-        public float getShade(final Direction direction, final boolean shade)
-        {
-            return 1;
-        }
-
-        @Override
         public LevelLightEngine getLightEngine()
         {
             throw new UnsupportedOperationException("Does anyone need LightEngine?");
-        }
-
-        @Override
-        public int getBlockTint(final BlockPos pos, final ColorResolver colorResolver)
-        {
-            return colorResolver.getColor(ServerLifecycleHooks.getCurrentServer().registryAccess().registryOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS), pos.getX(), pos.getZ());
         }
 
         @Override

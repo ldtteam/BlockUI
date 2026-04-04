@@ -1,13 +1,13 @@
 package com.ldtteam.common.fakelevel;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.BlockAndLightGetter;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.lighting.LightEngine;
 import net.neoforged.neoforge.common.ModConfigSpec.IntValue;
 
 /**
- * Loosely based on {@link BlockAndTintGetter}
+ * Loosely based on {@link BlockAndLightGetter}
  */
 public interface IFakeLevelLightProvider
 {
@@ -34,7 +34,7 @@ public interface IFakeLevelLightProvider
 
     /**
      * Returning false here means no other method from this iface will get called and all logic will be redirected to current client level.
-     * 
+     *
      * @return false if client level should be used instead
      */
     boolean forceOwnLightLevel();
