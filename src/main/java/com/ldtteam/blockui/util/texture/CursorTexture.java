@@ -1,21 +1,21 @@
 package com.ldtteam.blockui.util.texture;
 
-import com.google.gson.JsonObject;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.mod.BlockUI;
-import com.ldtteam.blockui.util.cursor.Cursor;
-import com.ldtteam.blockui.util.cursor.CursorUtils;
 import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.NativeImage.Format;
+import com.mojang.blaze3d.platform.cursor.CursorType;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.renderer.texture.AbstractTexture;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.client.renderer.texture.ReloadableTexture;
+import net.minecraft.client.renderer.texture.TextureContents;
+import net.minecraft.client.resources.metadata.texture.TextureMetadataSection;
 import net.minecraft.resources.Identifier;
-import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
+import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.GsonHelper;
-import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.system.MemoryStack;
@@ -27,172 +27,100 @@ import java.io.IOException;
 /**
  * Used for textured cursors.
  *
- * @see Pane#setCursor(Cursor)
+ * @see Pane#setCursor(CursorType)
  */
-public class CursorTexture extends AbstractTexture
+public class CursorTexture extends ReloadableTexture
 {
     private static final Logger LOGGER = LoggerFactory.getLogger(CursorTexture.class);
-    private final Identifier resourceLocation;
 
-    private int hotspotX = 0;
-    private int hotspotY = 0;
+    private CursorMetadataSection cursorMetadata = CursorMetadataSection.EMPTY;
     private long glfwCursorAddress = 0;
-    @Nullable
-    protected NativeImage nativeImage = null;
 
     public CursorTexture(final Identifier resLoc)
     {
-        this.resourceLocation = resLoc;
-    }
-
-    /**
-     * Sets cursor hotspot. Hotspot is position in the image which should be used as 0,0 when rendering the cursor (eg. image with
-     * 24x24 resolution will be centered on mouse point with hotspot 12x12).
-     *
-     * @param x hotspot left offset
-     * @param y hotspot top offset
-     */
-    public void setHotspot(final int x, final int y)
-    {
-        if (hotspotX != x || hotspotY != y)
-        {
-            hotspotX = x;
-            hotspotY = y;
-            onDataChange();
-        }
-    }
-
-    /**
-     * @return true if this is current cursor image, false otherwise
-     */
-    public boolean isCursorNow()
-    {
-        return CursorUtils.isCurrentCursor(glfwCursorAddress) && glfwCursorAddress != 0;
-    }
-
-    private void onDataChange()
-    {
-        if (!RenderSystem.isOnRenderThread())
-        {
-            RenderSystem.recordRenderCall(this::onDataChange);
-            return;
-        }
-
-        if (isCursorNow())
-        {
-            destroyCursorHandle();
-            setCursor();
-        }
-        else
-        {
-            destroyCursorHandle();
-        }
-    }
-
-    protected void destroyCursorHandle()
-    {
-        if (glfwCursorAddress != 0)
-        {
-            RenderSystem.assertOnRenderThread();
-            if (isCursorNow())
-            {
-                CursorUtils.resetCursor();
-            }
-
-            GLFW.glfwDestroyCursor(glfwCursorAddress);
-            glfwCursorAddress = 0;
-        }
-    }
-
-    /**
-     * Sets this texture as cursor image. Resets to default if anything went wrong during setup of this texture.
-     */
-    public void setCursor()
-    {
-        if (glfwCursorAddress == 0 && nativeImage != null)
-        {
-            RenderSystem.assertOnRenderThread();
-            try (var stack = MemoryStack.stackPush())
-            {
-                final GLFWImage image = GLFWImage.malloc(stack);
-                image.width(nativeImage.getWidth());
-                image.height(nativeImage.getHeight());
-                MemoryUtil.memPutAddress(image.address() + GLFWImage.PIXELS, nativeImage.pixels);
-                glfwCursorAddress = GLFW.glfwCreateCursor(image, hotspotX, hotspotY);
-            }
-
-            if (glfwCursorAddress == 0)
-            {
-                LOGGER.error("Cannot create textured cursor for resource location: " + resourceLocation);
-            }
-        }
-
-        if (glfwCursorAddress != 0)
-        {
-            CursorUtils.setCursorAddress(glfwCursorAddress);
-        }
-        else
-        {
-            CursorUtils.resetCursor();
-        }
+        super(resLoc);
     }
 
     @Override
-    public void load(final ResourceManager resourceManager) throws IOException
+    public TextureContents loadContents(final ResourceManager resourceManager) throws IOException
     {
-        if (nativeImage != null)
-        {
-            close();
-        }
-
-        final Resource resource = OutOfJarResourceLocation.getResourceHandle(resourceLocation, resourceManager);
+        final Resource resource = OutOfJarResourceLocation.getResourceHandle(resourceId(), resourceManager);
+        final NativeImage nativeImage;
         try (var is = resource.open())
         {
             nativeImage = NativeImage.read(is);
         }
         if (nativeImage.format() != Format.RGBA)
         {
-            LOGGER.error("Cannot load texture for cursor as it is not in RGBA format, resource location: " + resourceLocation);
-            close();
+            LOGGER.error("Cannot load texture for cursor as it is not in RGBA format, resource location: " + resourceId());
+
+            nativeImage.close();
+            return TextureContents.createMissing();
         }
 
-        resource.metadata().getSection(CursorMetadataSection.SERIALIZER).ifPresent(metadata -> {
-            // manual set to avoid double onDataChange call
-            this.hotspotX = metadata.hotspotX;
-            this.hotspotY = metadata.hotspotY;
-        });
+        this.cursorMetadata = resource.metadata().getSection(CursorMetadataSection.TYPE).orElse(CursorMetadataSection.EMPTY);
 
-        onDataChange();
+        return new TextureContents(nativeImage, resource.metadata().getSection(TextureMetadataSection.TYPE).orElse(null));
+    }
+
+    @Override
+    public void apply(final TextureContents contents)
+    {
+        try (NativeImage nativeImage = contents.image())
+        {
+            RenderSystem.assertOnRenderThread();
+
+            this.close();
+
+            try (var stack = MemoryStack.stackPush())
+            {
+                final GLFWImage image = GLFWImage.malloc(stack);
+                image.width(nativeImage.getWidth());
+                image.height(nativeImage.getHeight());
+                MemoryUtil.memPutAddress(image.address() + GLFWImage.PIXELS, nativeImage.getPointer());
+                glfwCursorAddress = GLFW.glfwCreateCursor(image, cursorMetadata.hotspotX, cursorMetadata.hotspotY);
+            }
+
+            if (glfwCursorAddress == 0)
+            {
+                LOGGER.error("Cannot create textured cursor for resource location: " + resourceId());
+            }
+        }
+    }
+
+    @Override
+    protected void doLoad(final NativeImage image)
+    {
+        // Noop
     }
 
     @Override
     public void close()
     {
-        destroyCursorHandle();
-        if (nativeImage != null)
+        if (glfwCursorAddress != 0)
         {
-            nativeImage.close();
-            nativeImage = null;
+            RenderSystem.assertOnRenderThread();
+            GLFW.glfwDestroyCursor(glfwCursorAddress);
+            glfwCursorAddress = 0;
         }
+        super.close();
+    }
+
+    public long getGlfwCursorAddress()
+    {
+        return glfwCursorAddress;
     }
 
     public static record CursorMetadataSection(int hotspotX, int hotspotY)
     {
-        public static final CursorMetadataSectionSerializer SERIALIZER = new CursorMetadataSectionSerializer();
-    }
+        public static final CursorMetadataSection EMPTY = new CursorMetadataSection(0, 0);
 
-    private static class CursorMetadataSectionSerializer implements MetadataSectionSerializer<CursorMetadataSection>
-    {
-        @Override
-        public String getMetadataSectionName()
-        {
-            return "ldtteam." + BlockUI.MOD_ID + ".cursor";
-        }
+        public static final Codec<CursorMetadataSection> CODEC = RecordCodecBuilder.create(builder -> builder
+            .group(Codec.INT.optionalFieldOf("hotspot.x", 0).forGetter(CursorMetadataSection::hotspotX),
+                Codec.INT.optionalFieldOf("hotspot.y", 0).forGetter(CursorMetadataSection::hotspotY))
+            .apply(builder, CursorMetadataSection::new));
 
-        @Override
-        public CursorMetadataSection fromJson(final JsonObject jsonObject)
-        {
-            return new CursorMetadataSection(GsonHelper.getAsInt(jsonObject, "hotspot.x", 0), GsonHelper.getAsInt(jsonObject, "hotspot.y", 0));
-        }
+        public static final MetadataSectionType<CursorMetadataSection> TYPE =
+            new MetadataSectionType<>("ldtteam." + BlockUI.MOD_ID + ".cursor", CODEC);
     }
 }

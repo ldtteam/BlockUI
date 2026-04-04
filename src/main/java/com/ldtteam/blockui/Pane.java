@@ -3,11 +3,10 @@ package com.ldtteam.blockui;
 import com.ldtteam.blockui.controls.AbstractTextBuilder.TooltipBuilder;
 import com.ldtteam.blockui.mod.BlockUI;
 import com.ldtteam.blockui.util.cursor.Cursor;
-import com.ldtteam.blockui.util.cursor.CursorUtils;
-import com.ldtteam.blockui.util.cursor.CursorUtils.StandardCursor;
 import com.ldtteam.blockui.views.View;
 import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.vertex.*;
+import com.mojang.blaze3d.platform.cursor.CursorType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.Mth;
@@ -42,7 +41,7 @@ public class Pane extends UiRenderMacros
     protected boolean visible = true;
     protected boolean enabled = true;
     protected String onHoverId = "";
-    protected Cursor cursor = Cursor.DEFAULT;
+    protected CursorType cursor = Cursor.DEFAULT;
     // Runtime
     protected BOWindow window;
     protected View parent;
@@ -322,7 +321,7 @@ public class Pane extends UiRenderMacros
     /**
      * Used mostly for overrides for default logics like {@link com.ldtteam.blockui.views.ZoomDragView#getCursor ZoomDragView}
      */
-    public Cursor getCursor()
+    public CursorType getCursor()
     {
         return cursor;
     }
@@ -330,7 +329,7 @@ public class Pane extends UiRenderMacros
     /**
      * @param cursor use {@link Cursor} instances for default behaviour (or new instances to prevent it)
      */
-    public void setCursor(final Cursor cursor)
+    public void setCursor(final CursorType cursor)
     {
         this.cursor = cursor;
     }

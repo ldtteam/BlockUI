@@ -1,6 +1,5 @@
 package com.ldtteam.blockui;
 
-import com.ldtteam.blockui.util.cursor.CursorUtils;
 import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.systems.RenderSystem;
 import org.joml.Matrix3x2fStack;
@@ -117,7 +116,7 @@ public class BOScreen extends Screen
                         -minecraft.font.lineHeight,
                         Color.getByName("white"));
                 }
-                target.applyCursor(debugX);
+                ms.requestCursor(target.applyCursor(debugX));
             }
 
             window.drawLast(target, calcRelativeX(mx), calcRelativeY(my));
@@ -332,7 +331,6 @@ public class BOScreen extends Screen
         finally
         {
             BOWindow.clearFocus();
-            CursorUtils.resetCursor();
         }
     }
 

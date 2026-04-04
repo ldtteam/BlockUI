@@ -3,6 +3,7 @@ package com.ldtteam.blockui;
 import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
 import com.ldtteam.blockui.util.SingleBlockGetter.SingleBlockNeighborhood;
 import com.ldtteam.blockui.util.cursor.Cursor;
+import com.mojang.blaze3d.platform.cursor.CursorType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import org.joml.Matrix3x2fStack;
 import com.mojang.math.Axis;
@@ -33,7 +34,7 @@ public class BOGuiGraphics extends GuiGraphics
     private static final SingleBlockNeighborhood NEIGHBORHOOD = new SingleBlockNeighborhood();
 
     private int cursorMaxDepth = -1;
-    private Cursor selectedCursor = Cursor.DEFAULT;
+    private CursorType selectedCursor = Cursor.DEFAULT;
 
     public BOGuiGraphics(final Minecraft mc, final Matrix3x2fStack ps, final BufferSource buffers)
     {
@@ -73,11 +74,12 @@ public class BOGuiGraphics extends GuiGraphics
         return super.drawString(minecraft.font, text, x, y, color, shadow);
     }
 
-    public void setCursor(final Cursor cursor)
+    public void setCursor(final CursorType cursor)
     {
-        if (pose().poseStack.size() >= cursorMaxDepth)
+        final int size = ((CountingMatrix3x2fStack) pose()).size;
+        if (size >= cursorMaxDepth)
         {
-            cursorMaxDepth = pose().poseStack.size();
+            cursorMaxDepth = size;
             selectedCursor = cursor;
         }
     }
@@ -85,14 +87,16 @@ public class BOGuiGraphics extends GuiGraphics
     /**
      * @param debugXoffset debug string x offset
      */
-    public void applyCursor(final int debugXoffset)
+    public CursorType applyCursor(final int debugXoffset)
     {
-        selectedCursor.apply();
-
         if (Pane.debugging)
         {
             drawString(selectedCursor.toString(), debugXoffset, -minecraft.font.lineHeight, Color.getByName("white"));
         }
+
+        // requestCursor(selectedCursor);
+        // need to direct this to vanilla gui
+        return selectedCursor;
     }
 
     /**

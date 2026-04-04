@@ -1,50 +1,77 @@
 package com.ldtteam.blockui.util.cursor;
 
-import com.ldtteam.blockui.util.cursor.CursorUtils.StandardCursor;
+import com.ldtteam.blockui.mod.BlockUI;
+import com.ldtteam.blockui.util.texture.CursorTexture;
+import com.ldtteam.blockui.util.texture.IsOurTexture;
+import com.mojang.blaze3d.platform.Window;
+import com.mojang.blaze3d.platform.cursor.CursorType;
+import com.mojang.blaze3d.platform.cursor.CursorTypes;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.Identifier;
+import org.lwjgl.glfw.GLFW;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Interface to wrap various cursors
  */
-@FunctionalInterface
-public interface Cursor
+public class Cursor
 {
-    /** Probably arrow, but OS dependend */
-    public static final Cursor DEFAULT = named(() -> CursorUtils.setStandardCursor(StandardCursor.DEFAULT), StandardCursor.DEFAULT);
-    public static final Cursor ARROW = named(() -> CursorUtils.setStandardCursor(StandardCursor.ARROW), StandardCursor.ARROW);
-    public static final Cursor TEXT_CURSOR = named(() -> CursorUtils.setStandardCursor(StandardCursor.TEXT_CURSOR), StandardCursor.TEXT_CURSOR);
-    public static final Cursor CROSSHAIR = named(() -> CursorUtils.setStandardCursor(StandardCursor.CROSSHAIR), StandardCursor.CROSSHAIR);
-    public static final Cursor HAND = named(() -> CursorUtils.setStandardCursor(StandardCursor.HAND), StandardCursor.HAND);
-    public static final Cursor HORIZONTAL_RESIZE = named(() -> CursorUtils.setStandardCursor(StandardCursor.HORIZONTAL_RESIZE), StandardCursor.HORIZONTAL_RESIZE);
-    public static final Cursor VERTICAL_RESIZE = named(() -> CursorUtils.setStandardCursor(StandardCursor.VERTICAL_RESIZE), StandardCursor.VERTICAL_RESIZE);
-    public static final Cursor RESIZE = named(() -> CursorUtils.setStandardCursor(StandardCursor.RESIZE), StandardCursor.RESIZE);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Cursor.class);
 
-    public static Cursor of(final Identifier resLoc)
+    /** Probably arrow, but OS dependend */
+    public static final CursorType DEFAULT = CursorType.DEFAULT;
+    public static final CursorType ARROW = CursorTypes.ARROW;
+    public static final CursorType TEXT_CURSOR = CursorTypes.IBEAM;
+    public static final CursorType CROSSHAIR = CursorTypes.CROSSHAIR;
+    public static final CursorType HAND = CursorTypes.POINTING_HAND;
+    public static final CursorType HORIZONTAL_RESIZE = CursorTypes.RESIZE_EW;
+    public static final CursorType VERTICAL_RESIZE = CursorTypes.RESIZE_NS;
+    public static final CursorType RESIZE_NWSE = new CursorType("resize_nwse", GLFW.GLFW_RESIZE_NWSE_CURSOR);
+    public static final CursorType RESIZE_NESW = new CursorType("resize_nesw", GLFW.GLFW_RESIZE_NESW_CURSOR);
+    public static final CursorType RESIZE = CursorTypes.RESIZE_ALL;
+    public static final CursorType NOT_ALLOWED = CursorTypes.NOT_ALLOWED;
+
+    public static CursorType of(final Identifier resLoc)
     {
-        CursorUtils.loadCursorTexture(resLoc);
-        return named(() -> CursorUtils.setCursorImage(resLoc), resLoc);
+        final TextureManager texManager = Minecraft.getInstance().getTextureManager();
+        final AbstractTexture texture = texManager.getTexture(resLoc);
+        if (!(texture instanceof CursorTexture))
+        {
+            if (IsOurTexture.isOur(texture))
+            {
+                LOGGER.warn("Trying to use special BlockUI texture as cursor? Things may not work well: " + resLoc.toString());
+            }
+
+            texManager.registerAndLoad(resLoc, new CursorTexture(resLoc));
+        }
+
+        return new TexturedCursorType(resLoc);
     }
 
-    /**
-     * Apply cursor to main window
-     */
-    void apply();
-
-    static Cursor named(final Runnable applier, final Object name)
+    public static class TexturedCursorType extends CursorType
     {
-        return new Cursor()
+        private final Identifier resLoc;
+
+        protected TexturedCursorType(final Identifier resLoc)
         {
-            @Override
-            public void apply()
+            super(BlockUI.MOD_ID + "-tex-cursor:" + resLoc.toString(), -1L);
+            this.resLoc = resLoc;
+        }
+
+        @Override
+        public void select(final Window window)
+        {
+            final AbstractTexture texture = Minecraft.getInstance().getTextureManager().getTexture(resLoc);
+
+            if (!(texture instanceof final CursorTexture cursorTexture))
             {
-                applier.run();
+                throw new IllegalArgumentException("Did you forget to load CursorTexture (or create CursorType) for: " + resLoc);
             }
 
-            @Override
-            public String toString()
-            {
-                return "Cursor: " + name;
-            }
-        };
+            GLFW.glfwSetCursor(window.handle(), cursorTexture.getGlfwCursorAddress());
+        }
     }
 }

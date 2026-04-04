@@ -6,6 +6,7 @@ import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.controls.AbstractTextElement;
 import com.ldtteam.blockui.util.cursor.Cursor;
+import com.mojang.blaze3d.platform.cursor.CursorType;
 import org.joml.Matrix3x2fStack;
 import net.minecraft.util.Mth;
 
@@ -64,9 +65,9 @@ public class ZoomDragView extends View
     }
 
     @Override
-    public Cursor getCursor()
+    public CursorType getCursor()
     {
-        Cursor superCursor = super.getCursor();
+        CursorType superCursor = super.getCursor();
 
         // if not default
         if (superCursor != Cursor.RESIZE)
