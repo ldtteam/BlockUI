@@ -9,7 +9,6 @@ import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.util.records.SizeI;
 import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
 import com.ldtteam.blockui.util.texture.OutOfJarTexture;
-import com.ldtteam.blockui.util.texture.SpriteTexture;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import javax.imageio.ImageIO;
@@ -232,15 +231,10 @@ public class Image extends Pane
             return resolveSprite(atlasSprite, AtlasManager.getSpriteScaling(atlasSprite));
         }
 
-        // if our sprite or full blit do normal blit
-        final AbstractTexture texture = OutOfJarTexture.assertLoadedDefaultManagers(resLoc);
-        if (texture instanceof SpriteTexture || (u == 0 && v == 0 && uWidth == 0 && vHeight == 0))
+        // if full blit do normal blit
+        if (u == 0 && v == 0 && uWidth == 0 && vHeight == 0)
         {
-            // Mojang bug: if texture is null = nothing is registered to resLoc now
-            // then blit will leak one opengl texture id every time this is null
-            // so if null use missingTexture instead
-            final Identifier notBugged = texture == null ? MissingTextureAtlasSprite.getLocation() : resLoc;
-            return (ps, x, y, w, h) -> blit(ps, notBugged, x, y, w, h);
+            return (ps, x, y, w, h) -> blit(ps, resLoc, x, y, w, h);
         }
 
         // else map u,v to float

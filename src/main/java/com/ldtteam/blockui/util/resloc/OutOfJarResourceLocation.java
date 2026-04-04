@@ -2,16 +2,16 @@ package com.ldtteam.blockui.util.resloc;
 
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.client.renderer.texture.HttpTexture;
-import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.core.ClientAsset.Texture;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.PackResources;
+import net.minecraft.server.packs.repository.KnownPack;
 import net.minecraft.server.packs.resources.FallbackResourceManager;
 import net.minecraft.server.packs.resources.IoSupplier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceMetadata;
+import net.minecraft.world.entity.player.PlayerSkin;
 import org.jetbrains.annotations.Nullable;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
@@ -39,7 +40,6 @@ public class OutOfJarResourceLocation extends Identifier
         return new OutOfJarResourceLocation(namespace, path, null);
     }
 
-    @SuppressWarnings("resource")
     public static OutOfJarResourceLocation ofMinecraftFolder(final String namespace, final String... parts)
     {
         Path path = Minecraft.getInstance().gameDirectory.toPath().resolve(namespace);
@@ -53,28 +53,17 @@ public class OutOfJarResourceLocation extends Identifier
     /**
      * @param minecraft       minecraft instance
      * @param gameProfile     player profile
-     * @param textureSelector null for {@code PlayerSkin#texture()}, or {@code PlayerSkin#capeTexture()} or
-     *                        {@code PlayerSkin#elytraTexture()} - both cape and elytry may return null future
+     * @param textureSelector null for {@link PlayerSkin#body()}, or {@link PlayerSkin#cape()} or
+     *                        {@link PlayerSkin#elytra()} - both cape and elytry may return null future
      */
     public static CompletableFuture<Identifier> ofMinecraftSkin(final Minecraft minecraft,
         final GameProfile gameProfile,
-        @Nullable final Function<PlayerSkin, Identifier> textureSelector)
+        @Nullable final Function<PlayerSkin, Texture> textureSelector)
     {
-        return minecraft.getSkinManager().getOrLoad(gameProfile).thenApply(playerSkin -> {
-            final Identifier skinResLoc = textureSelector == null ? playerSkin.texture() : textureSelector.apply(playerSkin);
-            if (skinResLoc == null)
-            {
-                return null;
-            }
-
-            final AbstractTexture texture = minecraft.getTextureManager().getTexture(skinResLoc);
-            if (!(texture instanceof final HttpTexture httpTexture))
-            {
-                return skinResLoc;
-            }
-
-            return new OutOfJarResourceLocation(skinResLoc.getNamespace(), httpTexture.file.toPath(), skinResLoc.getPath());
-        });
+        return minecraft.getSkinManager()
+            .get(gameProfile)
+            .thenApply(
+                skin -> skin.map(textureSelector == null ? PlayerSkin::body : textureSelector).map(Texture::texturePath).orElse(null));
     }
 
     public Path getNioPath()
@@ -95,8 +84,9 @@ public class OutOfJarResourceLocation extends Identifier
     {
         if (resLoc instanceof final OutOfJarResourceLocation nioResLoc)
         {
-            return fileExists(nioResLoc.withSuffix(".mcmeta"), fallbackManager) ?
-                new OutOfJarResource(nioResLoc, FallbackResourceManager.convertToMetadata(() -> Files.newInputStream(nioResLoc.getNioPath()))) :
+            final OutOfJarResourceLocation mcmeta = nioResLoc.withSuffix(".mcmeta");
+            return fileExists(mcmeta, fallbackManager) ?
+                new OutOfJarResource(nioResLoc, FallbackResourceManager.convertToMetadata(() -> Files.newInputStream(mcmeta.getNioPath()))) :
                 new OutOfJarResource(nioResLoc);
         }
         return fallbackManager.getResource(resLoc).orElseThrow(() -> new FileNotFoundException("File not found: " + resLoc));
@@ -125,7 +115,7 @@ public class OutOfJarResourceLocation extends Identifier
      */
     @Override
     @Deprecated(forRemoval = false)
-    public Identifier withPath(final String path)
+    public OutOfJarResourceLocation withPath(final String path)
     {
         return of(getNamespace(), Path.of(path));
     }
@@ -135,7 +125,7 @@ public class OutOfJarResourceLocation extends Identifier
      */
     @Override
     @Deprecated(forRemoval = false)
-    public Identifier withPath(final UnaryOperator<String> op)
+    public OutOfJarResourceLocation withPath(final UnaryOperator<String> op)
     {
         return of(getNamespace(), Path.of(op.apply(nioPath.toString())));
     }
@@ -144,7 +134,7 @@ public class OutOfJarResourceLocation extends Identifier
      * With path prefix (prefix + current path)
      */
     @Override
-    public Identifier withPrefix(final String prefix)
+    public OutOfJarResourceLocation withPrefix(final String prefix)
     {
         return of(getNamespace(), Path.of(prefix).resolve(nioPath));
     }
@@ -156,7 +146,7 @@ public class OutOfJarResourceLocation extends Identifier
      * would add file ".foo" in subdirectory. To get same behaviour as {@link Path#resolve(Path)} add '/' to start of parameter
      */
     @Override
-    public Identifier withSuffix(final String suffix)
+    public OutOfJarResourceLocation withSuffix(final String suffix)
     {
         // in nio resolveSibling(...) = parent + path.of(...) so theoretically should resolve both correctly
         return of(getNamespace(), nioPath.resolveSibling(nioPath.getFileName().toString() + suffix));
@@ -225,6 +215,13 @@ public class OutOfJarResourceLocation extends Identifier
         {
             // currently only used at one place, so no-op should not crash
             return null;
+        }
+
+        @Override
+        public Optional<KnownPack> knownPackInfo()
+        {
+            // currently only used at one place, that treats empty as Lifecycle.experimental() which seems fine
+            return Optional.empty();
         }
 
         @Override
