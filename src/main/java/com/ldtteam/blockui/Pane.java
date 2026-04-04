@@ -9,12 +9,13 @@ import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.platform.cursor.CursorType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.util.Mth;
 import org.joml.Matrix3x2fStack;
 import org.joml.Vector4f;
 import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.Nullable;
-
 import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
@@ -88,12 +89,7 @@ public class Pane extends UiRenderMacros
         onHoverId = params.getString("onHoverId", onHoverId);
         toolTipLines = params.getMultilineText("tooltip", toolTipLines);
 
-        params.getResource("cursor", resLoc -> {
-            cursor = (BlockUI.MOD_ID + "_std").equalsIgnoreCase(resLoc.getNamespace()) ?
-                // do not use Cursor instances, there are instance equality checks
-                () -> CursorUtils.setStandardCursor(StandardCursor.valueOf(resLoc.getPath().toUpperCase())) :
-                Cursor.of(resLoc);
-        });
+        params.getResource("cursor", resLoc -> cursor = Cursor.of(resLoc));
     }
 
     /**
@@ -670,10 +666,39 @@ public class Pane extends UiRenderMacros
      * @param ch  the character
      * @param key the key
      * @return true if event was used or propagation needs to be stopped
+     * @deprecated replaced by {@link #onKeyEvent(KeyEvent)} and {@link #onCharactedEvent(CharacterEvent)}
      */
+    @Deprecated(forRemoval = true, since = "26.1")
     public boolean onKeyTyped(final char ch, final int key)
     {
         return false;
+    }
+
+    /**
+     * Called when a key is pressed.
+     *
+     * @param keyEvent event with key, scancode and modifier keys
+     * @return true if event was used or propagation needs to be stopped
+     */
+    public boolean onKeyEvent(final KeyEvent keyEvent)
+    {
+        return onKeyTyped('\0', keyEvent.key());
+    }
+
+    /**
+     * Called when a unicode character is emitted.
+     *
+     * @param characterEvent event with unicode codepoint
+     * @return true if event was used or propagation needs to be stopped
+     */
+    public boolean onCharactedEvent(final CharacterEvent characterEvent)
+    {
+        boolean stopPropagation = false;
+        for (char c : Character.toChars(characterEvent.codepoint()))
+        {
+            stopPropagation |= onKeyTyped(c, -1);
+        }
+        return stopPropagation;
     }
 
     /**

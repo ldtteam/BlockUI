@@ -1,7 +1,7 @@
 package com.ldtteam.blockui.views;
 
 import com.ldtteam.blockui.PaneParams;
-import org.lwjgl.glfw.GLFW;
+import net.minecraft.client.input.KeyEvent;
 
 /**
  * An OverlayView is a full screen View which is displayed on top of the window.
@@ -65,14 +65,14 @@ public class OverlayView extends View
      * @return false at all times - do nothing.
      */
     @Override
-    public boolean onKeyTyped(final char ch, final int key)
+    public boolean onKeyEvent(final KeyEvent event)
     {
-        if (isVisible() && key == GLFW.GLFW_KEY_ESCAPE)
+        if (isVisible() && event.isEscape())
         {
             setVisible(false);
             return true;
         }
 
-        return super.onKeyTyped(ch, key);
+        return super.onKeyEvent(event);
     }
 }

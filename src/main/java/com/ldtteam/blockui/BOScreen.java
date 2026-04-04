@@ -6,12 +6,16 @@ import org.joml.Matrix3x2fStack;
 import com.mojang.blaze3d.vertex.VertexSorting;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
+import org.jspecify.annotations.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.PreeditEvent;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.client.ClientHooks;
@@ -102,8 +106,9 @@ public class BOScreen extends Screen
 
         try
         {
-            final BOGuiGraphics target = new BOGuiGraphics(ms.minecraft, newMs, ms.bufferSource());
-            window.draw(target, calcRelativeX(mx), calcRelativeY(my));
+            final double newMx = calcRelativeX(mx), newMy = calcRelativeY(my);
+            final BOGuiGraphics target = new BOGuiGraphics(ms.minecraft, newMs, ms.bufferSource(), newMx, newMy);
+            window.draw(target, newMx, newMy);
 
             if (ms.minecraft.screen == this)
             {
@@ -120,7 +125,7 @@ public class BOScreen extends Screen
                 ms.requestCursor(target.applyCursor(debugX));
             }
 
-            window.drawLast(target, calcRelativeX(mx), calcRelativeY(my));
+            window.drawLast(target, newMx, newMy);
         }
         catch (final Exception e)
         {
@@ -144,21 +149,22 @@ public class BOScreen extends Screen
     }
 
     @Override
-    public boolean keyPressed(final int key, final int scanCode, final int modifiers)
+    public boolean keyPressed(final KeyEvent event)
     {
+        final int key = event.key();
         // keys without printable representation
         if (key >= 0 && key <= GLFW.GLFW_KEY_LAST)
         {
             try
             {
-                return window.onKeyTyped('\0', key);
+                return window.onKeyEvent(event);
             }
             catch (final Exception e)
             {
                 final CrashReport crashReport = CrashReport.forThrowable(e, "KeyPressed event for BO screen");
                 final CrashReportCategory category = crashReport.addCategory("BO screen key event details");
                 category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
-                category.setDetail("GLFW key value", () -> Integer.toString(key));
+                category.setDetail("GLFW key value", () -> Integer.toString(event.input()));
                 throw new ReportedException(crashReport);
             }
         }
@@ -166,27 +172,35 @@ public class BOScreen extends Screen
     }
 
     @Override
-    public boolean charTyped(final char ch, final int key)
+    public boolean charTyped(final CharacterEvent event)
     {
         try
         {
-            return window.onKeyTyped(ch, key);
+            return window.onCharactedEvent(event);
         }
         catch (final Exception e)
         {
             final CrashReport crashReport = CrashReport.forThrowable(e, "CharTyped event for BO screen");
             final CrashReportCategory category = crashReport.addCategory("BO screen char event details");
             category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
-            category.setDetail("Char value", () -> Character.toString(ch));
+            category.setDetail("Char value", () -> Character.toString(event.codepoint()));
             throw new ReportedException(crashReport);
         }
     }
 
     @Override
-    public boolean mouseClicked(final double mxIn, final double myIn, final int keyCode)
+    public boolean preeditUpdated(final PreeditEvent event)
     {
-        final double mx = calcRelativeX(mxIn);
-        final double my = calcRelativeY(myIn);
+        // TODO: implement this in text field
+        return true;
+    }
+
+    @Override
+    public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick)
+    {
+        final int keyCode = event.button();
+        final double mx = calcRelativeX(event.x());
+        final double my = calcRelativeY(event.y());
         try
         {
             if (keyCode == GLFW.GLFW_MOUSE_BUTTON_LEFT)
@@ -233,11 +247,11 @@ public class BOScreen extends Screen
     }
 
     @Override
-    public boolean mouseDragged(final double xIn, final double yIn, final int speed, final double deltaX, final double deltaY)
+    public boolean mouseDragged(final MouseButtonEvent event, final double deltaX, final double deltaY)
     {
         try
         {
-            return window.onMouseDrag(calcRelativeX(xIn), calcRelativeY(yIn), speed, deltaX, deltaY);
+            return window.onMouseDrag(calcRelativeX(event.x()), calcRelativeY(event.y()), 0, deltaX, deltaY);
         }
         catch (final Exception e)
         {
@@ -249,15 +263,16 @@ public class BOScreen extends Screen
     }
 
     @Override
-    public boolean mouseReleased(final double mxIn, final double myIn, final int keyCode)
+    public boolean mouseReleased(final MouseButtonEvent event)
     {
+        final int keyCode = event.button();
         if (keyCode == GLFW.GLFW_MOUSE_BUTTON_LEFT)
         {
             // Adjust coordinate to origin of window
             isMouseLeftDown = false;
             try
             {
-                return window.onMouseReleased(calcRelativeX(mxIn), calcRelativeY(myIn));
+                return window.onMouseReleased(calcRelativeX(event.x()), calcRelativeY(event.y()));
             }
             catch (final Exception e)
             {

@@ -14,6 +14,8 @@ import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
 /**
  * Interface to wrap various cursors
  */
@@ -34,8 +36,27 @@ public class Cursor
     public static final CursorType RESIZE = CursorTypes.RESIZE_ALL;
     public static final CursorType NOT_ALLOWED = CursorTypes.NOT_ALLOWED;
 
+    private static final Map<String, CursorType> CURSOR_MAP = Map.ofEntries(
+        Map.entry(DEFAULT.name, DEFAULT),
+        Map.entry(ARROW.name, ARROW),
+        Map.entry(TEXT_CURSOR.name, TEXT_CURSOR),
+        Map.entry(CROSSHAIR.name, CROSSHAIR),
+        Map.entry(HAND.name, HAND),
+        Map.entry(HORIZONTAL_RESIZE.name, HORIZONTAL_RESIZE),
+        Map.entry(VERTICAL_RESIZE.name, VERTICAL_RESIZE),
+        Map.entry(RESIZE_NWSE.name, RESIZE_NWSE),
+        Map.entry(RESIZE_NESW.name, RESIZE_NESW),
+        Map.entry(RESIZE.name, RESIZE),
+        Map.entry(NOT_ALLOWED.name, NOT_ALLOWED)
+    );
+
     public static CursorType of(final Identifier resLoc)
     {
+        if ((BlockUI.MOD_ID + "_std").equalsIgnoreCase(resLoc.getNamespace()))
+        {
+            return CURSOR_MAP.get(resLoc.getPath());
+        }
+
         final TextureManager texManager = Minecraft.getInstance().getTextureManager();
         final AbstractTexture texture = texManager.getTexture(resLoc);
         if (!(texture instanceof CursorTexture))
@@ -57,7 +78,7 @@ public class Cursor
 
         protected TexturedCursorType(final Identifier resLoc)
         {
-            super(BlockUI.MOD_ID + "-tex-cursor:" + resLoc.toString(), -1L);
+            super(BlockUI.MOD_ID + "_tex_cursor:" + resLoc.toString(), -1L);
             this.resLoc = resLoc;
         }
 
