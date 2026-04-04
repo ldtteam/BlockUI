@@ -3,8 +3,9 @@ package com.ldtteam.blockui.hooks;
 import com.google.common.base.Predicates;
 import com.ldtteam.blockui.hooks.TriggerMechanism.RangeTriggerMechanism;
 import com.ldtteam.blockui.hooks.TriggerMechanism.RayTraceTriggerMechanism;
-import org.joml.Matrix3x2fStack;
+import org.joml.Matrix4fStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.state.level.LevelRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
@@ -50,11 +51,11 @@ public final class HookRegistries
         }
     }
 
-    public static void render(final Matrix3x2fStack matrixStack, final float partialTicks)
+    public static void render(final Matrix4fStack matrixStack, final float partialTicks, final LevelRenderState levelRenderState)
     {
         for (int i = 0; i < REGISTRIES.length; i++)
         {
-            REGISTRIES[i].render(matrixStack, partialTicks);
+            REGISTRIES[i].render(matrixStack, partialTicks, levelRenderState);
         }
     }
 
@@ -168,7 +169,7 @@ public final class HookRegistries
                     mc.player.getBoundingBox().inflate(range.getSearchRange()),
                     Predicates.alwaysTrue());
 
-                case RayTraceTriggerMechanism rayTrace -> {
+                case RayTraceTriggerMechanism _ -> {
                     if (mc.hitResult != null && mc.hitResult instanceof EntityHitResult entityHitResult)
                     {
                         final Entity entity = entityHitResult.getEntity();
@@ -192,12 +193,12 @@ public final class HookRegistries
         }
 
         @Override
-        protected void translateToGuiBottomCenter(final Matrix3x2fStack ms, final Entity entity, final float partialTicks)
+        protected void translateToGuiBottomCenter(final Matrix4fStack ms, final Entity entity, final float partialTicks)
         {
-            final double x = Mth.lerp(partialTicks, entity.xOld, entity.getX());
-            final double y = Mth.lerp(partialTicks, entity.yOld, entity.getY());
-            final double z = Mth.lerp(partialTicks, entity.zOld, entity.getZ());
-            ms.translate(x, y + entity.getBbHeight() + 0.3d, z);
+            final float x = (float) Mth.lerp(partialTicks, entity.xOld, entity.getX());
+            final float y = (float) Mth.lerp(partialTicks, entity.yOld, entity.getY());
+            final float z = (float) Mth.lerp(partialTicks, entity.zOld, entity.getZ());
+            ms.translate(x, y + entity.getBbHeight() + 0.3f, z);
         }
     }
 
@@ -342,7 +343,7 @@ public final class HookRegistries
                     yield targets;
                 }
 
-                case RayTraceTriggerMechanism rayTrace -> {
+                case RayTraceTriggerMechanism _ -> {
                     if (mc.hitResult != null && mc.hitResult instanceof BlockHitResult blockHitResult)
                     {
                         final BlockEntity te = mc.level.getBlockEntity(blockHitResult.getBlockPos());
@@ -366,9 +367,9 @@ public final class HookRegistries
         }
 
         @Override
-        protected void translateToGuiBottomCenter(final Matrix3x2fStack ms, final BlockEntity thing, final float partialTicks)
+        protected void translateToGuiBottomCenter(final Matrix4fStack ms, final BlockEntity thing, final float partialTicks)
         {
-            ms.translate(thing.getBlockPos().getX() + 0.5d, thing.getBlockPos().getY() + 1.1d, thing.getBlockPos().getZ() + 0.5d);
+            ms.translate(thing.getBlockPos().getX() + 0.5f, thing.getBlockPos().getY() + 1.1f, thing.getBlockPos().getZ() + 0.5f);
         }
     }
 }

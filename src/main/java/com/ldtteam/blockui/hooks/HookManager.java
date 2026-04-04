@@ -1,8 +1,8 @@
 package com.ldtteam.blockui.hooks;
 
 import com.ldtteam.blockui.mod.Log;
-import org.joml.Matrix3x2fStack;
-import net.minecraft.client.Minecraft;
+import org.joml.Matrix4fStack;
+import net.minecraft.client.renderer.state.level.LevelRenderState;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.Identifier;
 import java.util.ArrayList;
@@ -157,7 +157,7 @@ public abstract class HookManager<T, U, K>
      * @param thing        instance of registered type
      * @param partialTicks partialTicks, see world rendering
      */
-    protected abstract void translateToGuiBottomCenter(final Matrix3x2fStack ms, final T thing, final float partialTicks);
+    protected abstract void translateToGuiBottomCenter(final Matrix4fStack ms, final T thing, final float partialTicks);
 
     protected void tick(final long ticks)
     {
@@ -181,7 +181,7 @@ public abstract class HookManager<T, U, K>
 
                         final WindowEntry window = new WindowEntry(now, thing, hook, HookWindow::new);
                         activeWindows.put(key, window);
-                        window.screen.init(Minecraft.getInstance(), window.screen.getWindow().getWidth(), window.screen.getWindow().getHeight());
+                        window.screen.init(window.screen.getWindow().getWidth(), window.screen.getWindow().getHeight());
                     }
                     // already existing entry
                     else if (entry != null)
@@ -208,12 +208,12 @@ public abstract class HookManager<T, U, K>
         });
     }
 
-    protected void render(final Matrix3x2fStack ms, final float partialTicks)
+    protected void render(final Matrix4fStack ms, final float partialTicks, final LevelRenderState levelRenderState)
     {
         activeWindows.values().forEach(entry -> {
             ms.pushMatrix();
             translateToGuiBottomCenter(ms, entry.thing, partialTicks);
-            ms.mulPose(Minecraft.getInstance().getEntityRenderDispatcher().cameraOrientation());
+            ms.rotate(levelRenderState.cameraRenderState.orientation);
             ms.scale(-0.01F, -0.01F, 0.01F);
             entry.screen.render(ms);
             ms.popMatrix();

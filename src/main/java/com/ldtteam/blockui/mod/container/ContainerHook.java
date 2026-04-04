@@ -70,7 +70,7 @@ public class ContainerHook
 
             final Container container = worldBlockEntity instanceof Container c ? c :
                 (worldBlockEntity.getType() == BlockEntityType.ENDER_CHEST ? integratedServer.getPlayerList()
-                    .getPlayer(integratedServer.getSingleplayerProfile().getId())
+                    .getPlayer(integratedServer.getSingleplayerProfile().id())
                     .getEnderChestInventory() : null);
 
             if (container == null)

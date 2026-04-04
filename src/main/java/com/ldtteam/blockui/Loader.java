@@ -1,6 +1,7 @@
 package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.controls.*;
+import com.ldtteam.blockui.mod.BlockUI;
 import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.views.*;
 import net.minecraft.resources.Identifier;
@@ -25,6 +26,7 @@ import java.util.function.Function;
  */
 public final class Loader extends SimplePreparableReloadListener<Map<Identifier, PaneParams>>
 {
+    public static final Identifier RELOADABLE_LISTEN_RES_LOC = Identifier.fromNamespaceAndPath(BlockUI.MOD_ID, "xml_loader");
     public static final Loader INSTANCE = new Loader();
 
     private final Map<String, Function<PaneParams, ? extends Pane>> paneFactories = new HashMap<>();

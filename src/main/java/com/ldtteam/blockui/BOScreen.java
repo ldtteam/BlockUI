@@ -10,6 +10,7 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
@@ -48,7 +49,7 @@ public class BOScreen extends Screen
     }
 
     @Override
-    public void render(final GuiGraphics ms, final int mx, final int my, final float f)
+    public void extractRenderState(final GuiGraphicsExtractor ms, final int mx, final int my, final float f)
     {
         if (minecraft == null || !isOpen) // should never happen though
         {

@@ -1,6 +1,5 @@
 package com.ldtteam.blockui.mod;
 
-import com.ldtteam.blockui.AtlasManager;
 import com.ldtteam.blockui.BOScreen;
 import com.ldtteam.blockui.PaneBuilders;
 import com.ldtteam.blockui.controls.Button;
@@ -14,11 +13,11 @@ import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
 import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.profiling.Profiler;
+import net.minecraft.world.entity.player.PlayerSkin;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModList;
@@ -29,6 +28,7 @@ import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.event.TagsUpdatedEvent;
 import org.lwjgl.glfw.GLFW;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
@@ -60,18 +60,27 @@ public class ClientEventSubscriber
     @SubscribeEvent
     public static void onClientTickStart(final ClientTickEvent.Pre event)
     {
-        if (Screen.hasAltDown() && Screen.hasControlDown() && Screen.hasShiftDown())
+        if (Minecraft.getInstance().hasAltDown() && Minecraft.getInstance().hasControlDown() && Minecraft.getInstance().hasShiftDown())
         {
-            if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_X))
+            if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_X))
             {
                 final BOWindow window = new BOWindow();
                 int id = 0;
 
-                final Button dumpAtlases = createTestGuiButton(id++, "Dump mod atlases to run folder", null);
+                final Button dumpAtlases = createTestGuiButton(id++, "Dump ALL atlases to run folder", null);
                 dumpAtlases.setHandler(b -> {
                     final Path dumpingFolder = Path.of("atlas_dump").toAbsolutePath().normalize();
                     Minecraft.getInstance().player.sendSystemMessage(Component.literal("Dumping atlases into: " + dumpingFolder.toString()));
-                    AtlasManager.INSTANCE.dumpAtlases(dumpingFolder);
+                    Minecraft.getInstance().getAtlasManager().forEach((resLoc, atlas) -> {
+                        try
+                        {
+                            atlas.dumpContents(resLoc, dumpingFolder);
+                        }
+                        catch (IOException e)
+                        {
+                            e.printStackTrace();
+                        }
+                    });
                 });
                 window.addChild(dumpAtlases);
 
@@ -80,9 +89,9 @@ public class ClientEventSubscriber
                     parent.findPaneOfTypeByID("working_out_of_jar", Image.class).setImage(OutOfJarResourceLocation.of(BlockUI.MOD_ID, Path.of("../../src/test/resources/button.png")), false);
                     OutOfJarResourceLocation.ofMinecraftSkin(Minecraft.getInstance(), Minecraft.getInstance().getGameProfile(), null)
                         .thenAccept(resLoc -> parent.findPaneOfTypeByID("player_skin", Image.class).setImage(resLoc, false));
-                    OutOfJarResourceLocation.ofMinecraftSkin(Minecraft.getInstance(), Minecraft.getInstance().getGameProfile(), PlayerSkin::capeTexture)
+                    OutOfJarResourceLocation.ofMinecraftSkin(Minecraft.getInstance(), Minecraft.getInstance().getGameProfile(), PlayerSkin::cape)
                         .thenAccept(resLoc -> {if (resLoc!=null){parent.findPaneOfTypeByID("player_cape", Image.class).setImage(resLoc, false);}});
-                    OutOfJarResourceLocation.ofMinecraftSkin(Minecraft.getInstance(), Minecraft.getInstance().getGameProfile(), PlayerSkin::elytraTexture)
+                    OutOfJarResourceLocation.ofMinecraftSkin(Minecraft.getInstance(), Minecraft.getInstance().getGameProfile(), PlayerSkin::elytra)
                         .thenAccept(resLoc -> {if (resLoc!=null){parent.findPaneOfTypeByID("player_elytra", Image.class).setImage(resLoc, false);}});
                 }));
                 window.addChild(createTestGuiButton(id++, "Tooltip Positioning", Identifier.fromNamespaceAndPath(BlockUI.MOD_ID, "gui/test2.xml")));
@@ -119,9 +128,9 @@ public class ClientEventSubscriber
     {
         if (Minecraft.getInstance().level != null)
         {
-            Minecraft.getInstance().getProfiler().push("hook_manager_tick");
+            Profiler.get().push("hook_manager_tick");
             HookRegistries.tick(Minecraft.getInstance().level.getGameTime());
-            Minecraft.getInstance().getProfiler().pop();
+            Profiler.get().pop();
         }
     }
 

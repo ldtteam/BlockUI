@@ -1,30 +1,32 @@
 package com.ldtteam.blockui.mod;
 
-import com.ldtteam.blockui.AtlasManager;
 import com.ldtteam.blockui.Loader;
-import net.minecraft.client.renderer.BiomeColors;
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.client.resources.metadata.gui.GuiMetadataSection;
+import net.minecraft.client.resources.model.sprite.AtlasManager.AtlasConfig;
+import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
-import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.AddClientReloadListenersEvent;
+import net.neoforged.neoforge.client.event.RegisterTextureAtlasesEvent;
 import net.neoforged.neoforge.event.ModMismatchEvent;
+
+import java.util.Set;
 
 public class ClientLifecycleSubscriber
 {
     @SubscribeEvent
-    public static void onRegisterReloadListeners(final RegisterClientReloadListenersEvent event)
+    public static void onAddClientReloadListenersEvent(final AddClientReloadListenersEvent event)
     {
-        event.registerReloadListener(Loader.INSTANCE);
-        AtlasManager.INSTANCE.addAtlas(event::registerReloadListener, BlockUI.MOD_ID);
+        event.addListener(Loader.RELOADABLE_LISTEN_RES_LOC, Loader.INSTANCE);
     }
 
     @SubscribeEvent
-    public static void onRegisterBlockColor(final RegisterColorHandlersEvent.Block event)
+    public static void onRegisterTextureAtlasesEvent(final RegisterTextureAtlasesEvent event)
     {
-        // replace cauldron with plains default color (4159204, with slighty more light in HSL += 8%)
-        event.register(
-            (state, level, pos, tintIndex) -> level != null && pos != null ? BiomeColors.getAverageWaterColor(level, pos) : 0x638fe9,
-            Blocks.WATER_CAULDRON);
+        // TODO: port 26.1 validate if we get autoloaded in vanilla gui atlas or we need our own
+        event.register(new AtlasConfig(Identifier.fromNamespaceAndPath(BlockUI.MOD_ID, "textures/atlas/blockui_gui.png"),
+            Identifier.fromNamespaceAndPath(BlockUI.MOD_ID, "blockui_gui"),
+            false,
+            Set.of(GuiMetadataSection.TYPE)));
     }
 
     @SubscribeEvent
