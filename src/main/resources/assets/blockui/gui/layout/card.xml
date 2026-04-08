@@ -1,0 +1,16 @@
+<layout>
+    <box size="400 200" color="#888888" linewidth="1">
+        <!-- header slot: top bar -->
+        <view pos="1 1" size="398 56">
+            <slot name="header">
+                <text text="(no header)" textscale="1.6" pos="4 12" size="390 36" color="gray"/>
+            </slot>
+        </view>
+        <!-- default slot: body area -->
+        <view pos="1 58" size="398 140">
+            <slot>
+                <text text="(empty body)" textscale="1.6" pos="4 4" size="390 132" color="gray"/>
+            </slot>
+        </view>
+    </box>
+</layout>

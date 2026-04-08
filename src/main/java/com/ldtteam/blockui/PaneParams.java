@@ -2,8 +2,8 @@ package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.views.View;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
@@ -105,7 +105,10 @@ public class PaneParams
 
     public List<PaneParams> getChildren()
     {
-        if (!children.isEmpty()) return children;
+        if (!children.isEmpty())
+        {
+            return children;
+        }
 
         Node child = node.getFirstChild();
         while (child != null)
@@ -120,7 +123,7 @@ public class PaneParams
         return children;
     }
 
-        public String getText()
+    public String getText()
     {
         return node.getTextContent().trim();
     }
@@ -138,10 +141,11 @@ public class PaneParams
     /**
      * Finds an attribute by name from the XML node
      * and parses it using the provided parser method
-     * @param name the attribute name to search for
+     *
+     * @param name   the attribute name to search for
      * @param parser the parser to convert the attribute to its property
-     * @param def the default value if none can be found
-     * @param <T> the type of value to work with
+     * @param def    the default value if none can be found
+     * @param <T>    the type of value to work with
      * @return the parsed value
      */
     @SuppressWarnings("unchecked")
@@ -163,7 +167,10 @@ public class PaneParams
         }
 
         final Node attr = getAttribute(name);
-        if (attr != null) result = parser.apply(attr.getNodeValue());
+        if (attr != null)
+        {
+            result = parser.apply(attr.getNodeValue());
+        }
 
         propertyCache.put(name, result);
         return result != null ? result : def;
@@ -184,8 +191,8 @@ public class PaneParams
     /**
      * Get the String attribute from the name and revert to the default if not present.
      *
-     * @param name      the name.
-     * @param def the default value if none can be found
+     * @param name the name.
+     * @param def  the default value if none can be found
      * @return the String.
      */
     public String getString(final String name, final String def)
@@ -195,6 +202,7 @@ public class PaneParams
 
     /**
      * Get the resource location from the name
+     *
      * @param name the attribute name
      * @return the parsed resource location
      */
@@ -206,8 +214,9 @@ public class PaneParams
 
     /**
      * Get the resource location from the name
+     *
      * @param name the attribute name
-     * @param def the default value to fallback to
+     * @param def  the default value to fallback to
      * @return the parsed resource location
      */
     public ResourceLocation getResource(final String name, final ResourceLocation def)
@@ -217,7 +226,8 @@ public class PaneParams
 
     /**
      * Get the resource location from the name and load it
-     * @param name the attribute name
+     *
+     * @param name   the attribute name
      * @param loader a method to act upon the resource if it is not blank or null
      * @return the parsed resource location (or null if it couldn't be parsed)
      */
@@ -248,7 +258,7 @@ public class PaneParams
      * Get the text content with potential newlines from the name and revert to the default if not present.
      *
      * @param name the name
-     * @param def the default value if none can be found
+     * @param def  the default value if none can be found
      * @return the parsed and localized list
      */
     public List<MutableComponent> getMultilineText(final String name, List<MutableComponent> def)
@@ -259,8 +269,8 @@ public class PaneParams
     /**
      * Get the localized String attribute from the name and revert to the default if not present.
      *
-     * @param name      the name.
-     * @param def the default value if none can be found
+     * @param name the name.
+     * @param def  the default value if none can be found
      * @return the localized text component.
      */
     public MutableComponent getTextComponent(final String name, final MutableComponent def)
@@ -271,8 +281,8 @@ public class PaneParams
     /**
      * Get the integer attribute from name and revert to the default if not present.
      *
-     * @param name     the name.
-     * @param def the default value if none can be found
+     * @param name the name.
+     * @param def  the default value if none can be found
      * @return the int.
      */
     public int getInteger(final String name, final int def)
@@ -283,8 +293,8 @@ public class PaneParams
     /**
      * Get the float attribute from name and revert to the default if not present.
      *
-     * @param name     the name.
-     * @param def the default value if none can be found
+     * @param name the name.
+     * @param def  the default value if none can be found
      * @return the float.
      */
     public float getFloat(final String name, final float def)
@@ -295,8 +305,8 @@ public class PaneParams
     /**
      * Get the double attribute from name and revert to the default if not present.
      *
-     * @param name     the name.
-     * @param def the default value if none can be found
+     * @param name the name.
+     * @param def  the default value if none can be found
      * @return the double.
      */
     public double getDouble(final String name, final double def)
@@ -307,8 +317,8 @@ public class PaneParams
     /**
      * Get the boolean attribute from name and revert to the default if not present.
      *
-     * @param name     the name.
-     * @param def the default value if none can be found
+     * @param name the name.
+     * @param def  the default value if none can be found
      * @return the boolean.
      */
     public boolean getBoolean(final String name, final boolean def)
@@ -319,10 +329,10 @@ public class PaneParams
     /**
      * Get the boolean attribute from name and class and revert to the default if not present.
      *
-     * @param name      the name.
-     * @param clazz     the class.
-     * @param def the default value if none can be found
-     * @param <T>       the type of class.
+     * @param name  the name.
+     * @param clazz the class.
+     * @param def   the default value if none can be found
+     * @param <T>   the type of class.
      * @return the enum attribute.
      */
     public <T extends Enum<T>> T getEnum(final String name, final Class<T> clazz, final T def)
@@ -335,7 +345,7 @@ public class PaneParams
      *
      * @param name  the name
      * @param scale the total value to be a fraction of
-     * @param def the default value if none can be found
+     * @param def   the default value if none can be found
      * @return the parsed value
      */
     public int getScaledInteger(String name, final int scale, final int def)
@@ -346,15 +356,18 @@ public class PaneParams
     /**
      * Parses two scalable values and processes them through an applicant
      *
-     * @param name the attribute name to search for
-     * @param scaleX the first fraction total
-     * @param scaleY the second fraction total
-     * @param applier the method to utilise the result values
+     * @param name    the attribute name to search for
+     * @param scaleX  the first fraction total
+     * @param scaleY  the second fraction total
+     * @param applier the method to utilize the result values
      */
     public void getScaledInteger(final String name, final int scaleX, final int scaleY, Consumer<List<Integer>> applier)
     {
         List<Integer> results = Parsers.SCALED(scaleX, scaleY).apply(getString(name));
-        if (results != null) applier.accept(results);
+        if (results != null)
+        {
+            applier.accept(results);
+        }
     }
 
     /**
@@ -372,22 +385,26 @@ public class PaneParams
     /**
      * Fetches a property and runs the result through a given method.
      * Commonly used for shorthand properties.
-     * @param name the name of the attribute to retrieve
-     * @param parser the parser applied to each part
-     * @param parts the maximum number of parts to fill to if less are given
-     * @param applier the method to utilise the parsed values
-     * @param <T> the type of each part
+     *
+     * @param name    the name of the attribute to retrieve
+     * @param parser  the parser applied to each part
+     * @param parts   the maximum number of parts to fill to if less are given
+     * @param applier the method to utilize the parsed values
+     * @param <T>     the type of each part
      */
     public <T> void applyShorthand(String name, Function<String, T> parser, int parts, Consumer<List<T>> applier)
     {
         List<T> results = Parsers.shorthand(parser, parts).apply(getString(name));
-        if (results != null) applier.accept(results);
+        if (results != null)
+        {
+            applier.accept(results);
+        }
     }
 
     /**
      * Checks if any of attribute names are present and return first found, else return default.
      *
-     * @param def the default value if none can be found
+     * @param def        the default value if none can be found
      * @param attributes attributes names to check
      * @return first found attribute or default
      */

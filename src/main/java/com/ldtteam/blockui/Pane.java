@@ -29,6 +29,7 @@ public class Pane extends UiRenderMacros
     protected static Pane lastClickedPane;
     protected static Pane focus;
     protected Pane onHover;
+    public static final boolean DEBUG_CAPABLE = Boolean.getBoolean("blockui.debug");
     protected static boolean debugging = false;
     protected Minecraft mc = Minecraft.getInstance();
     // Attributes
@@ -126,16 +127,6 @@ public class Pane extends UiRenderMacros
      * Override to respond to the Pane becoming the current focus.
      */
     public void onFocus()
-    {
-        // Can be overloaded
-    }
-
-    /**
-     * Parse the children of the pane.
-     *
-     * @param params the parameter.
-     */
-    public void parseChildren(final PaneParams params)
     {
         // Can be overloaded
     }

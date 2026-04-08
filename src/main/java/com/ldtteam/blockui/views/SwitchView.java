@@ -1,7 +1,10 @@
 package com.ldtteam.blockui.views;
 
 import com.ldtteam.blockui.Pane;
+import com.ldtteam.blockui.LayoutContext;
 import com.ldtteam.blockui.PaneParams;
+
+import java.util.function.Consumer;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.util.Mth;
@@ -34,9 +37,9 @@ public class SwitchView extends View
     }
 
     @Override
-    public void parseChildren(final PaneParams params)
+    public void parseChildren(final PaneParams params, final LayoutContext context, final Consumer<PaneParams> childCreator)
     {
-        super.parseChildren(params);
+        super.parseChildren(params, context, childCreator);
 
         final String defaultView = params.getString("default");
         if (defaultView != null)

@@ -1,0 +1,12 @@
+<layout>
+    <view size="500 32">
+        <view pos="0 0" size="180 32">
+            <slot name="label">
+                <text text="Label:" size="180 28" pos="0 4" textscale="1.8"/>
+            </slot>
+        </view>
+        <view pos="190 0" size="310 32">
+            <slot name="content"/>
+        </view>
+    </view>
+</layout>

@@ -1,0 +1,61 @@
+<window xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="block_ui.xsd" size="1600 900" type="FIXED" pause="true" lightbox="true">
+
+    <!-- =====================================================
+         ROW 1: Section labels
+         ===================================================== -->
+    <text pos="10 10"  size="400 40" textscale="2.0" color="yellow" text="1. Both slots filled"/>
+    <text pos="440 10" size="400 40" textscale="2.0" color="yellow" text="2. Default slot only"/>
+    <text pos="870 10" size="400 40" textscale="2.0" color="yellow" text="3. Fallback (no content)"/>
+
+    <!-- =====================================================
+         CASE 1: card.xml with both named header + default body filled
+         ===================================================== -->
+    <view pos="10 55">
+        <layout source="blockui:gui/layout/card.xml">
+            <text slot="header" text="Hello Header" size="396 40" pos="4 4" color="white" textscale="1.6"/>
+            <text text="Body content here" size="396 132" pos="4 4" color="lime" textscale="1.6"/>
+        </layout>
+    </view>
+
+    <!-- =====================================================
+         CASE 2: card.xml with only default slot filled, header uses fallback
+         ===================================================== -->
+    <view pos="440 55">
+        <layout source="blockui:gui/layout/card.xml">
+            <text text="Only body filled" size="396 132" pos="4 4" color="aqua" textscale="1.6"/>
+        </layout>
+    </view>
+
+    <!-- =====================================================
+         CASE 3: card.xml with no slot content at all — both use fallbacks
+         ===================================================== -->
+    <view pos="870 55">
+        <layout source="blockui:gui/layout/card.xml"/>
+    </view>
+
+    <!-- =====================================================
+         ROW 2: Section label
+         ===================================================== -->
+    <text pos="10 270" size="600 40" textscale="2.0" color="yellow" text="4. labeled_row layout (named slots)"/>
+
+    <!-- =====================================================
+         CASE 4: labeled_row with named label + content slots, using pos on layout tag
+         ===================================================== -->
+    <view pos="10 315">
+        <layout source="blockui:gui/layout/labeled_row.xml" pos="0 0">
+            <text slot="label" text="Name:" size="180 32" pos="0 4" textscale="1.8" color="white"/>
+            <text slot="content" text="Steve" size="310 32" pos="0 4" textscale="1.8" color="lime"/>
+        </layout>
+        <layout source="blockui:gui/layout/labeled_row.xml" pos="0 50">
+            <text slot="label" text="Level:" size="180 32" pos="0 4" textscale="1.8" color="white"/>
+            <text slot="content" text="42" size="310 32" pos="0 4" textscale="1.8" color="aqua"/>
+        </layout>
+        <!-- label fallback used, only content provided -->
+        <layout source="blockui:gui/layout/labeled_row.xml" pos="0 100">
+            <text slot="content" text="(label is fallback)" size="310 32" pos="0 4" textscale="1.8" color="orange"/>
+        </layout>
+        <!-- no slots filled: label fallback shown, content slot is empty (no fallback) -->
+        <layout source="blockui:gui/layout/labeled_row.xml" pos="0 150"/>
+    </view>
+
+</window>
