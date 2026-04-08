@@ -96,8 +96,6 @@ public class BOWindow extends View
      */
     public void loadParams(final PaneParams params)
     {
-        params.getResource("inherit", r -> Loader.createFromXMLFile(r, this));
-
         params.applyShorthand("size", Parsers.INT, 2, a -> {
             width = a.get(0);
             height = a.get(1);
@@ -111,7 +109,10 @@ public class BOWindow extends View
     @Override
     public void drawSelf(final BOGuiGraphics ms, final double mx, final double my)
     {
-        debugging = Screen.hasShiftDown() && Screen.hasAltDown() && Screen.hasControlDown();
+        if (DEBUG_CAPABLE)
+        {
+            debugging = Screen.hasShiftDown() && Screen.hasAltDown() && Screen.hasControlDown();
+        }
 
         super.drawSelf(ms, mx, my);
     }

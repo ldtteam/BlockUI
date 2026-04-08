@@ -2,6 +2,7 @@ package com.ldtteam.blockui.mod;
 
 import com.ldtteam.blockui.AtlasManager;
 import com.ldtteam.blockui.BOScreen;
+import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneBuilders;
 import com.ldtteam.blockui.controls.Button;
 import com.ldtteam.blockui.controls.ButtonImage;
@@ -34,32 +35,14 @@ import java.util.function.Consumer;
 
 public class ClientEventSubscriber
 {
-    /**
-     * Used to catch the renderWorldLastEvent in order to draw the debug nodes for pathfinding.
-     *
-     * @param event the catched event.
-     */
-    /* TODO: fixme
-    public static void renderWorldLastEvent(@NotNull final RenderLevelLastEvent event)
-    {
-        final PoseStack ps = event.getPoseStack();
-        final Vec3 viewPosition = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
-
-        ps.pushPose();
-        ps.translate(-viewPosition.x(), -viewPosition.y(), -viewPosition.z());
-        HookRegistries.render(ps, event.getPartialTick());
-        ps.popPose();
-    }*/
-
-    /**
-     * Used to catch the clientTickEvent.
-     * Call renderer cache cleaning every 5 secs (100 ticks).
-     *
-     * @param event the catched event.
-     */
     @SubscribeEvent
     public static void onClientTickStart(final ClientTickEvent.Pre event)
     {
+        if (!Pane.DEBUG_CAPABLE)
+        {
+            return;
+        }
+
         if (Screen.hasAltDown() && Screen.hasControlDown() && Screen.hasShiftDown())
         {
             if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_X))
@@ -88,6 +71,7 @@ public class ClientEventSubscriber
                 window.addChild(createTestGuiButton(id++, "Tooltip Positioning", ResourceLocation.fromNamespaceAndPath(BlockUI.MOD_ID, "gui/test2.xml")));
                 window.addChild(createTestGuiButton(id++, "ItemIcon To BlockState", ResourceLocation.fromNamespaceAndPath(BlockUI.MOD_ID, "gui/test3.xml"), BlockStateTestGui::setup));
                 window.addChild(createTestGuiButton(id++, "Scrolling Lists", ResourceLocation.fromNamespaceAndPath(BlockUI.MOD_ID, "gui/test4.xml"), ScrollingListsGui::setup));
+                window.addChild(createTestGuiButton(id++, "Layout & Slots", ResourceLocation.fromNamespaceAndPath(BlockUI.MOD_ID, "gui/test5.xml")));
 
                 final Text builderTest = new Text();
                 builderTest.setSize(ButtonImage.DEFAULT_BUTTON_WIDTH * 2 + 20, ButtonImage.DEFAULT_BUTTON_HEIGHT);

@@ -1,7 +1,10 @@
 package com.ldtteam.blockui.views;
 
 import com.ldtteam.blockui.Pane;
+import com.ldtteam.blockui.LayoutContext;
 import com.ldtteam.blockui.PaneParams;
+
+import java.util.function.Consumer;
 
 /**
  * A Group is a View which enforces the position of children to be
@@ -38,9 +41,9 @@ public class ScrollingGroup extends ScrollingView
      * @param params the xml parameters.
      */
     @Override
-    public void parseChildren(final PaneParams params)
+    public void parseChildren(final PaneParams params, final LayoutContext context, final Consumer<PaneParams> childCreator)
     {
-        container.parseChildren(params);
+        container.parseChildren(params, context, childCreator);
 
         for (int i = 1; i < container.children.size(); i++)
         {
