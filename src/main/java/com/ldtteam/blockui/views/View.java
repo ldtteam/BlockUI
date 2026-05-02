@@ -77,7 +77,7 @@ public class View extends Pane
         final int paddedX = x + padding;
         final int paddedY = y + padding;
 
-        ms.translate(paddedX, paddedY, 0.0d);
+        ms.translate(paddedX, paddedY);
 
         // Translate Mouse into the View
         final double drawX = mx - paddedX;
@@ -118,7 +118,7 @@ public class View extends Pane
         final int paddedX = x + padding;
         final int paddedY = y + padding;
 
-        ms.translate(paddedX, paddedY, 0.0d);
+        ms.translate(paddedX, paddedY);
 
         // Translate Mouse into the View
         final double drawX = mx - paddedX;

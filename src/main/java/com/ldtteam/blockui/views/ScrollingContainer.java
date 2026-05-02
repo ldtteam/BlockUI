@@ -70,11 +70,11 @@ public class ScrollingContainer extends View
     public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
         final Matrix3x2fStack ms = target.pose();
-        scissorsStart(ms, width, contentHeight);
+        scissorsStart(target);
 
         // Translate the scroll
         ms.pushMatrix();
-        ms.translate(0.0d, -scrollY, 0.0d);
+        ms.translate(0.0f, (float) -scrollY);
         super.drawSelf(target, mx, my + scrollY);
         ms.popMatrix();
 
@@ -88,7 +88,7 @@ public class ScrollingContainer extends View
 
         // Translate the scroll
         ms.pushMatrix();
-        ms.translate(0.0d, -scrollY, 0.0d);
+        ms.translate(0.0f, (float) -scrollY);
         super.drawSelfLast(target, mx, my + scrollY);
         ms.popMatrix();
     }

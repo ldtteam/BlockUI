@@ -187,10 +187,9 @@ public class ItemIcon extends Pane
         {
             final Matrix3x2fStack ms = target.pose();
             ms.pushMatrix();
-            ms.translate(x, y, 0.0f);
-            ms.scale(this.getWidth() / DEFAULT_ITEMSTACK_SIZE, this.getHeight() / DEFAULT_ITEMSTACK_SIZE, 1.0f);
+            ms.translate(x, y);
+            ms.scale(this.getWidth() / DEFAULT_ITEMSTACK_SIZE, this.getHeight() / DEFAULT_ITEMSTACK_SIZE);
 
-            ms.last().normal().identity(); // reset normals cuz lighting
             target.renderItem(itemStack, 0, 0);
             if (renderItemDecorations)
             {

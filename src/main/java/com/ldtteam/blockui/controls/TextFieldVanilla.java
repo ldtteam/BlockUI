@@ -88,7 +88,7 @@ public class TextFieldVanilla extends TextField
             fill(ms, x, y, width, height, backgroundInnerColor);
 
             ms.pushMatrix();
-            ms.translate(BACKGROUND_X_TRANSLATE, (height - BACKGROUND_Y_TRANSLATE_OFFSET) / 2, 0);
+            ms.translate(BACKGROUND_X_TRANSLATE, (height - BACKGROUND_Y_TRANSLATE_OFFSET) / 2);
         }
 
         super.drawSelf(target, mx, my);

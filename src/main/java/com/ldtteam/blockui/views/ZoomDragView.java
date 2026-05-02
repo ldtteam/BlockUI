@@ -187,12 +187,12 @@ public class ZoomDragView extends View
     {
         final Matrix3x2fStack ms = target.pose();
 
-        scissorsStart(ms, contentWidth, contentHeight);
+        scissorsStart(target);
 
         ms.pushMatrix();
-        ms.translate(-scrollX, -scrollY, 0.0d);
-        ms.translate((1 - scale) * x, (1 - scale) * y, 0.0d);
-        ms.scale((float) scale, (float) scale, 1.0f);
+        ms.translate((float) -scrollX, (float) -scrollY);
+        ms.translate((float) (1 - scale) * x, (float) (1 - scale) * y);
+        ms.scale((float) scale, (float) scale);
         abstractDrawSelfPre(ms, mx, my);
         super.drawSelf(target, calcRelativeX(mx), calcRelativeY(my));
         abstractDrawSelfPost(ms, mx, my);
@@ -206,12 +206,12 @@ public class ZoomDragView extends View
     {
         final Matrix3x2fStack ms = target.pose();
 
-        scissorsStart(ms, contentWidth, contentHeight);
+        scissorsStart(target);
 
         ms.pushMatrix();
-        ms.translate(-scrollX, -scrollY, 0.0d);
-        ms.translate((1 - scale) * x, (1 - scale) * y, 0.0d);
-        ms.scale((float) scale, (float) scale, 1.0f);
+        ms.translate((float) -scrollX, (float) -scrollY);
+        ms.translate((float) (1 - scale) * x, (float) (1 - scale) * y);
+        ms.scale((float) scale, (float) scale);
         super.drawSelfLast(target, calcRelativeX(mx), calcRelativeY(my));
         ms.popMatrix();
 

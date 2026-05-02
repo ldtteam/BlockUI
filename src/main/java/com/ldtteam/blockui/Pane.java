@@ -9,6 +9,7 @@ import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.platform.cursor.CursorType;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.util.Mth;
@@ -16,17 +17,14 @@ import org.joml.Matrix3x2fStack;
 import org.joml.Vector4f;
 import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.Nullable;
-import java.util.Deque;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
 /**
  * A Pane is the root of all UI objects.
  */
 public class Pane extends UiRenderMacros
 {
-    private static final Deque<ScissorsInfo> scissorsInfoStack = new ConcurrentLinkedDeque<>();
     protected static Pane lastClickedPane;
     protected static Pane focus;
     protected Pane onHover;
@@ -709,46 +707,11 @@ public class Pane extends UiRenderMacros
         // Can be overloaded
     }
 
-    // TODO: refactor: move logic to macros, keep local override here
-    // TODO: move to stencil test? especially scissors can't be used in world gui
-    protected synchronized void scissorsStart(final Matrix3x2fStack ms, final int contentWidth, final int contentHeight)
+    protected synchronized void scissorsStart(final BOGuiGraphics target)
     {
-        final int fbWidth = mc.getWindow().getWidth();
-        final int fbHeight = mc.getWindow().getHeight();
-
-        final Vector4f start = new Vector4f(x, y, 0.0f, 1.0f);
-        final Vector4f end = new Vector4f(x + width, y + height, 0.0f, 1.0f);
-        ms.last().pose().transform(start);
-        ms.last().pose().transform(end);
-
-        int scissorsXstart = Mth.clamp((int) Math.floor(start.x()), 0, fbWidth);
-        int scissorsXend = Mth.clamp((int) Math.floor(end.x()), 0, fbWidth);
-
-        int scissorsYstart = Mth.clamp((int) Math.floor(start.y()), 0, fbHeight);
-        int scissorsYend = Mth.clamp((int) Math.floor(end.y()), 0, fbHeight);
-
-        // negate bottom top (opengl things)
-        final int temp = scissorsYstart;
-        scissorsYstart = fbHeight - scissorsYend;
-        scissorsYend = fbHeight - temp;
-
-        if (!scissorsInfoStack.isEmpty())
-        {
-            final ScissorsInfo parentInfo = scissorsInfoStack.peek();
-
-            scissorsXstart = Math.max(scissorsXstart, parentInfo.xStart);
-            scissorsXend = Math.max(scissorsXstart, Math.min(parentInfo.xEnd, scissorsXend));
-
-            scissorsYstart = Math.max(scissorsYstart, parentInfo.yStart);
-            scissorsYend = Math.max(scissorsYstart, Math.min(parentInfo.yEnd, scissorsYend));
-        }
-
-        final ScissorsInfo info = new ScissorsInfo(scissorsXstart, scissorsXend, scissorsYstart, scissorsYend, window.getScreen().width, window.getScreen().height);
-        scissorsInfoStack.push(info);
-        window.getScreen().width = contentWidth;
-        window.getScreen().height = contentHeight;
-
-        RenderSystem.enableScissor(scissorsXstart, scissorsYstart, scissorsXend - scissorsXstart, scissorsYend - scissorsYstart);
+        // the vanilla stuff here contains transformation via current pose (baked coordination)
+        // if ever this stop being a thing then in git history (1.21.1) we have our version
+        target.enableScissor(x, y, x + width, y + height);
     }
 
     /**
@@ -774,40 +737,29 @@ public class Pane extends UiRenderMacros
     protected synchronized void scissorsEnd(final BOGuiGraphics target)
     {
         final Matrix3x2fStack ms = target.pose();
-        final ScissorsInfo popped = scissorsInfoStack.pop();
+        final ScreenRectangle popped = target.peekScissorStack();
         if (debugging)
         {
             final int color = 0xffff0000;
-            final int w = popped.xEnd - popped.xStart;
-            final int h = popped.yEnd - popped.yStart;
+            final int w = popped.right() - popped.left();
+            final int h = popped.bottom() - popped.top();
 
-            final int yStart = mc.getWindow().getHeight() - popped.yEnd;
+            final int yStart = mc.getWindow().getHeight() - popped.bottom();
 
             ms.pushMatrix();
-            ms.setIdentity();
-            drawLineRect(ms, popped.xStart, yStart, w, h, color, 2);
+            ms.identity();
+            drawLineRect(target, popped.left(), yStart, w, h, color, 2);
 
             final String scId = "scissor_" + (id.isEmpty() ? this.toString() : id);
             final int stringWidth = mc.font.width(scId) + 1;
             target.drawString(scId,
-                popped.xStart + w - stringWidth,
+                popped.left() + w - stringWidth,
                 yStart + h - 2 * mc.font.lineHeight,
                 color);
             ms.popMatrix();
         }
 
-        window.getScreen().width = popped.oldGuiWidth;
-        window.getScreen().height = popped.oldGuiHeight;
-
-        if (!scissorsInfoStack.isEmpty())
-        {
-            final ScissorsInfo info = scissorsInfoStack.peek();
-            RenderSystem.enableScissor(info.xStart, info.yStart, info.xEnd - info.xStart, info.yEnd - info.yStart);
-        }
-        else
-        {
-            RenderSystem.disableScissor();
-        }
+        target.disableScissor();
     }
 
     /**
@@ -833,26 +785,6 @@ public class Pane extends UiRenderMacros
     public void setParentView(final View view)
     {
         this.parent = view;
-    }
-
-    private static class ScissorsInfo
-    {
-        private final int xStart;
-        private final int yStart;
-        private final int xEnd;
-        private final int yEnd;
-        private final int oldGuiWidth;
-        private final int oldGuiHeight;
-
-        ScissorsInfo(final int xStart, final int xEnd, final int yStart, final int yEnd, final int oldGuiWidth, final int oldGuiHeight)
-        {
-            this.xStart = xStart;
-            this.xEnd = xEnd;
-            this.yStart = yStart;
-            this.yEnd = yEnd;
-            this.oldGuiWidth = oldGuiWidth;
-            this.oldGuiHeight = oldGuiHeight;
-        }
     }
 
     /**
