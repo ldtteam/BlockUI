@@ -3,8 +3,11 @@ package com.ldtteam.common.util;
 import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
 import com.ldtteam.common.fakelevel.SingleBlockFakeLevel.SidedSingleBlockFakeLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -17,9 +20,12 @@ import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.HitResult;
 import net.neoforged.neoforge.common.util.FakePlayerFactory;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Methods for getting itemStack from blockState.
@@ -27,6 +33,7 @@ import org.jetbrains.annotations.Nullable;
 public class BlockToItemHelper
 {
     private static final SidedSingleBlockFakeLevel fakeLevel = new SidedSingleBlockFakeLevel();
+    private static final Logger LOGGER = LoggerFactory.getLogger(BlockToItemHelper.class);
 
     /**
      * Mostly for use in UI where you dont have level instance (eg. player selects block, from xml, but not when displaying real world
@@ -54,7 +61,7 @@ public class BlockToItemHelper
     /**
      * Mostly for use by machines/entities when you dont have player instance - uses fake player.
      *
-     * @return result of player middle-mouse-button click with more sensible defaults (liquids -> buckets, fire -> flint&steel), might
+     * @return result of player middle-mouse-button click with more sensible defaults (liquids -> buckets, fire -> flint and steel), might
      *         be {@link ItemStack#isEmpty()} in case of error
      */
     public static ItemStack getItemStack(final ServerLevel serverLevel, final BlockPos pos)
@@ -65,7 +72,7 @@ public class BlockToItemHelper
     /**
      * General method when you have everything block->item mapping needs, but you don't have hit result (ray trace from camera).
      *
-     * @return result of player middle-mouse-button click with more sensible defaults (liquids -> buckets, fire -> flint&steel), might
+     * @return result of player middle-mouse-button click with more sensible defaults (liquids -> buckets, fire -> flint and steel), might
      *         be {@link ItemStack#isEmpty()} in case of error
      */
     public static ItemStack getItemStack(final Level level, final BlockPos pos, final Player player)
@@ -74,7 +81,7 @@ public class BlockToItemHelper
     }
 
     /**
-     * @return result of player middle-mouse-button click with more sensible defaults (liquids -> buckets, fire -> flint&steel), might
+     * @return result of player middle-mouse-button click with more sensible defaults (liquids -> buckets, fire -> flint and steel), might
      *         be {@link ItemStack#isEmpty()} in case of error
      * @deprecated because vanilla removed {@link HitResult} from method signature
      */
@@ -113,5 +120,25 @@ public class BlockToItemHelper
         }
 
         return block.asItem();
+    }
+
+    /**
+     * Mimics vanilla logic, previously it was in BlockEntity, later moved to ServerGamePacketListenerImpl.
+     *
+     * @param blockEntity to be written
+     * @param itemStack to write to
+     * @param registryAccess from real level
+     */
+    @SuppressWarnings("deprecation")
+    public static void saveBeToItem(final BlockEntity blockEntity, final ItemStack itemStack, final RegistryAccess registryAccess)
+    {
+        try (ProblemReporter.ScopedCollector reporter = new ProblemReporter.ScopedCollector(() -> "BlockUI writing block entity to item", LOGGER))
+        {
+            TagValueOutput output = TagValueOutput.createWithContext(reporter, registryAccess);
+            blockEntity.saveCustomOnly(output);
+            blockEntity.removeComponentsFromTag(output);
+            BlockItem.setBlockEntityData(itemStack, blockEntity.getType(), output);
+            itemStack.applyComponents(blockEntity.collectComponents());
+        }
     }
 }

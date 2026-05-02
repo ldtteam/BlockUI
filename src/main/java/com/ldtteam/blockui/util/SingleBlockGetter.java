@@ -1,9 +1,14 @@
 package com.ldtteam.blockui.util;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.block.BlockAndTintGetter;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.BlockAndLightGetter;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.CardinalLighting;
+import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -69,7 +74,7 @@ public class SingleBlockGetter implements BlockGetter
     /**
      * Small single blockstate level wrapper. Lighting set to 10, full shading
      */
-    public static class SingleBlockNeighborhood extends SingleBlockGetter implements BlockAndLightGetter
+    public static class SingleBlockNeighborhood extends SingleBlockGetter implements BlockAndTintGetter
     {
         public SingleBlockNeighborhood(final BlockState blockState, final BlockEntity blockEntity)
         {
@@ -102,6 +107,21 @@ public class SingleBlockGetter implements BlockGetter
         public int getRawBrightness(final BlockPos pos, final int amount)
         {
             return 10;
+        }
+
+        @Override
+        public CardinalLighting cardinalLighting()
+        {
+            return CardinalLighting.DEFAULT;
+        }
+
+        @Override
+        public int getBlockTint(final BlockPos pos, final ColorResolver color)
+        {
+            return color.getColor(
+                Minecraft.getInstance().level.registryAccess().lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.PLAINS).value(),
+                0,
+                0);
         }
     }
 }

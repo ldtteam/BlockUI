@@ -29,7 +29,7 @@ public class IColourTest
         assertEquals(col.argb(), 0x01040302);
         assertEquals(col.rgba(), 0x04030201);
 
-        col = col.asQuartet();
+        col = col.asIntQuartet();
 
         assertEquals(col.red(), 4);
         assertEquals(col.green(), 3);
