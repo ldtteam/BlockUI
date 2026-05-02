@@ -146,7 +146,7 @@ public class ItemIcon extends Pane
         }
         if (!itemStack.isEmpty() && blockStateExtension.blockEntity() != null)
         {
-            blockStateExtension.blockEntity().saveToItem(itemStack, mc.level.registryAccess());
+            BlockToItemHelper.saveBeToItem(blockStateExtension.blockEntity(), itemStack, mc.level.registryAccess());
         }
         onItemUpdate();
     }
@@ -177,6 +177,8 @@ public class ItemIcon extends Pane
             if (onHover instanceof final AutomaticTooltip tooltip)
             {
                 tooltip.setTextOld(getModifiedItemStackTooltip());
+                tooltip.setStyle(itemStack.get(DataComponents.TOOLTIP_STYLE));
+                tooltip.setTooltipComponent(itemStack.getTooltipImage().orElse(null));
             }
             tooltipUpdateScheduled = false;
         }
@@ -256,7 +258,7 @@ public class ItemIcon extends Pane
             tooltipFlags = tooltipFlags.asCreative();
         }
 
-        final List<Component> tooltipList = itemStack.getTooltipLines(TooltipContext.of(mc.level), mc.player, tooltipFlags);
+        final List<Component> tooltipList = itemStack.getTooltipLines(TooltipContext.of(mc.level, mc.player), mc.player, ClientTooltipFlag.of(tooltipFlags));
         int nameOffset = 1;
 
         nameOffset = modifyTooltipName(tooltipList, tooltipFlags, nameOffset);
