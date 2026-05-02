@@ -9,6 +9,7 @@ import com.ldtteam.blockui.controls.Text;
 import com.ldtteam.blockui.hooks.HookManager;
 import com.ldtteam.blockui.hooks.HookRegistries;
 import com.ldtteam.blockui.mod.container.ContainerHook;
+import com.ldtteam.blockui.util.SpacerTextComponent;
 import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
 import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -29,6 +30,7 @@ import net.neoforged.neoforge.event.TagsUpdatedEvent;
 import org.lwjgl.glfw.GLFW;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
@@ -62,18 +64,31 @@ public class ClientEventSubscriber
     {
         if (Minecraft.getInstance().hasAltDown() && Minecraft.getInstance().hasControlDown() && Minecraft.getInstance().hasShiftDown())
         {
-            if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_X))
+            if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), GLFW.GLFW_KEY_X) &&
+                !(Minecraft.getInstance().screen instanceof final BOScreen screen &&
+                    screen.getWindow().getXmlResourceLocation().getPath().equals("test_gui")))
             {
-                final BOWindow window = new BOWindow();
+                final BOWindow window = new BOWindow(BlockUI.resLoc("test_gui"), false)
+                {
+                    @Override
+                    public void onUpdate()
+                    {
+                        this.blurBackground = Minecraft.getInstance().hasControlDown();
+                        this.lightbox = Minecraft.getInstance().hasShiftDown();
+                        super.onUpdate();
+                    }
+                };
                 int id = 0;
 
                 final Button dumpAtlases = createTestGuiButton(id++, "Dump ALL atlases to run folder", null);
                 dumpAtlases.setHandler(b -> {
                     final Path dumpingFolder = Path.of("atlas_dump").toAbsolutePath().normalize();
-                    Minecraft.getInstance().player.sendSystemMessage(Component.literal("Dumping atlases into: " + dumpingFolder.toString()));
+                    Minecraft.getInstance().player
+                        .sendSystemMessage(Component.literal("Dumping atlases into: " + dumpingFolder.toString()));
                     Minecraft.getInstance().getAtlasManager().forEach((resLoc, atlas) -> {
                         try
                         {
+                            Files.createDirectories(dumpingFolder);
                             atlas.dumpContents(resLoc, dumpingFolder);
                         }
                         catch (IOException e)
@@ -84,28 +99,44 @@ public class ClientEventSubscriber
                 });
                 window.addChild(dumpAtlases);
 
-                window.addChild(createTestGuiButton(id++, "General All-in-one", Identifier.fromNamespaceAndPath(BlockUI.MOD_ID, "gui/test.xml"), parent -> {
-                    parent.findPaneOfTypeByID("missing_out_of_jar", Image.class).setImage(OutOfJarResourceLocation.ofMinecraftFolder(BlockUI.MOD_ID, "missing_out_of_jar.png"), false);
-                    parent.findPaneOfTypeByID("working_out_of_jar", Image.class).setImage(OutOfJarResourceLocation.of(BlockUI.MOD_ID, Path.of("../../src/test/resources/button.png")), false);
+                window.addChild(createTestGuiButton(id++, "General All-in-one", BlockUI.resLoc("gui/test.xml"), parent -> {
+                    parent.findPaneOfTypeByID("missing_out_of_jar", Image.class)
+                        .setImage(OutOfJarResourceLocation.ofMinecraftFolder(BlockUI.MOD_ID, "missing_out_of_jar.png"), false);
+                    parent.findPaneOfTypeByID("working_out_of_jar", Image.class)
+                        .setImage(OutOfJarResourceLocation.of(BlockUI.MOD_ID, Path.of("../../src/test/resources/button.png")), false);
                     OutOfJarResourceLocation.ofMinecraftSkin(Minecraft.getInstance(), Minecraft.getInstance().getGameProfile(), null)
                         .thenAccept(resLoc -> parent.findPaneOfTypeByID("player_skin", Image.class).setImage(resLoc, false));
-                    OutOfJarResourceLocation.ofMinecraftSkin(Minecraft.getInstance(), Minecraft.getInstance().getGameProfile(), PlayerSkin::cape)
-                        .thenAccept(resLoc -> {if (resLoc!=null){parent.findPaneOfTypeByID("player_cape", Image.class).setImage(resLoc, false);}});
-                    OutOfJarResourceLocation.ofMinecraftSkin(Minecraft.getInstance(), Minecraft.getInstance().getGameProfile(), PlayerSkin::elytra)
-                        .thenAccept(resLoc -> {if (resLoc!=null){parent.findPaneOfTypeByID("player_elytra", Image.class).setImage(resLoc, false);}});
+                    OutOfJarResourceLocation
+                        .ofMinecraftSkin(Minecraft.getInstance(), Minecraft.getInstance().getGameProfile(), PlayerSkin::cape)
+                        .thenAccept(resLoc -> {
+                            if (resLoc != null)
+                            {
+                                parent.findPaneOfTypeByID("player_cape", Image.class).setImage(resLoc, false);
+                            }
+                        });
+                    OutOfJarResourceLocation
+                        .ofMinecraftSkin(Minecraft.getInstance(), Minecraft.getInstance().getGameProfile(), PlayerSkin::elytra)
+                        .thenAccept(resLoc -> {
+                            if (resLoc != null)
+                            {
+                                parent.findPaneOfTypeByID("player_elytra", Image.class).setImage(resLoc, false);
+                            }
+                        });
                 }));
-                window.addChild(createTestGuiButton(id++, "Tooltip Positioning", Identifier.fromNamespaceAndPath(BlockUI.MOD_ID, "gui/test2.xml")));
-                window.addChild(createTestGuiButton(id++, "ItemIcon To BlockState", Identifier.fromNamespaceAndPath(BlockUI.MOD_ID, "gui/test3.xml"), BlockStateTestGui::setup));
-                window.addChild(createTestGuiButton(id++, "Scrolling Lists", Identifier.fromNamespaceAndPath(BlockUI.MOD_ID, "gui/test4.xml"), ScrollingListsGui::setup));
+                window.addChild(createTestGuiButton(id++, "Tooltip Positioning", BlockUI.resLoc("gui/test2.xml")));
+                window.addChild(createTestGuiButton(id++, "ItemIcon To BlockState", BlockUI.resLoc("gui/test3.xml"), BlockStateTestGui::setup));
+                window.addChild(createTestGuiButton(id++, "Scrolling Lists", BlockUI.resLoc("gui/test4.xml"), ScrollingListsGui::setup));
 
                 final Text builderTest = new Text();
-                builderTest.setSize(ButtonImage.DEFAULT_BUTTON_WIDTH * 2 + 20, ButtonImage.DEFAULT_BUTTON_HEIGHT);
+                builderTest.setSize(ButtonImage.DEFAULT_BUTTON_WIDTH * 2 + 20, ButtonImage.DEFAULT_BUTTON_HEIGHT * 2);
                 builderTest.setPosition(0, ((id + 1) / 2) * (builderTest.getHeight() + 10));
                 PaneBuilders.textBuilder()
                     .append(Component.literal(BlockUI.MOD_ID))
                     .append(Component.literal(" - "))
                     .append(Component.literal(ModList.get().getModFileById(BlockUI.MOD_ID).versionString()))
                     .paragraphBreak()
+                    .append(SpacerTextComponent.of(5))
+                    .newLine()
                     .colorName("red")
                     .underlined()
                     .append(Component.translatable("blockui.tooltip.item_additional_info",

@@ -1,4 +1,4 @@
-<window xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="block_ui.xsd" size="320 240">
+<window xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="block_ui.xsd" size="320 240" lightbox="true">
     <itemicon item="minecraft:diamond_pickaxe" pos="0 192" size="64 64"/>
     <itemicon item="minecraft:diamond_pickaxe" pos="0 128" size="64 64"/>
     <itemicon item="minecraft:diamond_pickaxe" pos="0 64" size="64 64"/>
@@ -7,7 +7,9 @@
     <itemicon item="minecraft:diamond_pickaxe" pos="128 0" size="64 64"/>
     <itemicon item="minecraft:diamond_pickaxe" pos="192 0" size="64 64"/>
     <itemicon item="minecraft:diamond_pickaxe" pos="256 0" size="64 64"/>
+    <itemicon item="minecraft:diamond_pickaxe" pos="256 128" size="64 64"/>
     <itemicon item="minecraft:diamond_pickaxe" pos="256 192" size="64 64"/>
     <itemicon item="minecraft:brush" pos="128 128" size="64 64"/>
+    <itemicon item="minecraft:bundle" nbt='{"minecraft:bundle_contents": [{count: 1, id: "minecraft:redstone"}, {count: 1, components: {"minecraft:potion_contents": {potion: "minecraft:long_turtle_master"}}, id: "minecraft:tipped_arrow"}, {count: 1, components: {"minecraft:potion_contents": {potion: "minecraft:turtle_master"}}, id: "minecraft:tipped_arrow"}, {count: 1, components: {"minecraft:potion_contents": {potion: "minecraft:strong_healing"}}, id: "minecraft:tipped_arrow"}, {count: 1, components: {"minecraft:potion_contents": {potion: "minecraft:strong_strength"}}, id: "minecraft:tipped_arrow"}, {count: 1, components: {"minecraft:potion_contents": {potion: "minecraft:long_weakness"}}, id: "minecraft:tipped_arrow"}, {count: 1, components: {"minecraft:fireworks": {flight_duration: 3b}}, id: "minecraft:firework_rocket"}, {count: 1, id: "minecraft:spectral_arrow"}, {count: 1, id: "minecraft:snowball"}, {count: 2, id: "minecraft:birch_stairs"}, {count: 1, id: "minecraft:birch_wood"}, {count: 1, id: "minecraft:birch_door"}, {count: 16, id: "minecraft:stripped_jungle_wood"}, {count: 8, id: "minecraft:egg"}]}' size="16 16" pos="192 192"/>
     <text pos="64 64" size="300 20" textscale="1.4" text="1.4 textscale normal gui test"/>
 </window>

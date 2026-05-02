@@ -1,5 +1,6 @@
 package com.ldtteam.blockui.mod;
 
+import net.minecraft.resources.Identifier;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -21,5 +22,10 @@ public class BlockUI
             modBus.register(ClientLifecycleSubscriber.class);
             forgeBus.register(ClientEventSubscriber.class);
         }
+    }
+
+    public static Identifier resLoc(final String path)
+    {
+        return Identifier.fromNamespaceAndPath(MOD_ID, path);
     }
 }
