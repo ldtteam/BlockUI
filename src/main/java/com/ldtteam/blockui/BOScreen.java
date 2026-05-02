@@ -1,12 +1,7 @@
 package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.views.BOWindow;
-import com.mojang.blaze3d.systems.RenderSystem;
-import org.joml.Matrix3x2fStack;
-import com.mojang.blaze3d.vertex.VertexSorting;
-import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
-import org.jspecify.annotations.Nullable;
+import com.mojang.blaze3d.platform.Window;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
@@ -17,9 +12,12 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.PreeditEvent;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.Projection;
+import net.minecraft.client.renderer.state.WindowRenderState;
 import net.minecraft.network.chat.Component;
-import net.neoforged.neoforge.client.ClientHooks;
-import net.neoforged.neoforge.client.NeoForgeRenderTypes;
+import org.joml.Matrix2f;
+import org.joml.Matrix3x2f;
+import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.Objects;
@@ -55,64 +53,78 @@ public class BOScreen extends Screen
     @Override
     public void extractRenderState(final GuiGraphicsExtractor ms, final int mx, final int my, final float f)
     {
-        if (minecraft == null || !isOpen) // should never happen though
+        if (ms.minecraft == null || !isOpen) // should never happen though
         {
             return;
         }
+        final WindowRenderState windowState = ms.minecraft.gameRenderer.getGameRenderState().windowRenderState;
 
         absoluteMouseX = mx;
         absoluteMouseY = my;
-        framebufferWidth = ms.minecraft.getWindow().getWidth();
-        framebufferHeight = ms.minecraft.getWindow().getHeight();
-        final int guiWidth = Math.max(framebufferWidth, 320);
-        final int guiHeight = Math.max(framebufferHeight, 240);
+        framebufferWidth = windowState.width; // ms.minecraft.getWindow().getWidth();
+        framebufferHeight = windowState.height; // ms.minecraft.getWindow().getHeight();
+        final int guiWidth = Math.max(framebufferWidth, Window.BASE_WIDTH);
+        final int guiHeight = Math.max(framebufferHeight, Window.BASE_HEIGHT);
 
-        final boolean oldFilteringValue = NeoForgeRenderTypes.enableTextTextureLinearFiltering;
-        NeoForgeRenderTypes.enableTextTextureLinearFiltering = false;
-
-        mcScale = ms.minecraft.getWindow().getGuiScale();
+        mcScale = windowState.guiScale; // ms.minecraft.getWindow().getGuiScale();
         renderScale = window.getRenderType().calcRenderScale(ms.minecraft.getWindow(), window);
-
-        if (window.hasLightbox() && ms.minecraft.screen == this)
-        {
-            UiRenderMacros.fillGradient(ms.pose(), 0, 0, framebufferWidth, framebufferHeight, -1072689136, -804253680);
-            //super.renderBackground(ms);
-        }
 
         width = window.getWidth();
         height = window.getHeight();
         x = Math.floor((guiWidth - width * renderScale) / 2.0d);
         y = Math.floor((guiHeight - height * renderScale) / 2.0d);
 
-        // replace vanilla projection
-        final Matrix4fStack shaderPs = RenderSystem.getModelViewStack();
-        final Matrix4f oldProjection = RenderSystem.getProjectionMatrix();
-        RenderSystem.setProjectionMatrix(
-            new Matrix4f().setOrtho(0.0F, framebufferWidth, framebufferHeight, 0.0F, 1000.0F, ClientHooks.getGuiFarPlane()),
-            VertexSorting.ORTHOGRAPHIC_Z);
-        shaderPs.pushMatrix();
-        shaderPs.identity();
-        shaderPs.translate(0.0f, 0.0f, 10000f - net.neoforged.neoforge.client.ClientHooks.getGuiFarPlane());
-        RenderSystem.applyModelViewMatrix();
+        // counter vanilla projection
+        final Projection vanillaProjection = new Projection();
+        // INLINE: this is copied from wherever vanilla is doing projection for GUI
+        vanillaProjection.setupOrtho(1000.0F,
+            11000.0F,
+            (float) windowState.width / windowState.guiScale,
+            (float) windowState.height / windowState.guiScale,
+            true);
 
-        final Matrix3x2fStack newMs = new Matrix3x2fStack();
-        newMs.translate(x, y, ms.pose().last().pose().m32());
-        newMs.scale((float) renderScale, (float) renderScale, 1.0f);
+        final Matrix4f oldProjection = vanillaProjection.getMatrix(new Matrix4f());
+        final Matrix4f oldViewModel = new Matrix4f().setTranslation(0.0F, 0.0F, -11000.0F);
+        // INLINE: end
 
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.enableDepthTest();
-        RenderSystem.disableBlend();
-        RenderSystem.defaultBlendFunc();
+        final Matrix4f ourProjection = new Matrix4f().setOrtho(0.0F, framebufferWidth, framebufferHeight, 0.0F, vanillaProjection.zNear(), vanillaProjection.zFar());
+
+        // if ever vanilla decides allows to use 1.21 system immediately do so
+        // this hack is based on following facts at the time when it was written:
+        // 1) the only thing that does matrix computation is vertex shader (VS)
+        // 2) the said VS does classic vertex math: output = P * VM * input
+        // 3) there is no other math (or scissoring stuff) evolder around old P * VM
+        // 4) the old P and VM are properly copied from vanilla (INLINE above)
+        // 5) the matrixes are stable enough to not under/overflow
+        final Matrix4f hack = new Matrix4f();
+        hack.mul(oldViewModel.invert()); // this internally does invertTranslation
+        hack.mul(oldProjection.invertOrtho());
+        hack.mul(ourProjection);
+
+        final var newMs = new BOGuiGraphics.CountingMatrix3x2fStack(16);
+        // inject hack
+        newMs.mul(new Matrix3x2f(new Matrix2f(hack.m00(), hack.m01(), hack.m10(), hack.m11())));
+        // our stuff, this assumes projection matrix is size of FB
 
         try
         {
             final double newMx = calcRelativeX(mx), newMy = calcRelativeY(my);
-            final BOGuiGraphics target = new BOGuiGraphics(ms.minecraft, newMs, ms.bufferSource(), newMx, newMy);
+            final BOGuiGraphics target = new BOGuiGraphics(ms.minecraft, newMs, ms.guiRenderState, (int) newMx, (int) newMy);
 
             if (window.hasBlurredBackground() && ms.minecraft.screen == this && target.guiRenderState.firstStratumAfterBlur == Integer.MAX_VALUE)
             {
                 target.blurBeforeThisStratum();
             }
+
+            if (window.hasLightbox() && ms.minecraft.screen == this)
+            {
+                UiRenderMacros.fillGradient(target, 0, 0, framebufferWidth, framebufferHeight, -1072689136, -804253680);
+                // super.extractTransparentBackground(target);
+            }
+
+            newMs.translate((float) x, (float) y);
+            newMs.scale((float) renderScale, (float) renderScale);
+
             window.draw(target, newMx, newMy);
 
             if (ms.minecraft.screen == this)
@@ -130,6 +142,8 @@ public class BOScreen extends Screen
                 ms.requestCursor(target.applyCursor(debugX));
             }
 
+            target.nextStratum(); // TODO: simulate Z layering a bit, we really need to write sorted layering for us to be stable..
+
             window.drawLast(target, newMx, newMy);
         }
         catch (final Exception e)
@@ -142,15 +156,11 @@ public class BOScreen extends Screen
             category.setDetail("BO gui scale", () -> Double.toString(renderScale));
             throw new ReportedException(crashReport);
         }
-        finally
-        {
-            // restore vanilla state
-            shaderPs.popMatrix();
-            RenderSystem.setProjectionMatrix(oldProjection, VertexSorting.ORTHOGRAPHIC_Z);
-            RenderSystem.applyModelViewMatrix();
+    }
 
-            NeoForgeRenderTypes.enableTextTextureLinearFiltering = oldFilteringValue;
-        }
+    @Override // INLINE: partial inline - completely remove any extraction
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+        this.minecraft.gui.extractDeferredSubtitles();
     }
 
     @Override
