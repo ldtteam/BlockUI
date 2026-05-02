@@ -3,6 +3,7 @@ package com.ldtteam.blockui;
 import com.ldtteam.blockui.controls.*;
 import com.ldtteam.blockui.mod.BlockUI;
 import com.ldtteam.blockui.mod.Log;
+import com.ldtteam.blockui.util.SafeError;
 import com.ldtteam.blockui.views.*;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -67,7 +68,8 @@ public final class Loader extends SimplePreparableReloadListener<Map<Identifier,
         }
         if (paneParams.hasAttribute(ItemIconWithProperties.PARAM_PROPERTIES))
         {
-            return new ItemIconWithProperties(paneParams);
+            SafeError.throwInDev(new UnsupportedOperationException("ItemIconWithProperties was not portable"));
+            // return new ItemIconWithProperties(paneParams);
         }
         return new ItemIcon(paneParams);
     }
