@@ -10,15 +10,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.resources.Identifier;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import java.util.function.ToDoubleBiFunction;
 
 /**
  * Blockout window, high level root pane.
  */
-@OnlyIn(Dist.CLIENT)
 public class BOWindow extends View
 {
     /**
@@ -45,6 +42,11 @@ public class BOWindow extends View
      * Defines if the window should have a lightbox.
      */
     protected boolean lightbox = false;
+
+    /**
+     * Defines if the window should have blurred background.
+     */
+    protected boolean blurBackground = false;
 
     /**
      * Render using size or attemp to scale to fullscreen.
@@ -104,6 +106,7 @@ public class BOWindow extends View
         });
 
         lightbox = params.getBoolean("lightbox", lightbox);
+        blurBackground = params.getBoolean("blurBackground", blurBackground);
         windowPausesGame = params.getBoolean("pause", windowPausesGame);
         windowRenderType = params.getEnum("type", WindowRenderType.class, windowRenderType);
     }
@@ -116,6 +119,11 @@ public class BOWindow extends View
         super.drawSelf(ms, mx, my);
     }
 
+    public void setLightbox(final boolean lightbox)
+    {
+        this.lightbox = lightbox;
+    }
+
     /**
      * Return {@code true} if the 'lightbox' (default dark background) should be displayed.
      *
@@ -124,6 +132,21 @@ public class BOWindow extends View
     public boolean hasLightbox()
     {
         return lightbox;
+    }
+
+    public void setBlurBackground(final boolean blurBackground)
+    {
+        this.blurBackground = blurBackground;
+    }
+
+    public boolean hasBlurredBackground()
+    {
+        return blurBackground;
+    }
+
+    public void setWindowPausesGame(final boolean windowPausesGame)
+    {
+        this.windowPausesGame = windowPausesGame;
     }
 
     /**

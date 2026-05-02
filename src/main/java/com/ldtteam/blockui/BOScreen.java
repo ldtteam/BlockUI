@@ -108,6 +108,11 @@ public class BOScreen extends Screen
         {
             final double newMx = calcRelativeX(mx), newMy = calcRelativeY(my);
             final BOGuiGraphics target = new BOGuiGraphics(ms.minecraft, newMs, ms.bufferSource(), newMx, newMy);
+
+            if (window.hasBlurredBackground() && ms.minecraft.screen == this && target.guiRenderState.firstStratumAfterBlur == Integer.MAX_VALUE)
+            {
+                target.blurBeforeThisStratum();
+            }
             window.draw(target, newMx, newMy);
 
             if (ms.minecraft.screen == this)
