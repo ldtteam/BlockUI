@@ -206,7 +206,7 @@ public final class Loader extends SimplePreparableReloadListener<Map<Identifier,
             }
 
             doc.getDocumentElement().normalize();
-            foundXmls.put(rl, new PaneParams(doc.getDocumentElement()));
+            foundXmls.put(rl, new PaneParams(doc.getDocumentElement(), rl));
         });
 
         profiler.pop();

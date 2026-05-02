@@ -1,20 +1,16 @@
 package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.controls.AbstractTextBuilder.TooltipBuilder;
-import com.ldtteam.blockui.mod.BlockUI;
+import com.ldtteam.blockui.util.SafeError;
 import com.ldtteam.blockui.util.cursor.Cursor;
 import com.ldtteam.blockui.views.View;
 import com.ldtteam.blockui.views.BOWindow;
-import com.mojang.blaze3d.vertex.*;
 import com.mojang.blaze3d.platform.cursor.CursorType;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
-import net.minecraft.util.Mth;
 import org.joml.Matrix3x2fStack;
-import org.joml.Vector4f;
 import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.Nullable;
 import java.util.List;
@@ -43,6 +39,7 @@ public class Pane extends UiRenderMacros
     protected CursorType cursor = Cursor.DEFAULT;
     // Runtime
     protected BOWindow window;
+    private   String paneParamsPath = "UNKNOWN";
     protected View parent;
     protected Pane hoverSource = null;
     /**
@@ -69,6 +66,7 @@ public class Pane extends UiRenderMacros
     public Pane(final PaneParams params)
     {
         super();
+        paneParamsPath = params.getXmlRelatedId();
         id = params.getString("id", id);
 
         params.getScaledInteger("size", params.getParentWidth(), params.getParentHeight(), a -> {
@@ -144,6 +142,29 @@ public class Pane extends UiRenderMacros
     public final void setID(final String id)
     {
         this.id = id;
+    }
+
+    /**
+     * @return string path from nearest parent with id
+     */
+    public final String getXmlRelatedId()
+    {
+        return window == null ? paneParamsPath : window.getXmlResourceLocation().toString() + "|" + Objects.requireNonNullElseGet(id, () -> pathToNearestIdParent(parent));
+    }
+
+    private static String pathToNearestIdParent(final Pane pane)
+    {
+        if (pane == null)
+        {
+            return "root";
+        }
+
+        return pane.id != null ? pane.id : pathToNearestIdParent(pane.parent) + "/" + pane.getClass().getSimpleName();
+    }
+
+    public void requireNonNull(final Object value, final String errorMessage)
+    {
+        SafeError.requireNonNull(value, errorMessage + " (" + getXmlRelatedId() + ")");
     }
 
     /**

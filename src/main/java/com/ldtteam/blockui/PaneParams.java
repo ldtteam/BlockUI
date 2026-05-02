@@ -1,8 +1,12 @@
 package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.mod.Log;
+import com.ldtteam.blockui.util.SafeError;
 import com.ldtteam.blockui.views.View;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.resources.Identifier;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.MutableComponent;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -21,15 +25,17 @@ public class PaneParams
     private final List<PaneParams>    children;
     private final Node                node;
     private       View                parentView;
+    private final Identifier          windowResLoc;
 
     /**
      * Instantiates the pane parameters.
      *
      * @param n the node.
      */
-    public PaneParams(final Node n)
+    public PaneParams(final Node n, final Identifier windowResLoc)
     {
         node = n;
+        this.windowResLoc = windowResLoc;
         children = new ArrayList<>(node.getChildNodes().getLength());
     }
 
@@ -112,7 +118,7 @@ public class PaneParams
         {
             if (child.getNodeType() == Node.ELEMENT_NODE)
             {
-                children.add(new PaneParams(child));
+                children.add(new PaneParams(child, windowResLoc));
             }
             child = child.getNextSibling();
         }
@@ -167,6 +173,45 @@ public class PaneParams
 
         propertyCache.put(name, result);
         return result != null ? result : def;
+    }
+
+    /**
+     * Get the compoundTag attribute.
+     *
+     * @param name the name to search.
+     * @return the attribute.
+     */
+    @Nullable
+    public CompoundTag getCompoundTag(final String name)
+    {
+        return getCompoundTag(name, null);
+    }
+
+    /**
+     * Get the compoundTag attribute from the name and revert to the default if not present.
+     *
+     * @param name      the name.
+     * @param def the default value if none can be found
+     * @return the String.
+     */
+    public CompoundTag getCompoundTag(final String name, final CompoundTag def)
+    {
+        final String data = getString(name, null);
+        if (data == null)
+        {
+            return def;
+        }
+        CompoundTag tag;
+        try
+        {
+            tag = TagParser.parseCompoundFully(data);
+        }
+        catch (CommandSyntaxException e)
+        {
+            SafeError.throwInDev(new IllegalArgumentException("Failed to parse compound at: " + getXmlRelatedId(), e));
+            return def;
+        }
+        return tag;
     }
 
     /**
@@ -402,5 +447,26 @@ public class PaneParams
             }
         }
         return def;
+    }
+
+    /**
+     * @return string path from nearest parent with id
+     */
+    public String getXmlRelatedId()
+    {
+        return windowResLoc.toString() + "|" + Objects.requireNonNullElseGet(getString("id"), () -> pathToNearestIdParent(node));
+    }
+
+    private static String pathToNearestIdParent(final Node node)
+    {
+        if (node == null)
+        {
+            return "root";
+        }
+
+        final NamedNodeMap attributes = node.getAttributes();
+        final Node idNode = attributes == null ? null : attributes.getNamedItem("id");
+        final String id = idNode == null ? null : idNode.getNodeValue();
+        return id != null ? id : pathToNearestIdParent(node.getParentNode()) + "/" + node.getLocalName();
     }
 }

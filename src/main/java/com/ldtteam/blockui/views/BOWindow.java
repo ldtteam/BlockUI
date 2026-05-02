@@ -54,6 +54,7 @@ public class BOWindow extends View
     protected WindowRenderType windowRenderType = WindowRenderType.OVERSIZED_VANILLA;
 
     protected Identifier xmlResourceLocation;
+    protected boolean loadedFromXml = false;
 
     /**
      * Create a window from an xml file.
@@ -62,17 +63,20 @@ public class BOWindow extends View
      */
     public BOWindow(final Identifier resource)
     {
-        this();
-        this.xmlResourceLocation = resource;
-        Loader.createFromXMLFile(resource, this);
+        this(resource, true);
     }
 
     /**
      * Make default sized window.
      */
-    public BOWindow()
+    public BOWindow(final Identifier resource, final boolean shouldloadXml)
     {
-        this(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        this(resource, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        if (shouldloadXml)
+        {
+            Loader.createFromXMLFile(resource, this);
+            loadedFromXml = true;
+        }
     }
 
     /**
@@ -81,9 +85,10 @@ public class BOWindow extends View
      * @param w Width of the window, in pixels.
      * @param h Height of the window, in pixels.
      */
-    public BOWindow(final int w, final int h)
+    public BOWindow(final Identifier resource, final int w, final int h)
     {
         super();
+        xmlResourceLocation = resource;
         width = w;
         height = h;
 
@@ -168,11 +173,20 @@ public class BOWindow extends View
     }
 
     /**
-     * @return xml defining this window
+     * @return xml defining this window, or
+     * @see
      */
     public Identifier getXmlResourceLocation()
     {
         return xmlResourceLocation;
+    }
+
+    /**
+     * @return true if
+     */
+    public boolean wasLoadedFromXml()
+    {
+        return loadedFromXml;
     }
 
     /**

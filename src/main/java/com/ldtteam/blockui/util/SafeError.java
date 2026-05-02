@@ -1,7 +1,9 @@
 package com.ldtteam.blockui.util;
 
 import com.ldtteam.blockui.mod.Log;
+import net.minecraft.util.Util;
 import net.neoforged.fml.loading.FMLEnvironment;
+import java.util.Objects;
 
 /**
  * Utility class for throwing errors which is safe during production.
@@ -21,7 +23,20 @@ public class SafeError
         }
         else
         {
-            throw exception;
+            throw Util.pauseInIde(exception);
+        }
+    }
+
+    /**
+     * @param value        the object reference to check for nullity
+     * @param errorMessage detail message to be used in the event that a {@code NullPointerException} is thrown
+     * @see Objects#requireNonNull(Object, String)
+     */
+    public static void requireNonNull(final Object value, final String errorMessage)
+    {
+        if (value == null)
+        {
+            throwInDev(new NullPointerException(errorMessage));
         }
     }
 }
