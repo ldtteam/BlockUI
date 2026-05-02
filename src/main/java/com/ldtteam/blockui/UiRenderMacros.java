@@ -1,29 +1,56 @@
 package com.ldtteam.blockui;
 
-import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.ldtteam.blockui.mod.BlockUI;
+import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
+import com.ldtteam.blockui.util.SingleBlockGetter.SingleBlockNeighborhood;
+import com.ldtteam.blockui.util.color.IColour;
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import org.joml.Matrix3x2fStack;
-import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat.Mode;
 import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.render.TextureSetup;
+import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
+import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.client.renderer.block.BlockModelRenderState;
+import net.minecraft.client.renderer.block.FluidRenderer;
+import net.minecraft.client.renderer.block.FluidStateModelSet;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
+import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
+import net.minecraft.client.renderer.state.gui.GuiRenderState;
+import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
+import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling.NineSlice;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling.Tile;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling.Type;
+import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.util.LightCoordsUtil;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.material.FluidState;
 import net.neoforged.fml.loading.FMLEnvironment;
-import org.joml.Matrix4f;
-import org.joml.Quaternionf;
+import org.joml.Matrix3f;
+import org.joml.Matrix3x2f;
+import org.jspecify.annotations.Nullable;
+
+import java.util.EnumMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.BiConsumer;
 
 /**
  * Our replacement for GuiComponent.
@@ -31,8 +58,34 @@ import org.joml.Quaternionf;
 public class UiRenderMacros
 {
     public static final double HALF_BIAS = 0.5;
+    /** alpha/blending enabled by default */
+    public static final RenderPipeline GUI_POS_COLOR_TRIANGLES = RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
+        .withLocation(BlockUI.resLoc("gui_pos_color_triangles"))
+        .withVertexShader("core/position_color")
+        .withFragmentShader("core/position_color")
+        .withVertexFormat(DefaultVertexFormat.POSITION_COLOR, Mode.TRIANGLES)
+        .build();
+    /** alpha/blending enabled by default */
+    public static final RenderPipeline GUI_POS_TEX_TRIANGLES = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+        .withLocation(BlockUI.resLoc("gui_pos_tex_triangles"))
+        .withVertexShader("core/position_tex")
+        .withFragmentShader("core/position_tex")
+        .withVertexFormat(DefaultVertexFormat.POSITION_TEX, Mode.TRIANGLES)
+        .build();
+    /** alpha/blending enabled by default */
+    public static final RenderPipeline GUI_POS_TEX_COLOR_TRIANGLES = RenderPipeline.builder(RenderPipelines.GUI_TEXTURED_SNIPPET)
+        .withLocation(BlockUI.resLoc("gui_pos_tex_color_triangles"))
+        .withVertexShader("core/position_tex_color")
+        .withFragmentShader("core/position_tex_color")
+        .withVertexFormat(DefaultVertexFormat.POSITION_TEX_COLOR, Mode.TRIANGLES)
+        .build();
+    /** alpha/blending enabled by default */
+    public static final RenderPipeline GUI_POS_COLOR_LINES = RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
+        .withLocation(BlockUI.resLoc("gui_pos_color_lines"))
+        .withVertexFormat(DefaultVertexFormat.POSITION_COLOR, Mode.DEBUG_LINES)
+        .build();
 
-    public static void drawLineRectGradient(final Matrix3x2fStack ps,
+    public static void drawLineRectGradient(final GuiGraphicsExtractor ps,
         final int x,
         final int y,
         final int w,
@@ -43,7 +96,7 @@ public class UiRenderMacros
         drawLineRectGradient(ps, x, y, w, h, argbColorStart, argbColorEnd, 1);
     }
 
-    public static void drawLineRectGradient(final Matrix3x2fStack ps,
+    public static void drawLineRectGradient(final GuiGraphicsExtractor ps,
         final int x,
         final int y,
         final int w,
@@ -68,7 +121,7 @@ public class UiRenderMacros
             lineWidth);
     }
 
-    public static void drawLineRectGradient(final Matrix3x2fStack ps,
+    public static void drawLineRectGradient(final GuiGraphicsExtractor ps,
         final int x,
         final int y,
         final int w,
@@ -88,44 +141,51 @@ public class UiRenderMacros
             return;
         }
 
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        if (alphaStart != 255 || alphaEnd != 255)
-        {
-            RenderSystem.enableBlend();
-        }
-        else
-        {
-            RenderSystem.disableBlend();
-        }
-
-        final Matrix4f m = ps.last().pose();
-        BufferBuilder buffer = Tesselator.getInstance().begin(Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-        buffer.addVertex(m, x, y, 0).setColor(redStart, greenStart, blueStart, alphaStart);
-        buffer.addVertex(m, x, y + h, 0).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
-        buffer.addVertex(m, x + lineWidth, y + h - lineWidth, 0).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
-        buffer.addVertex(m, x + lineWidth, y + lineWidth, 0).setColor(redStart, greenStart, blueStart, alphaStart);
-        buffer.addVertex(m, x + w - lineWidth, y + lineWidth, 0).setColor(redStart, greenStart, blueStart, alphaStart);
-        buffer.addVertex(m, x + w, y, 0).setColor(redStart, greenStart, blueStart, alphaStart);
-        BufferUploader.drawWithShader(buffer.build());
-
-        buffer = Tesselator.getInstance().begin(Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-        buffer.addVertex(m, x + w, y + h, 0).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
-        buffer.addVertex(m, x + w, y, 0).setColor(redStart, greenStart, blueStart, alphaStart);
-        buffer.addVertex(m, x + w - lineWidth, y + lineWidth, 0).setColor(redStart, greenStart, blueStart, alphaStart);
-        buffer.addVertex(m, x + w - lineWidth, y + h - lineWidth, 0).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
-        buffer.addVertex(m, x + lineWidth, y + h - lineWidth, 0).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
-        buffer.addVertex(m, x, y + h, 0).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
-        BufferUploader.drawWithShader(buffer.build());
-
-        RenderSystem.disableBlend();
+        submitNoTex(ps, GUI_POS_COLOR_TRIANGLES, x, y, w, h, (m, buffer) -> {
+            populateFillTriangles(m, buffer, x, y, w, lineWidth, redStart, greenStart, blueStart, alphaStart);
+            populateFillGradientTriangles(m,
+                buffer,
+                x,
+                y + lineWidth,
+                lineWidth,
+                h - 2 * lineWidth,
+                redStart,
+                redEnd,
+                greenStart,
+                greenEnd,
+                blueStart,
+                blueEnd,
+                alphaStart,
+                alphaEnd);
+            populateFillGradientTriangles(m,
+                buffer,
+                x + w - lineWidth,
+                y + lineWidth,
+                lineWidth,
+                h - 2 * lineWidth,
+                redStart,
+                redEnd,
+                greenStart,
+                greenEnd,
+                blueStart,
+                blueEnd,
+                alphaStart,
+                alphaEnd);
+            populateFillTriangles(m, buffer, x, y + h - lineWidth, w, lineWidth, redEnd, greenEnd, blueEnd, alphaEnd);
+        });
     }
 
-    public static void drawLineRect(final Matrix3x2fStack ps, final int x, final int y, final int w, final int h, final int argbColor)
+    public static void drawLineRect(final GuiGraphicsExtractor ps,
+        final int x,
+        final int y,
+        final int w,
+        final int h,
+        final int argbColor)
     {
         drawLineRect(ps, x, y, w, h, argbColor, 1);
     }
 
-    public static void drawLineRect(final Matrix3x2fStack ps,
+    public static void drawLineRect(final GuiGraphicsExtractor ps,
         final int x,
         final int y,
         final int w,
@@ -145,7 +205,7 @@ public class UiRenderMacros
             lineWidth);
     }
 
-    public static void drawLineRect(final Matrix3x2fStack ps,
+    public static void drawLineRect(final GuiGraphicsExtractor ps,
         final int x,
         final int y,
         final int w,
@@ -161,44 +221,20 @@ public class UiRenderMacros
             return;
         }
 
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        if (alpha != 255)
-        {
-            RenderSystem.enableBlend();
-        }
-        else
-        {
-            RenderSystem.disableBlend();
-        }
-
-        final Matrix4f m = ps.last().pose();
-        BufferBuilder buffer = Tesselator.getInstance().begin(Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-        buffer.addVertex(m, x, y, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x, y + h, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x + lineWidth, y + h - lineWidth, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x + lineWidth, y + lineWidth, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x + w - lineWidth, y + lineWidth, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x + w, y, 0).setColor(red, green, blue, alpha);
-        BufferUploader.drawWithShader(buffer.build());
-
-        buffer = Tesselator.getInstance().begin(Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-        buffer.addVertex(m, x + w, y + h, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x + w, y, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x + w - lineWidth, y + lineWidth, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x + w - lineWidth, y + h - lineWidth, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x + lineWidth, y + h - lineWidth, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x, y + h, 0).setColor(red, green, blue, alpha);
-        BufferUploader.drawWithShader(buffer.build());
-
-        RenderSystem.disableBlend();
+        submitNoTex(ps, GUI_POS_COLOR_TRIANGLES, x, y, w, h, (m, buffer) -> {
+            populateFillTriangles(m, buffer, x, y, w, lineWidth, red, green, blue, alpha);
+            populateFillTriangles(m, buffer, x, y + lineWidth, lineWidth, h - 2 * lineWidth, red, green, blue, alpha);
+            populateFillTriangles(m, buffer, x + w - lineWidth, y + lineWidth, lineWidth, h - 2 * lineWidth, red, green, blue, alpha);
+            populateFillTriangles(m, buffer, x, y + h - lineWidth, w, lineWidth, red, green, blue, alpha);
+        });
     }
 
-    public static void fill(final Matrix3x2fStack ps, final int x, final int y, final int w, final int h, final int argbColor)
+    public static void fill(final GuiGraphicsExtractor ps, final int x, final int y, final int w, final int h, final int argbColor)
     {
         fill(ps, x, y, w, h, (argbColor >> 16) & 0xff, (argbColor >> 8) & 0xff, argbColor & 0xff, (argbColor >> 24) & 0xff);
     }
 
-    public static void fill(final Matrix3x2fStack ps,
+    public static void fill(final GuiGraphicsExtractor ps,
         final int x,
         final int y,
         final int w,
@@ -213,28 +249,16 @@ public class UiRenderMacros
             return;
         }
 
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        if (alpha != 255)
-        {
-            RenderSystem.enableBlend();
-        }
-        else
-        {
-            RenderSystem.disableBlend();
-        }
-
-        final Matrix4f m = ps.last().pose();
-        final BufferBuilder buffer = Tesselator.getInstance().begin(Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-        buffer.addVertex(m, x, y, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x, y + h, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x + w, y + h, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x + w, y, 0).setColor(red, green, blue, alpha);
-        BufferUploader.drawWithShader(buffer.build());
-
-        RenderSystem.disableBlend();
+        submitNoTex(ps,
+            GUI_POS_COLOR_TRIANGLES,
+            x,
+            y,
+            w,
+            h,
+            (m, buffer) -> populateFillTriangles(m, buffer, x, y, w, h, red, green, blue, alpha));
     }
 
-    public static void fillGradient(final Matrix3x2fStack ps,
+    public static void fillGradient(final GuiGraphicsExtractor ps,
         final int x,
         final int y,
         final int w,
@@ -257,7 +281,7 @@ public class UiRenderMacros
             (argbColorEnd >> 24) & 0xff);
     }
 
-    public static void fillGradient(final Matrix3x2fStack ps,
+    public static void fillGradient(final GuiGraphicsExtractor ps,
         final int x,
         final int y,
         final int w,
@@ -276,33 +300,34 @@ public class UiRenderMacros
             return;
         }
 
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        if (alphaStart != 255 || alphaEnd != 255)
-        {
-            RenderSystem.enableBlend();
-        }
-        else
-        {
-            RenderSystem.disableBlend();
-        }
-
-        final Matrix4f m = ps.last().pose();
-        final BufferBuilder buffer = Tesselator.getInstance().begin(Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-        buffer.addVertex(m, x, y, 0).setColor(redStart, greenStart, blueStart, alphaStart);
-        buffer.addVertex(m, x, y + h, 0).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
-        buffer.addVertex(m, x + w, y + h, 0).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
-        buffer.addVertex(m, x + w, y, 0).setColor(redStart, greenStart, blueStart, alphaStart);
-        BufferUploader.drawWithShader(buffer.build());
-
-        RenderSystem.disableBlend();
+        submitNoTex(ps,
+            GUI_POS_COLOR_TRIANGLES,
+            x,
+            y,
+            w,
+            h,
+            (m, buffer) -> populateFillGradientTriangles(m,
+                buffer,
+                x,
+                y,
+                w,
+                h,
+                redStart,
+                redEnd,
+                greenStart,
+                greenEnd,
+                blueStart,
+                blueEnd,
+                alphaStart,
+                alphaEnd));
     }
 
-    public static void hLine(final Matrix3x2fStack ps, final int x, final int xEnd, final int y, final int argbColor)
+    public static void hLine(final GuiGraphicsExtractor ps, final int x, final int xEnd, final int y, final int argbColor)
     {
         line(ps, x, y, xEnd, y, (argbColor >> 16) & 0xff, (argbColor >> 8) & 0xff, argbColor & 0xff, (argbColor >> 24) & 0xff);
     }
 
-    public static void hLine(final Matrix3x2fStack ps,
+    public static void hLine(final GuiGraphicsExtractor ps,
         final int x,
         final int xEnd,
         final int y,
@@ -314,12 +339,12 @@ public class UiRenderMacros
         line(ps, x, y, xEnd, y, red, green, blue, alpha);
     }
 
-    public static void vLine(final Matrix3x2fStack ps, final int x, final int y, final int yEnd, final int argbColor)
+    public static void vLine(final GuiGraphicsExtractor ps, final int x, final int y, final int yEnd, final int argbColor)
     {
         line(ps, x, y, x, yEnd, (argbColor >> 16) & 0xff, (argbColor >> 8) & 0xff, argbColor & 0xff, (argbColor >> 24) & 0xff);
     }
 
-    public static void vLine(final Matrix3x2fStack ps,
+    public static void vLine(final GuiGraphicsExtractor ps,
         final int x,
         final int y,
         final int yEnd,
@@ -331,12 +356,12 @@ public class UiRenderMacros
         line(ps, x, y, x, yEnd, red, green, blue, alpha);
     }
 
-    public static void line(final Matrix3x2fStack ps, final int x, final int y, final int xEnd, final int yEnd, final int argbColor)
+    public static void line(final GuiGraphicsExtractor ps, final int x, final int y, final int xEnd, final int yEnd, final int argbColor)
     {
         line(ps, x, y, xEnd, yEnd, (argbColor >> 16) & 0xff, (argbColor >> 8) & 0xff, argbColor & 0xff, (argbColor >> 24) & 0xff);
     }
 
-    public static void line(final Matrix3x2fStack ps,
+    public static void line(final GuiGraphicsExtractor ps,
         final int x,
         final int y,
         final int xEnd,
@@ -351,26 +376,13 @@ public class UiRenderMacros
             return;
         }
 
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
-        if (alpha != 255)
-        {
-            RenderSystem.enableBlend();
-        }
-        else
-        {
-            RenderSystem.disableBlend();
-        }
-
-        final Matrix4f m = ps.last().pose();
-        final BufferBuilder buffer = Tesselator.getInstance().begin(Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
-        buffer.addVertex(m, x, y, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, xEnd, yEnd, 0).setColor(red, green, blue, alpha);
-        BufferUploader.drawWithShader(buffer.build());
-
-        RenderSystem.disableBlend();
+        submitNoTex(ps, GUI_POS_COLOR_LINES, x, y, xEnd - x, yEnd - y, (m, buffer) -> {
+            buffer.addVertexWith2DPose(m, x, y).setColor(red, green, blue, alpha);
+            buffer.addVertexWith2DPose(m, xEnd, yEnd).setColor(red, green, blue, alpha);
+        });
     }
 
-    public static void blit(final Matrix3x2fStack ps,
+    public static void blit(final GuiGraphicsExtractor ps,
         final Identifier rl,
         final int x,
         final int y,
@@ -381,10 +393,10 @@ public class UiRenderMacros
         final int mapW,
         final int mapH)
     {
-        blit(ps, rl, x, y, w, h, (float) u / mapW, (float) v / mapH, (float) (u + w) / mapW, (float) (v + h) / mapH);
+        blit(ps, rl, x, y, w, h, (float) u / mapW, (float) v / mapH, (float) (u + w) / mapW, (float) (v + h) / mapH, null);
     }
 
-    public static void blit(final Matrix3x2fStack ps,
+    public static void blit(final GuiGraphicsExtractor ps,
         final Identifier rl,
         final int x,
         final int y,
@@ -397,10 +409,10 @@ public class UiRenderMacros
         final int mapW,
         final int mapH)
     {
-        blit(ps, rl, x, y, w, h, (float) u / mapW, (float) v / mapH, (float) (u + uW) / mapW, (float) (v + vH) / mapH);
+        blit(ps, rl, x, y, w, h, (float) u / mapW, (float) v / mapH, (float) (u + uW) / mapW, (float) (v + vH) / mapH, null);
     }
 
-    public static void blitSprite(final Matrix3x2fStack ps,
+    public static void blitSprite(final GuiGraphicsExtractor ps,
         final TextureAtlasSprite sprite,
         final GuiSpriteScaling guiScaling,
         final int x,
@@ -408,65 +420,31 @@ public class UiRenderMacros
         final int w,
         final int h)
     {
-        final Identifier atlasLocation = sprite.atlasLocation();
-        final float u0 = sprite.getU0();
-        final float v0 = sprite.getV0();
-        final float u1 = sprite.getU1();
-        final float v1 = sprite.getV1();
-        if (guiScaling.type() == Type.STRETCH)
-        {
-            blit(ps, atlasLocation, x, y, w, h, u0, v0, u1, v1);
-        }
-        else if (guiScaling instanceof final NineSlice nineSlice)
-        {
-            final int rbW = nineSlice.width();
-            final int rbH = nineSlice.height();
-
-            if (rbW == w && rbH == h)
-            {
-                blit(ps, atlasLocation, x, y, w, h, u0, v0, u1, v1);
-            }
-            else
-            {
-                final int uR = nineSlice.border().left();
-                final int vR = nineSlice.border().top();
-                final int rW = rbW - uR - nineSlice.border().right();
-                final int rH = rbH - vR - nineSlice.border().bottom();
-                blitRepeatable(ps, atlasLocation, x, y, w, h, u0, v0, u1, v1, uR, vR, rW, rH, rbW, rbH);
-            }
-        }
-        else if (guiScaling instanceof final Tile tile)
-        {
-            final int tW = tile.width();
-            final int tH = tile.height();
-
-            if (tW == w && tH == h)
-            {
-                blit(ps, atlasLocation, x, y, w, h, u0, v0, u1, v1);
-            }
-            else
-            {
-                blitRepeatable(ps, atlasLocation, x, y, w, h, u0, v0, u1, v1, 0, 0, tW, tH, tW, tH);
-            }
-        }
+        resolveSprite(sprite, guiScaling).blit(ps, x, y, w, h);
     }
 
-    public static void blitSprite(final Matrix3x2fStack ps,
+    public static void blitSprite(final GuiGraphicsExtractor ps,
         final TextureAtlasSprite sprite,
         final int x,
         final int y,
         final int w,
         final int h)
     {
-        blit(ps, sprite.atlasLocation(), x, y, w, h, sprite.getU0(), sprite.getV0(), sprite.getU1(), sprite.getV1());
+        blit(ps, sprite.atlasLocation(), x, y, w, h, sprite.getU0(), sprite.getV0(), sprite.getU1(), sprite.getV1(), null);
     }
 
-    public static void blit(final Matrix3x2fStack ps, final Identifier rl, final int x, final int y, final int w, final int h)
+    public static void blit(final GuiGraphicsExtractor ps,
+        final Identifier rl,
+        final int x,
+        final int y,
+        final int w,
+        final int h,
+        @Nullable final IColour colorModulation)
     {
-        blit(ps, rl, x, y, w, h, 0.0f, 0.0f, 1.0f, 1.0f);
+        blit(ps, rl, x, y, w, h, 0.0f, 0.0f, 1.0f, 1.0f, colorModulation);
     }
 
-    public static void blit(final Matrix3x2fStack ps,
+    public static void blit(final GuiGraphicsExtractor ps,
         final Identifier rl,
         final int x,
         final int y,
@@ -475,23 +453,36 @@ public class UiRenderMacros
         final float uMin,
         final float vMin,
         final float uMax,
-        final float vMax)
+        final float vMax,
+        @Nullable final IColour colorModulation)
     {
-        RenderSystem.setShaderTexture(0, rl);
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-
-        final Matrix4f m = ps.last().pose();
-        final BufferBuilder buffer = Tesselator.getInstance().begin(Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_TEX);
-        buffer.addVertex(m, x, y, 0).setUv(uMin, vMin);
-        buffer.addVertex(m, x, y + h, 0).setUv(uMin, vMax);
-        buffer.addVertex(m, x + w, y + h, 0).setUv(uMax, vMax);
-        buffer.addVertex(m, x + w, y, 0).setUv(uMax, vMin);
-        BufferUploader.drawWithShader(buffer.build());
+        if (colorModulation == null)
+        {
+            submitBlit(ps,
+                GUI_POS_TEX_TRIANGLES,
+                x,
+                y,
+                w,
+                h,
+                rl,
+                (m, buffer) -> populateBlitTriangles(buffer, m, x, x + w, y, y + h, uMin, uMax, vMin, vMax));
+        }
+        else
+        {
+            // TODO: this would normally use uniform 'colorModulator', but vanilla doesn't expose it to gui yet
+            submitBlit(ps,
+                GUI_POS_TEX_COLOR_TRIANGLES,
+                x,
+                y,
+                w,
+                h,
+                rl,
+                (m, buffer) -> populateBlitTriangles(buffer, m, x, x + w, y, y + h, uMin, uMax, vMin, vMax, colorModulation));
+        }
     }
 
     /**
-     * Draws texture without scaling so one texel is one pixel, using repeatable texture center. TODO: Nightenom - rework to better
-     * algoritm from pgr, also texture extensions?
+     * Draws texture without scaling so one texel is one pixel, using repeatable texture center.
      *
      * @param ps              MatrixStack
      * @param rl              image ResLoc
@@ -503,14 +494,10 @@ public class UiRenderMacros
      * @param vMin            texture start offset [normalized texels]
      * @param uMax            texture end offset [normalized texels]
      * @param vMax            texture end offset [normalized texels]
-     * @param uRepeat         offset relative to u, v [texels], smaller than uWidth
-     * @param vRepeat         offset relative to u, v [texels], smaller than vHeight
-     * @param repeatWidth     size of repeatable part in texture [texels], smaller than or equal repeatBoxWidth - uRepeat
-     * @param repeatHeight    size of repeatable part in texture [texels], smaller than or equal repeatBoxHeight - vRepeat
-     * @param repeatBoxWidth  size of entire repeatable box (borders + repeat part) [texels]
-     * @param repeatBoxHeight size of entire repeatable box (borders + repeat part) [texels]
+     * @param nineSlice       repeatable box definition [texels]
+     * @param colorModulation texture color modulation
      */
-    protected static void blitRepeatable(final Matrix3x2fStack ps,
+    public static void blitRepeatable(final GuiGraphicsExtractor ps,
         final Identifier rl,
         final int x,
         final int y,
@@ -520,95 +507,135 @@ public class UiRenderMacros
         final float vMin,
         final float uMax,
         final float vMax,
-        final int uRepeat,
-        final int vRepeat,
-        final int repeatWidth,
-        final int repeatHeight,
-        final int repeatBoxWidth,
-        final int repeatBoxHeight)
+        final NineSlice nineSlice,
+        final IColour colorModulation)
     {
-        if (uRepeat < 0 || vRepeat < 0 ||
-            uRepeat >= repeatBoxWidth ||
-            vRepeat >= repeatBoxHeight ||
-            repeatWidth < 1 ||
-            repeatHeight < 1 ||
-            repeatWidth > repeatBoxWidth - uRepeat ||
-            repeatHeight > repeatBoxHeight - vRepeat)
+        if (nineSlice.border().left() < 0 || nineSlice.border().right() < 0 ||
+            nineSlice.border().top() < 0 ||
+            nineSlice.border().bottom() < 0)
         {
-            throw new IllegalArgumentException("Repeatable box is outside of texture box");
+            throw new IllegalArgumentException("Negative nineSlice borders");
+        }
+        if (nineSlice.border().left() + nineSlice.border().right() > nineSlice.width() ||
+            nineSlice.border().top() + nineSlice.border().bottom() > nineSlice.height())
+        {
+            throw new IllegalArgumentException("NineSlice borders greater than box");
         }
 
-        final int repeatCountX = Math.max(1, Math.max(0, width - (repeatBoxWidth - repeatWidth)) / repeatWidth);
-        final int repeatCountY = Math.max(1, Math.max(0, height - (repeatBoxHeight - repeatHeight)) / repeatHeight);
-        final float uTexelWidth = (uMax - uMin) / repeatBoxWidth;
-        final float vTexelHeight = (vMax - vMin) / repeatBoxHeight;
-
-        final Matrix4f mat = ps.last().pose();
-        final BufferBuilder buffer = Tesselator.getInstance().begin(Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX);
-
-        // main
-        for (int i = 0; i < repeatCountX; i++)
+        if (nineSlice.width() == width && nineSlice.height() == height)
         {
-            final int uAdjust = i == 0 ? 0 : uRepeat;
-            final int xStart = x + uAdjust + i * repeatWidth;
-            final int w = Math.min(repeatWidth + uRepeat - uAdjust, width - (repeatBoxWidth - uRepeat - repeatWidth));
-            final float minU = uMin + uTexelWidth * uAdjust;
-            final float maxU = minU + uTexelWidth * w;
+            blit(ps, rl, x, y, width, height, uMin, vMin, uMax, vMax, colorModulation);
+            return;
+        }
 
+        submitBlit(ps, GUI_POS_TEX_TRIANGLES, x, y, width, height, rl, (m, b) -> {
+            final IColour c = Objects.requireNonNullElse(colorModulation, NOOP_COLOUR);
+
+            // nineSlice w/h is in UV [0,1]
+            // nineSlice assumes texel = pixel
+
+            final int lrBorder = nineSlice.border().left() + nineSlice.border().right();
+            final int tbBorder = nineSlice.border().top() + nineSlice.border().bottom();
+
+            // pixels
+            final int xAdjust = nineSlice.border().left();
+            final int yAdjust = nineSlice.border().top();
+            final int pixWidth = nineSlice.width() - lrBorder;
+            final int pixHeight = nineSlice.height() - tbBorder;
+
+            final int repeatCountX = Math.max(0, width - lrBorder) / pixWidth;
+            final int repeatCountY = Math.max(0, height - tbBorder) / pixHeight;
+
+            // corners
+
+            final int x0 = x;
+            final int x1 = x + xAdjust;
+            final int x2normal = xAdjust + repeatCountX * pixWidth;
+            final int x2stretched = width - xAdjust;
+            final int x2 = x + (nineSlice.stretchInner() ? x2stretched : x2normal);
+            final int x3 = x + width;
+
+            final int y0 = y;
+            final int y1 = y + yAdjust;
+            final int y2normal = yAdjust + repeatCountY * pixHeight;
+            final int y2stretched = height - yAdjust;
+            final int y2 = y + (nineSlice.stretchInner() ? y2stretched : y2normal);
+            final int y3 = y + height;
+
+            final float u0 = uMin;
+            final float u1 = Mth.lerp((float) nineSlice.border().left() / nineSlice.width(), uMin, uMax);
+            final float u2stretchFix = nineSlice.stretchInner() ? 0 : x2stretched - x2normal;
+            final float u2 = Mth.lerp(1.0f - (nineSlice.border().right() + u2stretchFix) / nineSlice.width(), uMin, uMax);
+            final float u3 = uMax;
+
+            final float v0 = vMin;
+            final float v1 = Mth.lerp((float) nineSlice.border().top() / nineSlice.height(), vMin, vMax);
+            final float v2stretchFix = nineSlice.stretchInner() ? 0 : y2stretched - y2normal;
+            final float v2 = Mth.lerp(1.0f - (nineSlice.border().bottom() + v2stretchFix) / nineSlice.height(), vMin, vMax);
+            final float v3 = vMax;
+
+            populateBlitTriangles(b, m, x0, x1, y0, y1, u0, u1, v0, v1, c);
+            populateBlitTriangles(b, m, x0, x1, y2, y3, u0, u1, v2, v3, c);
+            populateBlitTriangles(b, m, x2, x3, y0, y1, u2, u3, v0, v1, c);
+            populateBlitTriangles(b, m, x2, x3, y2, y3, u2, u3, v2, v3, c);
+
+            // tiles
+
+            final float uS = u1;
+            final float uE = Mth.lerp(1.0f - (float) nineSlice.border().right() / nineSlice.width(), uMin, uMax);
+            final float vS = v1;
+            final float vE = Mth.lerp(1.0f - (float) nineSlice.border().bottom() / nineSlice.height(), vMin, vMax);
+
+            // stretch single tile
+            if (nineSlice.stretchInner())
+            {
+                final int xS = x1, xE = x2;
+                final int yS = y1, yE = y2;
+
+                // in same order as fori
+                populateBlitTriangles(b, m, xS, xE, y0, y1, uS, uE, v0, v1, c);
+                populateBlitTriangles(b, m, xS, xE, y2, y3, uS, uE, v2, v3, c);
+
+                populateBlitTriangles(b, m, xS, xE, yS, yE, uS, uE, vS, vE, c);
+
+                populateBlitTriangles(b, m, x0, x1, yS, yE, u0, u1, vS, vE, c);
+                populateBlitTriangles(b, m, x2, x3, yS, yE, u2, u3, vS, vE, c);
+                return;
+            }
+            // else draw tiling
+
+            // center and top & bot edges
+            for (int i = 0; i < repeatCountX; i++)
+            {
+                final int xS = x1 + i * pixWidth;
+                final int xE = xS + pixWidth;
+
+                populateBlitTriangles(b, m, xS, xE, y0, y1, uS, uE, v0, v1, c);
+                populateBlitTriangles(b, m, xS, xE, y2, y3, uS, uE, v2, v3, c);
+
+                for (int j = 0; j < repeatCountY; j++)
+                {
+                    final int yS = y1 + j * pixHeight;
+                    final int yE = yS + pixHeight;
+
+                    populateBlitTriangles(b, m, xS, xE, yS, yE, uS, uE, vS, vE, c);
+                }
+            }
+
+            // left & right edges
             for (int j = 0; j < repeatCountY; j++)
             {
-                final int vAdjust = j == 0 ? 0 : vRepeat;
-                final int yStart = y + vAdjust + j * repeatHeight;
-                final int h = Math.min(repeatHeight + vRepeat - vAdjust, height - (repeatBoxHeight - vRepeat - repeatHeight));
-                final float minV = vMin + vTexelHeight * vAdjust;
-                final float maxV = minV + vTexelHeight * h;
+                final int yS = y1 + j * pixHeight;
+                final int yE = yS + pixHeight;
 
-                populateBlitTriangles(buffer, mat, xStart, xStart + w, yStart, yStart + h, minU, maxU, minV, maxV);
+                populateBlitTriangles(b, m, x0, x1, yS, yE, u0, u1, vS, vE, c);
+                populateBlitTriangles(b, m, x2, x3, yS, yE, u2, u3, vS, vE, c);
             }
-        }
-
-        final int xEnd = x + Math.min(uRepeat + repeatCountX * repeatWidth, width - (repeatBoxWidth - uRepeat - repeatWidth));
-        final int yEnd = y + Math.min(vRepeat + repeatCountY * repeatHeight, height - (repeatBoxHeight - vRepeat - repeatHeight));
-        final int uLeft = width - (xEnd - x);
-        final int vBot = height - (yEnd - y);
-        final float restMinU = uMax - uLeft * uTexelWidth;
-        final float restMinV = vMax - vBot * vTexelHeight;
-
-        // bot border
-        for (int i = 0; i < repeatCountX; i++)
-        {
-            final int uAdjust = i == 0 ? 0 : uRepeat;
-            final int xStart = x + uAdjust + i * repeatWidth;
-            final int w = Math.min(repeatWidth + uRepeat - uAdjust, width - uLeft);
-            final float minU = uMin + uTexelWidth * uAdjust;
-            final float maxU = minU + uTexelWidth * w;
-
-            populateBlitTriangles(buffer, mat, xStart, xStart + w, yEnd, yEnd + vBot, minU, maxU, restMinV, vMax);
-        }
-
-        // left border
-        for (int j = 0; j < repeatCountY; j++)
-        {
-            final int vAdjust = j == 0 ? 0 : vRepeat;
-            final int yStart = y + vAdjust + j * repeatHeight;
-            final int h = Math.min(repeatHeight + vRepeat - vAdjust, height - vBot);
-            final float minV = vMin + vTexelHeight * vAdjust;
-            final float maxV = minV + vTexelHeight * h;
-
-            populateBlitTriangles(buffer, mat, xEnd, xEnd + uLeft, yStart, yStart + h, restMinU, uMax, minV, maxV);
-        }
-
-        // bot left corner
-        populateBlitTriangles(buffer, mat, xEnd, xEnd + uLeft, yEnd, yEnd + vBot, restMinU, uMax, restMinV, vMax);
-
-        RenderSystem.setShaderTexture(0, rl);
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-
-        BufferUploader.drawWithShader(buffer.build());
+        });
     }
 
-    public static void populateFillTriangles(final Matrix4f m,
-        final BufferBuilder buffer,
+    public static void populateFillTriangles(final Matrix3x2f m,
+        final VertexConsumer buffer,
         final int x,
         final int y,
         final int w,
@@ -618,16 +645,21 @@ public class UiRenderMacros
         final int blue,
         final int alpha)
     {
-        buffer.addVertex(m, x, y, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x, y + h, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x + w, y, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x + w, y, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x, y + h, 0).setColor(red, green, blue, alpha);
-        buffer.addVertex(m, x + w, y + h, 0).setColor(red, green, blue, alpha);
+        if (w == 0 || h == 0)
+        {
+            return;
+        }
+
+        buffer.addVertexWith2DPose(m, x, y).setColor(red, green, blue, alpha);
+        buffer.addVertexWith2DPose(m, x, y + h).setColor(red, green, blue, alpha);
+        buffer.addVertexWith2DPose(m, x + w, y).setColor(red, green, blue, alpha);
+        buffer.addVertexWith2DPose(m, x + w, y).setColor(red, green, blue, alpha);
+        buffer.addVertexWith2DPose(m, x, y + h).setColor(red, green, blue, alpha);
+        buffer.addVertexWith2DPose(m, x + w, y + h).setColor(red, green, blue, alpha);
     }
 
-    public static void populateFillGradientTriangles(final Matrix4f m,
-        final BufferBuilder buffer,
+    public static void populateFillGradientTriangles(final Matrix3x2f m,
+        final VertexConsumer buffer,
         final int x,
         final int y,
         final int w,
@@ -641,16 +673,21 @@ public class UiRenderMacros
         final int alphaStart,
         final int alphaEnd)
     {
-        buffer.addVertex(m, x, y, 0).setColor(redStart, greenStart, blueStart, alphaStart);
-        buffer.addVertex(m, x, y + h, 0).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
-        buffer.addVertex(m, x + w, y, 0).setColor(redStart, greenStart, blueStart, alphaStart);
-        buffer.addVertex(m, x + w, y, 0).setColor(redStart, greenStart, blueStart, alphaStart);
-        buffer.addVertex(m, x, y + h, 0).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
-        buffer.addVertex(m, x + w, y + h, 0).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
+        if (w == 0 || h == 0)
+        {
+            return;
+        }
+
+        buffer.addVertexWith2DPose(m, x, y).setColor(redStart, greenStart, blueStart, alphaStart);
+        buffer.addVertexWith2DPose(m, x, y + h).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
+        buffer.addVertexWith2DPose(m, x + w, y).setColor(redStart, greenStart, blueStart, alphaStart);
+        buffer.addVertexWith2DPose(m, x + w, y).setColor(redStart, greenStart, blueStart, alphaStart);
+        buffer.addVertexWith2DPose(m, x, y + h).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
+        buffer.addVertexWith2DPose(m, x + w, y + h).setColor(redEnd, greenEnd, blueEnd, alphaEnd);
     }
 
-    public static void populateBlitTriangles(final BufferBuilder buffer,
-        final Matrix4f mat,
+    public static void populateBlitTriangles(final VertexConsumer buffer,
+        final Matrix3x2f mat,
         final float xStart,
         final float xEnd,
         final float yStart,
@@ -660,12 +697,17 @@ public class UiRenderMacros
         final float vMin,
         final float vMax)
     {
-        buffer.addVertex(mat, xStart, yStart, 0).setUv(uMin, vMin);
-        buffer.addVertex(mat, xStart, yEnd, 0).setUv(uMin, vMax);
-        buffer.addVertex(mat, xEnd, yStart, 0).setUv(uMax, vMin);
-        buffer.addVertex(mat, xEnd, yStart, 0).setUv(uMax, vMin);
-        buffer.addVertex(mat, xStart, yEnd, 0).setUv(uMin, vMax);
-        buffer.addVertex(mat, xEnd, yEnd, 0).setUv(uMax, vMax);
+        if (xStart == xEnd || yStart == yEnd)
+        {
+            return;
+        }
+
+        buffer.addVertexWith2DPose(mat, xStart, yStart).setUv(uMin, vMin);
+        buffer.addVertexWith2DPose(mat, xStart, yEnd).setUv(uMin, vMax);
+        buffer.addVertexWith2DPose(mat, xEnd, yStart).setUv(uMax, vMin);
+        buffer.addVertexWith2DPose(mat, xEnd, yStart).setUv(uMax, vMin);
+        buffer.addVertexWith2DPose(mat, xStart, yEnd).setUv(uMin, vMax);
+        buffer.addVertexWith2DPose(mat, xEnd, yEnd).setUv(uMax, vMax);
     }
 
     /**
@@ -733,11 +775,39 @@ public class UiRenderMacros
         }
         poseStack.popPose();
         Lighting.setupFor3DItems();
+    public static void populateBlitTriangles(final VertexConsumer buffer,
+        final Matrix3x2f mat,
+        final float xStart,
+        final float xEnd,
+        final float yStart,
+        final float yEnd,
+        final float uMin,
+        final float uMax,
+        final float vMin,
+        final float vMax,
+        final IColour color)
+    {
+        if (xStart == xEnd || yStart == yEnd)
+        {
+            return;
+        }
+
+        buffer.addVertexWith2DPose(mat, xStart, yStart).setUv(uMin, vMin);
+        color.writeIntoBuffer(buffer);
+        buffer.addVertexWith2DPose(mat, xStart, yEnd).setUv(uMin, vMax);
+        color.writeIntoBuffer(buffer);
+        buffer.addVertexWith2DPose(mat, xEnd, yStart).setUv(uMax, vMin);
+        color.writeIntoBuffer(buffer);
+        buffer.addVertexWith2DPose(mat, xEnd, yStart).setUv(uMax, vMin);
+        color.writeIntoBuffer(buffer);
+        buffer.addVertexWith2DPose(mat, xStart, yEnd).setUv(uMin, vMax);
+        color.writeIntoBuffer(buffer);
+        buffer.addVertexWith2DPose(mat, xEnd, yEnd).setUv(uMax, vMax);
+        color.writeIntoBuffer(buffer);
     }
 
     /**
      * @return rendering lambda detached from sprite and guiScaling instances
-     * @implNote same as logic {@link #blitSprite(Matrix3x2fStack, TextureAtlasSprite, GuiSpriteScaling, int, int, int, int)}
      */
     public static ResolvedBlit resolveSprite(final TextureAtlasSprite sprite, final GuiSpriteScaling guiScaling)
     {
@@ -748,43 +818,16 @@ public class UiRenderMacros
         final float v1 = sprite.getV1();
         if (guiScaling.type() == Type.STRETCH)
         {
-            return (ps, x, y, w, h) -> blit(ps, atlasLocation, x, y, w, h, u0, v0, u1, v1);
+            return (ps, x, y, w, h, c) -> blit(ps, atlasLocation, x, y, w, h, u0, v0, u1, v1, c);
         }
         else if (guiScaling instanceof final NineSlice nineSlice)
         {
-            final int rbW = nineSlice.width();
-            final int rbH = nineSlice.height();
-            final int uR = nineSlice.border().left();
-            final int vR = nineSlice.border().top();
-            final int rW = rbW - uR - nineSlice.border().right();
-            final int rH = rbH - vR - nineSlice.border().bottom();
-
-            return (ps, x, y, w, h) -> {
-                if (rbW == w && rbH == h)
-                {
-                    blit(ps, atlasLocation, x, y, w, h, u0, v0, u1, v1);
-                }
-                else
-                {
-                    blitRepeatable(ps, atlasLocation, x, y, w, h, u0, v0, u1, v1, uR, vR, rW, rH, rbW, rbH);
-                }
-            };
+            return (ps, x, y, w, h, c) -> blitRepeatable(ps, atlasLocation, x, y, w, h, u0, v0, u1, v1, nineSlice, c);
         }
         else if (guiScaling instanceof final Tile tile)
         {
-            final int tW = tile.width();
-            final int tH = tile.height();
-
-            return (ps, x, y, w, h) -> {
-                if (tW == w && tH == h)
-                {
-                    blit(ps, atlasLocation, x, y, w, h, u0, v0, u1, v1);
-                }
-                else
-                {
-                    blitRepeatable(ps, atlasLocation, x, y, w, h, u0, v0, u1, v1, 0, 0, tW, tH, tW, tH);
-                }
-            };
+            final NineSlice nineSlice = new NineSlice(tile.width(), tile.height(), new NineSlice.Border(0, 0, 0, 0), false);
+            return (ps, x, y, w, h, c) -> blitRepeatable(ps, atlasLocation, x, y, w, h, u0, v0, u1, v1, nineSlice, c);
         }
         if (!FMLEnvironment.isProduction())
         {
@@ -799,8 +842,167 @@ public class UiRenderMacros
     @FunctionalInterface
     public static interface ResolvedBlit
     {
-        public static final ResolvedBlit EMPTY = (ps, x, y, w, h) -> {};
+        public static final ResolvedBlit EMPTY = (ps, x, y, w, h, c) -> {};
 
-        void blit(Matrix3x2fStack ps, int x, int y, int w, int h);
+        void blit(GuiGraphicsExtractor ps, int x, int y, int w, int h, @Nullable IColour colorModulation);
+
+        default void blit(final GuiGraphicsExtractor ps, final int x, final int y, final int w, final int h)
+        {
+            blit(ps, x, y, w, h, colorModulation());
+        }
+
+        @Nullable
+        default IColour colorModulation()
+        {
+            return null;
+        }
+
+        default ResolvedBlitWithColorModulation withColorModulation(final IColour colorModulation)
+        {
+            return new ResolvedBlitWithColorModulation(this, colorModulation);
+        }
     }
+
+    public static record ResolvedBlitWithColorModulation(ResolvedBlit blit, IColour colorModulation) implements ResolvedBlit
+    {
+        @Override
+        public void blit(final GuiGraphicsExtractor ps,
+            final int x,
+            final int y,
+            final int w,
+            final int h,
+            @Nullable final IColour colorModulation)
+        {
+            blit.blit(ps, x, y, w, h, colorModulation);
+        }
+    }
+
+    public static void submitNoTex(final GuiGraphicsExtractor target,
+        final RenderPipeline pipeline,
+        final int x,
+        final int y,
+        final int w,
+        final int h,
+        final BiConsumer<Matrix3x2f, VertexConsumer> task)
+    {
+        submit(target, pipeline, x, y, w, h, task, TextureSetup.noTexture());
+    }
+
+    public static void submitBlit(final GuiGraphicsExtractor target,
+        final RenderPipeline pipeline,
+        final int x,
+        final int y,
+        final int w,
+        final int h,
+        final Identifier texResLoc,
+        final BiConsumer<Matrix3x2f, VertexConsumer> task)
+    {
+        final AbstractTexture texture = target.minecraft.getTextureManager().getTexture(texResLoc);
+        submit(target, pipeline, x, y, w, h, task, TextureSetup.singleTexture(texture.getTextureView(), texture.getSampler()));
+    }
+
+    public static void submit(final GuiGraphicsExtractor target,
+        final RenderPipeline pipeline,
+        final int x,
+        final int y,
+        final int w,
+        final int h,
+        final BiConsumer<Matrix3x2f, VertexConsumer> task,
+        final TextureSetup texture)
+    {
+        innerSubmit(target,
+            x,
+            y,
+            w,
+            h,
+            (pose, bounds, scissors) -> target.submitGuiElementRenderState(
+                new UiRenderMacrosGuiElementRenderState(pose, task, pipeline, texture, bounds, scissors)));
+    }
+
+    public static <T> void innerSubmit(final GuiGraphicsExtractor target,
+        final int x,
+        final int y,
+        final int w,
+        final int h,
+        final SubmitTask task)
+    {
+        final Matrix3x2f pose = new Matrix3x2f(target.pose());
+        final ScreenRectangle scissors = target.peekScissorStack();
+
+        ScreenRectangle bounds = new ScreenRectangle(x, y, w, h);
+        bounds = bounds.transformMaxBounds(pose);
+        bounds = scissors == null ? bounds : scissors.intersection(bounds);
+
+        if (bounds != null)
+        {
+            task.submit(pose, bounds, scissors);
+        }
+    }
+
+    @FunctionalInterface
+    public static interface SubmitTask
+    {
+        void submit(Matrix3x2f pose, ScreenRectangle bounds, ScreenRectangle scissors);
+    }
+
+    public record UiRenderMacrosGuiElementRenderState(Matrix3x2f pose,
+        BiConsumer<Matrix3x2f, VertexConsumer> task,
+        RenderPipeline pipeline,
+        TextureSetup textureSetup,
+        @Nullable ScreenRectangle bounds,
+        @Nullable ScreenRectangle scissorArea) implements GuiElementRenderState
+    {
+        @Override
+        public void buildVertices(final VertexConsumer vertexConsumer)
+        {
+            task.accept(pose(), vertexConsumer);
+        }
+    }
+
+    }
+
+    public static final IColour NOOP_COLOUR = new IColour()
+    {
+        @Override
+        public int red()
+        {
+            return 0;
+        }
+
+        @Override
+        public int green()
+        {
+            return 0;
+        }
+
+        @Override
+        public int blue()
+        {
+            return 0;
+        }
+
+        @Override
+        public int alpha()
+        {
+            return 0;
+        }
+
+        @Override
+        public int argb()
+        {
+            return 0;
+        }
+
+        @Override
+        public int rgba()
+        {
+            return 0;
+        }
+
+        @Override
+        public void writeIntoBuffer(VertexConsumer buffer)
+        {
+            // intentionally skip
+        }
+    };
 }

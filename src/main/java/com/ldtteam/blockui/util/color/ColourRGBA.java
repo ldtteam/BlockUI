@@ -5,28 +5,33 @@ package com.ldtteam.blockui.util.color;
  */
 public record ColourRGBA(int rgba) implements IColour
 {
+    public ColourRGBA(int rgb, int alpha)
+    {
+        this((rgb << 8) | (alpha & MAX_INT_VALUE));
+    }
+
     @Override
     public int red()
     {
-        return (rgba >> 24) & 0xff;
+        return (rgba >> 24) & MAX_INT_VALUE;
     }
 
     @Override
     public int green()
     {
-        return (rgba >> 16) & 0xff;
+        return (rgba >> 16) & MAX_INT_VALUE;
     }
 
     @Override
     public int blue()
     {
-        return (rgba >> 8) & 0xff;
+        return (rgba >> 8) & MAX_INT_VALUE;
     }
 
     @Override
     public int alpha()
     {
-        return (rgba >> 0) & 0xff;
+        return (rgba >> 0) & MAX_INT_VALUE;
     }
 
     @Override

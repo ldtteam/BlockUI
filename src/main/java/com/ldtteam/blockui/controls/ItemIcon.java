@@ -9,11 +9,11 @@ import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
 import com.ldtteam.blockui.util.SpacerTextComponent;
 import com.ldtteam.blockui.util.ToggleableTextComponent;
-import com.mojang.blaze3d.systems.RenderSystem;
-import org.joml.Matrix3x2fStack;
+import com.ldtteam.common.util.BlockToItemHelper;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.core.Holder.Reference;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -24,8 +24,10 @@ import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.block.AirBlock;
+import net.neoforged.neoforge.client.ClientTooltipFlag;
 import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix3x2fStack;
 import java.util.Collections;
 import java.util.List;
 
@@ -34,6 +36,7 @@ import java.util.List;
  */
 public class ItemIcon extends Pane
 {
+    protected static final int DEFAULT_ITEMSTACK_SIZE_I = 16;
     protected static final float DEFAULT_ITEMSTACK_SIZE = 16f;
     protected static final MutableComponent FIX_VANILLA_TOOLTIP = SpacerTextComponent.of(1);
 
@@ -69,7 +72,7 @@ public class ItemIcon extends Pane
         final Identifier itemName = params.getResource("item");
         if (itemName != null)
         {
-            final Item item = BuiltInRegistries.ITEM.get(itemName);
+            final Item item = BuiltInRegistries.ITEM.get(itemName).map(Reference::value).orElse(null);
             if (item != null)
             {
                 setItem(item.getDefaultInstance());
@@ -190,14 +193,12 @@ public class ItemIcon extends Pane
             ms.translate(x, y);
             ms.scale(this.getWidth() / DEFAULT_ITEMSTACK_SIZE, this.getHeight() / DEFAULT_ITEMSTACK_SIZE);
 
-            target.renderItem(itemStack, 0, 0);
+            target.item(itemStack, 0, 0);
             if (renderItemDecorations)
             {
                 target.renderItemDecorations(itemStack, 0, 0);
             }
 
-            RenderSystem.defaultBlendFunc();
-            RenderSystem.disableBlend();
             ms.popMatrix();
         }
     }
@@ -287,8 +288,8 @@ public class ItemIcon extends Pane
         if (prevTooltipSize != tooltipList.size())
         {
             // add "show more info" text
-            tooltipList.add(ToggleableTextComponent.ofNegated(Screen::hasShiftDown, Component.empty()));
-            tooltipList.add(ToggleableTextComponent.ofNegated(Screen::hasShiftDown,
+            tooltipList.add(ToggleableTextComponent.ofNegated(mc::hasShiftDown, Component.empty()));
+            tooltipList.add(ToggleableTextComponent.ofNegated(mc::hasShiftDown,
                 Component.translatable("blockui.tooltip.item_additional_info", Component.translatable("key.keyboard.left.shift"))
                     .withStyle(ChatFormatting.GOLD)));
         }
@@ -297,13 +298,13 @@ public class ItemIcon extends Pane
         return tooltipList;
     }
 
-    protected static MutableComponent wrapShift(final MutableComponent wrapped)
+    protected MutableComponent wrapShift(final MutableComponent wrapped)
     {
-        return ToggleableTextComponent.of(Screen::hasShiftDown, wrapped);
+        return ToggleableTextComponent.of(mc::hasShiftDown, wrapped);
     }
 
-    protected static MutableComponent wrapShift(final MutableComponent wrapped, final boolean shouldWrap)
+    protected MutableComponent wrapShift(final MutableComponent wrapped, final boolean shouldWrap)
     {
-        return shouldWrap ? ToggleableTextComponent.of(Screen::hasShiftDown, wrapped) : wrapped;
+        return shouldWrap ? ToggleableTextComponent.of(mc::hasShiftDown, wrapped) : wrapped;
     }
 }

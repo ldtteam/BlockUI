@@ -3,7 +3,7 @@ package com.ldtteam.blockui.util.color;
 /**
  * Colour backed by four separated channel values. Generally good choice for rendering related things
  */
-public record ColourQuartet(int red, int green, int blue, int alpha) implements IColour
+public record ColourQuartet4i(int red, int green, int blue, int alpha) implements IColour
 {
     @Override
     public int argb()
@@ -18,7 +18,7 @@ public record ColourQuartet(int red, int green, int blue, int alpha) implements 
     }
 
     @Override
-    public ColourQuartet asQuartet()
+    public ColourQuartet4i asIntQuartet()
     {
         return this;
     }

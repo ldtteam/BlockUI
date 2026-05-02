@@ -1,9 +1,24 @@
 package com.ldtteam.blockui.util.color;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.network.chat.TextColor;
 
 public interface IColour
 {
+    // channel transformations
+    public static final float MAX_FLOAT_VALUE = 255.0f;
+    public static final int MAX_INT_VALUE = 255;
+
+    public static float asFloat(final int value)
+    {
+        return value / MAX_FLOAT_VALUE;
+    }
+
+    public static int asInt(final float value)
+    {
+        return (int) Math.floor(value * MAX_FLOAT_VALUE);
+    }
+
     /**
      * @return red channel only, range 0-255
      */
@@ -29,7 +44,7 @@ public interface IColour
      */
     default float alphaF()
     {
-        return alpha() / 255.0f;
+        return alpha() / MAX_FLOAT_VALUE;
     }
 
     /**
@@ -45,9 +60,17 @@ public interface IColour
     /**
      * @return quartet instance or this instance (if already in quartet format)
      */
-    default ColourQuartet asQuartet()
+    default ColourQuartet4i asIntQuartet()
     {
-        return new ColourQuartet(red(), green(), blue(), alpha());
+        return new ColourQuartet4i(red(), green(), blue(), alpha());
+    }
+
+    /**
+     * @return quartet instance or this instance (if already in quartet format)
+     */
+    default ColourQuartet4f asFloatQuartet()
+    {
+        return new ColourQuartet4f(red(), green(), blue(), alpha());
     }
 
     /**
@@ -73,4 +96,54 @@ public interface IColour
     {
         buffer.setColor(red(), green(), blue(), alpha());
     }
+
+    default TextColor toTextColor()
+    {
+        return TextColor.fromRgb(argb());
+    }
+
+    public static final IColour ZERO = new IColour()
+    {
+        @Override
+        public int red()
+        {
+            return 0;
+        }
+
+        @Override
+        public int green()
+        {
+            return 0;
+        }
+
+        @Override
+        public int blue()
+        {
+            return 0;
+        }
+
+        @Override
+        public int alpha()
+        {
+            return 0;
+        }
+
+        @Override
+        public int argb()
+        {
+            return 0;
+        }
+
+        @Override
+        public int rgba()
+        {
+            return 0;
+        }
+
+        @Override
+        public void writeIntoBuffer(VertexConsumer buffer)
+        {
+            // intentionally skip
+        }
+    };
 }

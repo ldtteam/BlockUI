@@ -3,19 +3,12 @@ package com.ldtteam.blockui.controls;
 import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
-import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.util.cursor.Cursor;
 import com.ldtteam.blockui.views.View;
-import com.mojang.blaze3d.platform.GlStateManager.LogicOp;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -29,8 +22,8 @@ public class TextField extends Pane
     private static final int     DEFAULT_MAX_TEXT_LENGTH = 32;
     // Attributes
     protected            int     maxTextLength           = DEFAULT_MAX_TEXT_LENGTH;
-    protected            int     textColor               = 0xE0E0E0;
-    protected            int     textColorDisabled       = 0x707070;
+    protected            int     textColor               = 0xFFE0E0E0;
+    protected            int     textColorDisabled       = 0xFF707070;
     protected            boolean shadow                  = true;
     @Nullable
     protected            String  tabNextPaneID           = null;
@@ -389,7 +382,7 @@ public class TextField extends Pane
         {
             if (cursorBeforeEnd)
             {
-                fill(target.pose(), cursorX, drawY - 1, 1, 1 + mc.font.lineHeight, RECT_COLOR);
+                fill(target, cursorX, drawY - 1, 1, 1 + mc.font.lineHeight, RECT_COLOR);
             }
             else
             {
@@ -415,21 +408,7 @@ public class TextField extends Pane
                 selectionEndX = x + width;
             }
 
-            final Matrix4f m = target.pose().last().pose();
-            RenderSystem.setShaderColor(0.0F, 0.0F, 1.0F, 1.0F);
-            RenderSystem.enableColorLogicOp();
-            RenderSystem.logicOp(LogicOp.OR_REVERSE);
-            RenderSystem.setShader(GameRenderer::getPositionShader);
-
-            final BufferBuilder vertexBuffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION);
-            vertexBuffer.addVertex(m, selectionStartX, drawY - 1, 0.0f);
-            vertexBuffer.addVertex(m, selectionStartX, drawY + 1 + mc.font.lineHeight, 0.0f);
-            vertexBuffer.addVertex(m, selectionEndX, drawY + 1 + mc.font.lineHeight, 0.0f);
-            vertexBuffer.addVertex(m, selectionEndX, drawY - 1, 0.0f);
-            BufferUploader.drawWithShader(vertexBuffer.build());
-
-            RenderSystem.disableColorLogicOp();
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+            target.textHighlight(selectionStartX, drawY - 1, selectionEndX, drawY + 1 + mc.font.lineHeight, true);
         }
     }
 

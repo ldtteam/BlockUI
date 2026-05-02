@@ -54,7 +54,7 @@ public class Box extends View
     @Override
     public void drawSelf(final BOGuiGraphics ms, final double mx, final double my)
     {
-        drawLineRect(ms.pose(), x, y, width, height, color, lineWidth);
+        drawLineRect(ms, x, y, width, height, color, lineWidth);
 
         super.drawSelf(ms, mx, my);
     }

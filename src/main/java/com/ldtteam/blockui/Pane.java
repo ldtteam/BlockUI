@@ -354,7 +354,7 @@ public class Pane extends UiRenderMacros
             {
                 final int color = wasCursorInPane ? 0xFF00FF00 : 0xFF0000FF;
 
-                drawLineRect(target.pose(), x, y, width, height, color);
+                drawLineRect(target, x, y, width, height, color);
 
                 if (wasCursorInPane && !id.isEmpty())
                 {

@@ -60,8 +60,6 @@ public class OverlayView extends View
      * Called when a key is pressed.
      * hide the view when ESC is pressed.
      *
-     * @param ch  the character.
-     * @param key the key.
      * @return false at all times - do nothing.
      */
     @Override

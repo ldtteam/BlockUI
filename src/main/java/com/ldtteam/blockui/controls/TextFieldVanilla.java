@@ -84,8 +84,8 @@ public class TextFieldVanilla extends TextField
         if (backgroundEnabled)
         {
             // Draw box
-            drawLineRect(ms, x - 1, y - 1, width + 2, height + 2, backgroundOuterColor);
-            fill(ms, x, y, width, height, backgroundInnerColor);
+            drawLineRect(target, x - 1, y - 1, width + 2, height + 2, backgroundOuterColor);
+            fill(target, x, y, width, height, backgroundInnerColor);
 
             ms.pushMatrix();
             ms.translate(BACKGROUND_X_TRANSLATE, (height - BACKGROUND_Y_TRANSLATE_OFFSET) / 2);

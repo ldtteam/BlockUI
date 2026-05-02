@@ -1,7 +1,8 @@
 package com.ldtteam.blockui.util.texture;
 
 import com.ldtteam.blockui.UiRenderMacros.ResolvedBlit;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.ldtteam.blockui.util.color.ColourQuartet4f;
+import com.ldtteam.blockui.util.color.IColour;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.resources.Identifier;
 import java.util.HashMap;
@@ -17,9 +18,11 @@ public record ResolvedWidgetSprites(ResolvedBlit enabled,
     ResolvedBlit enabledFocused,
     ResolvedBlit disabledFocused)
 {
-    public static float FOCUSED_MODULATOR = 1.1f;
-    public static float DISABLED_MODULATOR = 0.5f;
-    public static float DISABLED_FOCUSED_MODULATOR = 0.6f;
+    //public static IColour FOCUSED_MODULATOR = new ColourQuartet4f(1.1f, 1.1f, 1.1f, 1.0f);
+    // TODO: cannot do more than byte max (ie. 255), need shader and buffer support to use this
+    public static IColour FOCUSED_MODULATOR = new ColourQuartet4f(1.0f, 1.0f, 1.0f, 1.0f);
+    public static IColour NORMAL_MODULATOR = new ColourQuartet4f(0.91f, 0.91f, 0.91f, 1.0f);
+    public static IColour DISABLED_MODULATOR = new ColourQuartet4f(0.5f, 0.5f, 0.5f, 1.0f);
 
     /**
      * @return resolve given sprites using given resolver
@@ -42,7 +45,6 @@ public record ResolvedWidgetSprites(ResolvedBlit enabled,
      * @param isEnabled whether element is interactive
      * @param isFocused whether element is hovered/focused
      * @return correct blit and also applies shader color
-     * @see RenderSystem#setShaderColor(float, float, float, float)
      */
     public ResolvedBlit getAndPrepare(final boolean isEnabled, final boolean isFocused)
     {
@@ -50,34 +52,28 @@ public record ResolvedWidgetSprites(ResolvedBlit enabled,
         {
             if (isFocused)
             {
-                ifSameShaderColor(enabled, enabledFocused, FOCUSED_MODULATOR);
-                return enabledFocused;
+                return ifSameBlitModulateColor(enabled, enabledFocused, FOCUSED_MODULATOR);
             }
             else
             {
-                return enabled;
+                return enabled.withColorModulation(NORMAL_MODULATOR);
             }
         }
         else
         {
             if (isFocused)
             {
-                ifSameShaderColor(enabled, disabledFocused, DISABLED_MODULATOR);
-                return disabledFocused;
+                return ifSameBlitModulateColor(enabled, disabledFocused, DISABLED_MODULATOR);
             }
             else
             {
-                ifSameShaderColor(enabled, disabled, DISABLED_MODULATOR);
-                return disabled;
+                return ifSameBlitModulateColor(enabled, disabled, DISABLED_MODULATOR);
             }
         }
     }
 
-    private static void ifSameShaderColor(final ResolvedBlit a, final ResolvedBlit b, final float rgb)
+    private static ResolvedBlit ifSameBlitModulateColor(final ResolvedBlit test, final ResolvedBlit compared, final IColour modulator)
     {
-        if (a == b)
-        {
-            RenderSystem.setShaderColor(rgb, rgb, rgb, 1.0F);
-        }
+        return compared == test ? compared.withColorModulation(modulator) : compared;
     }
 }

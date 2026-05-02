@@ -3,8 +3,6 @@ package com.ldtteam.blockui.controls;
 import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.PaneParams;
 import net.minecraft.resources.Identifier;
-import net.neoforged.fml.loading.FMLEnvironment;
-import java.util.Objects;
 
 /**
  * Checkbox used for toggling a checkmark on and off.
@@ -58,6 +56,7 @@ public class CheckBox extends ButtonImage
     public void setCheckmarkImage(final Identifier loc)
     {
         this.checkmarkImage = loc;
+        requireNonNull(checkmarkImage, "Missing checkmark texture");
     }
 
     public Identifier getCheckmarkImage()
@@ -68,10 +67,7 @@ public class CheckBox extends ButtonImage
     @Override
     public void postDrawBackground(final BOGuiGraphics target, final double mx, final double my)
     {
-        if (!FMLEnvironment.isProduction())
-        {
-            Objects.requireNonNull(checkmarkImage, () -> "Missing checkmark source: " + id + " | " + window.getXmlResourceLocation());
-        }
+        requireNonNull(checkmarkImage, "Missing checkmark texture");
 
         if (!checked)
         {
@@ -83,7 +79,7 @@ public class CheckBox extends ButtonImage
             resolvedCheckmarkImage = Image.resolveBlit(checkmarkImage);
         }
 
-        resolvedCheckmarkImage.blit(target.pose(), x, y, width, height);
+        resolvedCheckmarkImage.blit(target, x, y, width, height);
     }
 
     /**

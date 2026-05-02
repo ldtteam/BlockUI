@@ -4,31 +4,22 @@ import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
 import com.ldtteam.blockui.util.SingleBlockGetter.SingleBlockNeighborhood;
 import com.ldtteam.blockui.util.cursor.Cursor;
 import com.mojang.blaze3d.platform.cursor.CursorType;
-import com.mojang.blaze3d.systems.RenderSystem;
-import org.joml.Matrix3x2fStack;
-import com.mojang.math.Axis;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.ItemBlockRenderTypes;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.core.BlockPos;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.renderer.block.BlockModelRenderState;
+import net.minecraft.client.renderer.block.model.BlockDisplayContext;
+import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
+import net.minecraft.client.renderer.item.ItemStackRenderState;
+import net.minecraft.client.renderer.state.gui.GuiRenderState;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.material.FluidState;
-import net.neoforged.neoforge.client.ClientHooks;
 import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix3f;
+import org.joml.Matrix3x2fStack;
 
-public class BOGuiGraphics extends GuiGraphics
+public class BOGuiGraphics extends GuiGraphicsExtractor
 {
     // Static instance should be fine since gui rendering is on single thread
     private static final SingleBlockNeighborhood NEIGHBORHOOD = new SingleBlockNeighborhood();
@@ -36,9 +27,9 @@ public class BOGuiGraphics extends GuiGraphics
     private int cursorMaxDepth = -1;
     private CursorType selectedCursor = Cursor.DEFAULT;
 
-    public BOGuiGraphics(final Minecraft mc, final Matrix3x2fStack ps, final BufferSource buffers)
+    public BOGuiGraphics(final Minecraft mc, final CountingMatrix3x2fStack ps, final GuiRenderState renderState, final int mx, final int my)
     {
-        super(mc, ps, buffers);
+        super(mc, ps, renderState, mx, my);
     }
 
     private Font getFont(@Nullable final ItemStack itemStack)
@@ -56,22 +47,23 @@ public class BOGuiGraphics extends GuiGraphics
 
     public void renderItemDecorations(final ItemStack itemStack, final int x, final int y)
     {
-        super.renderItemDecorations(getFont(itemStack), itemStack, x, y);
+        super.itemDecorations(getFont(itemStack), itemStack, x, y);
     }
 
     public void renderItemDecorations(final ItemStack itemStack, final int x, final int y, @Nullable final String altStackSize)
     {
-        super.renderItemDecorations(getFont(itemStack), itemStack, x, y, altStackSize);
+        super.itemDecorations(getFont(itemStack), itemStack, x, y, altStackSize);
     }
 
-    public int drawString(final String text, final float x, final float y, final int color)
+    public int drawString(final String text, final int x, final int y, final int color)
     {
         return drawString(text, x, y, color, false);
     }
 
-    public int drawString(final String text, final float x, final float y, final int color, final boolean shadow)
+    public int drawString(final String text, final int x, final int y, final int color, final boolean shadow)
     {
-        return super.drawString(minecraft.font, text, x, y, color, shadow);
+        super.text(minecraft.font, text, x, y, color, shadow);
+        return x + minecraft.font.width(text); // should return end pos
     }
 
     public void setCursor(final CursorType cursor)
@@ -100,7 +92,7 @@ public class BOGuiGraphics extends GuiGraphics
     }
 
     /**
-     * Render given blockState with model just like {@link #renderItem(ItemStack, int, int)}
+     * Render given blockState with model just like {@link #item(ItemStack, int, int)}
      *
      * @param data      blockState rendering data
      * @param itemStack backing itemStack for given blockState
@@ -177,21 +169,44 @@ public class BOGuiGraphics extends GuiGraphics
         pose().popPose();
     }
 
-    public void pushMvApplyPose()
+    public static double getAltSpeedFactor(final Minecraft mc)
     {
-        RenderSystem.getModelViewStack().pushMatrix();
-        RenderSystem.getModelViewStack().mul(pose().last().pose());
-        RenderSystem.applyModelViewMatrix();
+        return mc.hasAltDown() ? 5 : 1;
     }
 
-    public void popMvPose()
+    public ScreenRectangle calcTransformedPaneBounds(final Pane pane)
     {
-        RenderSystem.getModelViewStack().popMatrix();
-        RenderSystem.applyModelViewMatrix();
+        return new ScreenRectangle(0, 0, pane.getWidth(), pane.getHeight()).transformAxisAligned(pose());
     }
 
-    public static double getAltSpeedFactor()
+    public static class CountingMatrix3x2fStack extends Matrix3x2fStack
     {
-        return Screen.hasAltDown() ? 5 : 1;
+        private int size = 0;
+
+        public CountingMatrix3x2fStack(final int stackSize)
+        {
+            super(stackSize);
+        }
+
+        @Override
+        public Matrix3x2fStack clear()
+        {
+            size = 0;
+            return super.clear();
+        }
+
+        @Override
+        public Matrix3x2fStack popMatrix()
+        {
+            size--;
+            return super.popMatrix();
+        }
+
+        @Override
+        public Matrix3x2fStack pushMatrix()
+        {
+            size++;
+            return super.pushMatrix();
+        }
     }
 }

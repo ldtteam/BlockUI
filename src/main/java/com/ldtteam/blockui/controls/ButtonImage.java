@@ -5,13 +5,11 @@ import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.Parsers;
 import com.ldtteam.blockui.util.texture.ResolvedWidgetSprites;
-import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
-import net.neoforged.fml.loading.FMLEnvironment;
 
 import java.util.Objects;
 
@@ -27,9 +25,10 @@ public class ButtonImage extends Button
      */
     public static final int DEFAULT_BUTTON_WIDTH = 200;
     public static final int DEFAULT_BUTTON_HEIGHT = 20;
-    public static final int DEFAULT_ENABLED_COLOR = 0xFFFFFF;
-    public static final int DEFAULT_HOVER_COLOR = 0xFFFFA0;
-    public static final int DEFAULT_DISABLED_COLOR = 0xA0A0A0;
+    public static final int DEFAULT_ENABLED_COLOR = 0xFFFFFFFF;
+    @Deprecated(forRemoval = true, since = "26.1") // not used in vanilla anymore
+    public static final int DEFAULT_HOVER_COLOR = 0xFFFFFFA0;
+    public static final int DEFAULT_DISABLED_COLOR = 0xFFA0A0A0;
 
     protected WidgetSprites textures = VANILLA_BUTTON;
     protected ResolvedWidgetSprites resolvedTextures = null;
@@ -91,7 +90,7 @@ public class ButtonImage extends Button
         }
         textures = VANILLA_BUTTON;
         textColor = DEFAULT_ENABLED_COLOR;
-        textHoverColor = DEFAULT_HOVER_COLOR;
+        textHoverColor = DEFAULT_ENABLED_COLOR;
         textDisabledColor = DEFAULT_DISABLED_COLOR;
         textOffsetX = 3;
         textOffsetY = 3;
@@ -133,6 +132,8 @@ public class ButtonImage extends Button
     {
         this.textures = buttonTextures;
         this.resolvedTextures = null;
+
+        requireNonNull(textures.enabled(), "Missing enabled texture");
     }
 
     /**
@@ -225,31 +226,21 @@ public class ButtonImage extends Button
     @Override
     public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
-        if (!FMLEnvironment.isProduction())
-        {
-            Objects.requireNonNull(textures.enabled(), () -> id + " | " + window.getXmlResourceLocation());
-        }
+        requireNonNull(textures.enabled(), "Missing enabled texture");
 
         if (resolvedTextures == null)
         {
             resolvedTextures = ResolvedWidgetSprites.fromUnresolved(textures, Image::resolveBlit);
         }
 
-        RenderSystem.enableBlend();
-        RenderSystem.defaultBlendFunc();
-
-        resolvedTextures.getAndPrepare(isEnabled(), wasCursorInPane).blit(target.pose(), x, y, width, height);
+        resolvedTextures.getAndPrepare(isEnabled(), wasCursorInPane).blit(target, x, y, width, height);
         postDrawBackground(target, mx, my);
-
-        RenderSystem.disableBlend();
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         super.drawSelf(target, mx, my);
     }
 
     /**
-     * Called after drawing the button background. {@link RenderSystem#setShaderColor(float, float, float, float)} might be applied
-     * according to rendering of the actuall button background.
+     * Called after drawing the button background.
      */
     public void postDrawBackground(final BOGuiGraphics target, final double mx, final double my)
     {
