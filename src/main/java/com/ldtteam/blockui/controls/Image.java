@@ -5,27 +5,14 @@ import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.Parsers;
 import com.ldtteam.blockui.mod.BlockUI;
-import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.util.records.SizeI;
-import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
 import com.ldtteam.blockui.util.texture.OutOfJarTexture;
-import com.mojang.blaze3d.platform.NativeImage;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.metadata.gui.GuiMetadataSection;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Tuple;
-import net.neoforged.fml.loading.FMLEnvironment;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.NoSuchFileException;
-import java.util.Iterator;
 import java.util.Objects;
 
 /**
@@ -72,64 +59,15 @@ public class Image extends Pane
     }
 
     /**
-     * Load and image from a {@link Identifier} and return a {@link Tuple} containing its width and height.
+     * Load and image from a {@link Identifier} and return a {@link SizeI} containing its width and height.
      *
      * @param resourceLocation The {@link Identifier} pointing to the image.
      * @return Width and height.
      */
     public static SizeI getImageDimensions(final Identifier resourceLocation)
     {
-        // this is called by most of image classes -> parse our textures
-        OutOfJarTexture.assertLoadedDefaultManagers(resourceLocation);
-
-        final int pos = resourceLocation.getPath().lastIndexOf(".");
-
-        if (pos == -1)
-        {
-            try (InputStream is = OutOfJarResourceLocation.openStream(resourceLocation, Minecraft.getInstance().getResourceManager());
-                NativeImage nativeImage = NativeImage.read(is))
-            {
-                return new SizeI(nativeImage.getWidth(), nativeImage.getHeight());
-            }
-            catch (final Exception e)
-            {
-                throw new IllegalStateException("No extension for file: " + resourceLocation.toString(), e);
-            }
-        }
-
-        final String suffix = resourceLocation.getPath().substring(pos + 1);
-        final Iterator<ImageReader> it = ImageIO.getImageReadersBySuffix(suffix);
-
-        while (it.hasNext())
-        {
-            final ImageReader reader = it.next();
-            try (InputStream is = OutOfJarResourceLocation.openStream(resourceLocation, Minecraft.getInstance().getResourceManager());
-                ImageInputStream stream = ImageIO.createImageInputStream(is))
-            {
-                reader.setInput(stream);
-
-                return new SizeI(reader.getWidth(reader.getMinIndex()), reader.getHeight(reader.getMinIndex()));
-            }
-            catch (final NoSuchFileException | FileNotFoundException e)
-            {
-                // dont log these, texture manager logs it anyway
-            }
-            catch (final IOException e)
-            {
-                Log.getLogger().warn(e);
-            }
-            finally
-            {
-                reader.dispose();
-            }
-        }
-
-        if (!FMLEnvironment.isProduction())
-        {
-            throw new RuntimeException("Couldn't resolve size for image: " + resourceLocation);
-        }
-
-        return new SizeI(0, 0);
+        final var texture = Minecraft.getInstance().getTextureManager().getTexture(resourceLocation).getTexture();
+        return new SizeI(texture.getWidth(0), texture.getHeight(0));
     }
 
     /**
@@ -218,6 +156,9 @@ public class Image extends Pane
         {
             return (ps, x, y, w, h, c) -> blit(ps, MissingTextureAtlasSprite.getLocation(), x, y, w, h, c);
         }
+
+        // this is called by most of image classes -> parse our textures
+        OutOfJarTexture.assertLoadedDefaultManagers(resLoc);
 
         final TextureAtlas guiAtlas =
             Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(BlockUI.NAMESPACE_TO_ATLAS_MAP.get(resLoc.getNamespace()));
