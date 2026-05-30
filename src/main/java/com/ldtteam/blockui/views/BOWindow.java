@@ -54,7 +54,6 @@ public class BOWindow extends View
     protected WindowRenderType windowRenderType = WindowRenderType.OVERSIZED_VANILLA;
 
     protected Identifier xmlResourceLocation;
-    protected boolean loadedFromXml = false;
 
     /**
      * Create a window from an xml file.
@@ -75,7 +74,6 @@ public class BOWindow extends View
         if (shouldloadXml)
         {
             Loader.createFromXMLFile(resource, this);
-            loadedFromXml = true;
         }
     }
 
@@ -179,14 +177,6 @@ public class BOWindow extends View
     public Identifier getXmlResourceLocation()
     {
         return xmlResourceLocation;
-    }
-
-    /**
-     * @return true if
-     */
-    public boolean wasLoadedFromXml()
-    {
-        return loadedFromXml;
     }
 
     /**

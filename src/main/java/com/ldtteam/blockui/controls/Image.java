@@ -55,7 +55,7 @@ public class Image extends Pane
         });
 
         resourceLocation = params.getResource("source");
-        requireNonNull(resourceLocation, "Missing image texture");
+        requireNonNull(resourceLocation, "Missing image texture (if dynamic in code use: minecraft:missingno)");
     }
 
     /**

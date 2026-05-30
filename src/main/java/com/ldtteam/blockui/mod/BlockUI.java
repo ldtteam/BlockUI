@@ -15,7 +15,7 @@ public class BlockUI
     public static final String MOD_ID = "blockui";
 
     /**
-     * If your mod is using atlas register it here so we know it exists.
+     * If your mod is using GUI atlas register it here so we know it exists.
      */
     public static final Map<String, Identifier> NAMESPACE_TO_ATLAS_MAP = new HashMap<>();
 

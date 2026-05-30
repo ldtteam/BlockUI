@@ -210,7 +210,6 @@ public class Tooltip extends AbstractTextElement
 
             // modified INLINE: vanilla Screen#renderTooltip(MatrixStack, List<? extends IReorderingProcessor>, int, int, FontRenderer)
             // INLINE: update from net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil
-            // that now uses textures, but the colors stay the same (validate when porting by comparing with vanilla tooltip)
             ms.pushMatrix();
 
             final int shift = TooltipRenderUtil.MARGIN;

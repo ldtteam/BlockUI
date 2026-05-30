@@ -1,6 +1,7 @@
 package com.ldtteam.blockui.util.cursor;
 
 import com.ldtteam.blockui.mod.BlockUI;
+import com.ldtteam.blockui.util.SafeError;
 import com.ldtteam.blockui.util.texture.CursorTexture;
 import com.ldtteam.blockui.util.texture.IsOurTexture;
 import com.mojang.blaze3d.platform.Window;
@@ -31,8 +32,8 @@ public class Cursor
     public static final CursorType HAND = CursorTypes.POINTING_HAND;
     public static final CursorType HORIZONTAL_RESIZE = CursorTypes.RESIZE_EW;
     public static final CursorType VERTICAL_RESIZE = CursorTypes.RESIZE_NS;
-    public static final CursorType RESIZE_NWSE = new CursorType("resize_nwse", GLFW.GLFW_RESIZE_NWSE_CURSOR);
-    public static final CursorType RESIZE_NESW = new CursorType("resize_nesw", GLFW.GLFW_RESIZE_NESW_CURSOR);
+    public static final CursorType RESIZE_NWSE = CursorType.createStandardCursor(GLFW.GLFW_RESIZE_NWSE_CURSOR, "resize_nwse", Cursor.DEFAULT);
+    public static final CursorType RESIZE_NESW = CursorType.createStandardCursor(GLFW.GLFW_RESIZE_NESW_CURSOR, "resize_nesw", Cursor.DEFAULT);
     public static final CursorType RESIZE = CursorTypes.RESIZE_ALL;
     public static final CursorType NOT_ALLOWED = CursorTypes.NOT_ALLOWED;
 
@@ -54,7 +55,7 @@ public class Cursor
     {
         if ((BlockUI.MOD_ID + "_std").equalsIgnoreCase(resLoc.getNamespace()))
         {
-            return CURSOR_MAP.get(resLoc.getPath());
+            return SafeError.requireNonNull(CURSOR_MAP.get(resLoc.getPath()), Cursor.DEFAULT, "Invalid built-in cursor: " + resLoc.toString());
         }
 
         final TextureManager texManager = Minecraft.getInstance().getTextureManager();

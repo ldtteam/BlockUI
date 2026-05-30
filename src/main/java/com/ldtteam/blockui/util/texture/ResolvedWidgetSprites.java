@@ -21,7 +21,7 @@ public record ResolvedWidgetSprites(ResolvedBlit enabled,
     //public static IColour FOCUSED_MODULATOR = new ColourQuartet4f(1.1f, 1.1f, 1.1f, 1.0f);
     // TODO: cannot do more than byte max (ie. 255), need shader and buffer support to use this
     public static IColour FOCUSED_MODULATOR = new ColourQuartet4f(1.0f, 1.0f, 1.0f, 1.0f);
-    public static IColour NORMAL_MODULATOR = new ColourQuartet4f(0.91f, 0.91f, 0.91f, 1.0f);
+    public static IColour NORMAL_MODULATOR = new ColourQuartet4f(10 / 11.0f, 10 / 11.0f, 10 / 11.0f, 1.0f);
     public static IColour DISABLED_MODULATOR = new ColourQuartet4f(0.5f, 0.5f, 0.5f, 1.0f);
 
     /**

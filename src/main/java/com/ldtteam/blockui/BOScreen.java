@@ -61,12 +61,12 @@ public class BOScreen extends Screen
 
         absoluteMouseX = mx;
         absoluteMouseY = my;
-        framebufferWidth = windowState.width; // ms.minecraft.getWindow().getWidth();
-        framebufferHeight = windowState.height; // ms.minecraft.getWindow().getHeight();
+        framebufferWidth = windowState.width;
+        framebufferHeight = windowState.height;
         final int guiWidth = Math.max(framebufferWidth, Window.BASE_WIDTH);
         final int guiHeight = Math.max(framebufferHeight, Window.BASE_HEIGHT);
 
-        mcScale = windowState.guiScale; // ms.minecraft.getWindow().getGuiScale();
+        mcScale = windowState.guiScale;
         renderScale = window.getRenderType().calcRenderScale(ms.minecraft.getWindow(), window);
 
         width = window.getWidth();
@@ -97,7 +97,7 @@ public class BOScreen extends Screen
         // 4) the old P and VM are properly copied from vanilla (INLINE above)
         // 5) the matrixes are stable enough to not under/overflow
         final Matrix4f hack = new Matrix4f();
-        hack.mul(oldViewModel.invert()); // this internally does invertTranslation
+        hack.mul(oldViewModel.invert());
         hack.mul(oldProjection.invertOrtho());
         hack.mul(ourProjection);
 

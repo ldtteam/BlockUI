@@ -39,4 +39,20 @@ public class SafeError
             throwInDev(new NullPointerException(errorMessage));
         }
     }
+
+    /**
+     * @param value        the object reference to check for nullity
+     * @param defaultValue default value for production environment
+     * @param errorMessage detail message to be used in the event that a {@code NullPointerException} is thrown
+     * @see Objects#requireNonNull(Object, String)
+     */
+    public static <T> T requireNonNull(final T value, final T defaultValue, final String errorMessage)
+    {
+        if (value == null)
+        {
+            throwInDev(new NullPointerException(errorMessage));
+            return defaultValue;
+        }
+        return value;
+    }
 }
