@@ -58,15 +58,17 @@ public final class Loader extends SimplePreparableReloadListener<Map<Identifier,
 
     private static ItemIcon itemIcon(final PaneParams paneParams)
     {
+        @Deprecated(forRemoval = true, since = "26.1")
+        final String PARAM_PROPERTIES = "properties";
         if (paneParams.hasAttribute(ItemIconWithBlockState.PARAM_NBT))
         {
-            if (!FMLEnvironment.isProduction() && paneParams.hasAttribute(ItemIconWithProperties.PARAM_PROPERTIES))
+            if (!FMLEnvironment.isProduction() && paneParams.hasAttribute(PARAM_PROPERTIES))
             {
-                throw new IllegalStateException("Must be one of '%s' or '%s'".formatted(ItemIconWithBlockState.PARAM_NBT, ItemIconWithProperties.PARAM_PROPERTIES));
+                throw new IllegalStateException("Must be one of '%s' or '%s'".formatted(ItemIconWithBlockState.PARAM_NBT, PARAM_PROPERTIES));
             }
             return new ItemIconWithBlockState(paneParams);
         }
-        if (paneParams.hasAttribute(ItemIconWithProperties.PARAM_PROPERTIES))
+        if (paneParams.hasAttribute(PARAM_PROPERTIES))
         {
             SafeError.throwInDev(new UnsupportedOperationException("ItemIconWithProperties was not portable"));
             // return new ItemIconWithProperties(paneParams);
