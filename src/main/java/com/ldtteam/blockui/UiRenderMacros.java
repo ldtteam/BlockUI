@@ -1,54 +1,27 @@
 package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.mod.BlockUI;
-import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
-import com.ldtteam.blockui.util.SingleBlockGetter.SingleBlockNeighborhood;
 import com.ldtteam.blockui.util.color.IColour;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat.Mode;
-import com.mojang.math.Axis;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.render.TextureSetup;
-import net.minecraft.client.gui.render.pip.PictureInPictureRenderer;
-import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
 import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.client.renderer.block.BlockModelRenderState;
-import net.minecraft.client.renderer.block.FluidRenderer;
-import net.minecraft.client.renderer.block.FluidStateModelSet;
-import net.minecraft.client.renderer.blockentity.state.BlockEntityRenderState;
-import net.minecraft.client.renderer.chunk.ChunkSectionLayer;
-import net.minecraft.client.renderer.feature.FeatureRenderDispatcher;
-import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.state.gui.GuiElementRenderState;
-import net.minecraft.client.renderer.state.gui.GuiRenderState;
-import net.minecraft.client.renderer.state.gui.pip.PictureInPictureRenderState;
 import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling.NineSlice;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling.Tile;
 import net.minecraft.client.resources.metadata.gui.GuiSpriteScaling.Type;
-import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.material.FluidState;
 import net.neoforged.fml.loading.FMLEnvironment;
-import org.joml.Matrix3f;
 import org.joml.Matrix3x2f;
 import org.jspecify.annotations.Nullable;
-
-import java.util.EnumMap;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 
@@ -356,7 +329,12 @@ public class UiRenderMacros
         line(ps, x, y, x, yEnd, red, green, blue, alpha);
     }
 
-    public static void line(final GuiGraphicsExtractor ps, final int x, final int y, final int xEnd, final int yEnd, final int argbColor)
+    public static void line(final GuiGraphicsExtractor ps,
+        final int x,
+        final int y,
+        final int xEnd,
+        final int yEnd,
+        final int argbColor)
     {
         line(ps, x, y, xEnd, yEnd, (argbColor >> 16) & 0xff, (argbColor >> 8) & 0xff, argbColor & 0xff, (argbColor >> 24) & 0xff);
     }
@@ -820,7 +798,13 @@ public class UiRenderMacros
         final int h,
         final BiConsumer<Matrix3x2f, VertexConsumer> task)
     {
-        submit(target, pipeline, x, y, w, h, task, TextureSetup.noTexture());
+        innerSubmit(target,
+            x,
+            y,
+            w,
+            h,
+            (pose, bounds, scissors) -> target.submitGuiElementRenderState(
+                new UiRenderMacrosGuiElementRenderState(pose, task, pipeline, TextureSetup.noTexture(), bounds, scissors)));
     }
 
     public static void submitBlit(final GuiGraphicsExtractor target,
@@ -832,26 +816,12 @@ public class UiRenderMacros
         final Identifier texResLoc,
         final BiConsumer<Matrix3x2f, VertexConsumer> task)
     {
-        final AbstractTexture texture = target.minecraft.getTextureManager().getTexture(texResLoc);
-        submit(target, pipeline, x, y, w, h, task, TextureSetup.singleTexture(texture.getTextureView(), texture.getSampler()));
-    }
-
-    public static void submit(final GuiGraphicsExtractor target,
-        final RenderPipeline pipeline,
-        final int x,
-        final int y,
-        final int w,
-        final int h,
-        final BiConsumer<Matrix3x2f, VertexConsumer> task,
-        final TextureSetup texture)
-    {
-        innerSubmit(target,
-            x,
-            y,
-            w,
-            h,
-            (pose, bounds, scissors) -> target.submitGuiElementRenderState(
-                new UiRenderMacrosGuiElementRenderState(pose, task, pipeline, texture, bounds, scissors)));
+        innerSubmit(target, x, y, w, h, (pose, bounds, scissors) -> {
+            final AbstractTexture texture = target.minecraft.getTextureManager().getTexture(texResLoc);
+            final TextureSetup textureSetup = TextureSetup.singleTexture(texture.getTextureView(), texture.getSampler());
+            target.submitGuiElementRenderState(
+                new UiRenderMacrosGuiElementRenderState(pose, task, pipeline, textureSetup, bounds, scissors));
+        });
     }
 
     public static <T> void innerSubmit(final GuiGraphicsExtractor target,
@@ -892,8 +862,6 @@ public class UiRenderMacros
         {
             task.accept(pose(), vertexConsumer);
         }
-    }
-
     }
 
     public static final IColour NOOP_COLOUR = new IColour()

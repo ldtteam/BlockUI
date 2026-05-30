@@ -36,8 +36,8 @@ import java.util.List;
  */
 public class ItemIcon extends Pane
 {
-    protected static final int DEFAULT_ITEMSTACK_SIZE_I = 16;
-    protected static final float DEFAULT_ITEMSTACK_SIZE = 16f;
+    public static final int DEFAULT_ITEMSTACK_SIZE_I = 16;
+    public static final float DEFAULT_ITEMSTACK_SIZE = 16f;
     protected static final MutableComponent FIX_VANILLA_TOOLTIP = SpacerTextComponent.of(1);
 
     /**

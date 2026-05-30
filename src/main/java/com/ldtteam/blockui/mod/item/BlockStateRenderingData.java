@@ -3,23 +3,13 @@ package com.ldtteam.blockui.mod.item;
 import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.common.util.BlockToItemHelper;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.block.BlockModelShaper;
-import net.minecraft.client.renderer.block.model.BlockElement;
-import net.minecraft.client.renderer.block.model.BlockModel;
-import net.minecraft.client.renderer.block.model.MultiVariant;
-import net.minecraft.client.resources.model.ModelBakery;
-import net.minecraft.client.resources.model.ModelResourceLocation;
-import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.Direction.Axis;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.neoforged.neoforge.model.data.ModelData;
 import net.neoforged.neoforge.common.util.Lazy;
 import org.jetbrains.annotations.Nullable;
@@ -131,53 +121,12 @@ public record BlockStateRenderingData(BlockState blockState,
 
     /**
      * @return true if model contains only Y axis rotations
-     * TODO: move to tag
      */
     public static boolean checkModelForYrotation(final BlockState blockState)
     {
-        final ModelResourceLocation modelResLoc = BlockModelShaper.stateToModelLocation(blockState);
-        final ModelBakery modelBakery =
-            Minecraft.getInstance().getBlockRenderer().getBlockModelShaper().getModelManager().getModelBakery();
-        final UnbakedModel model = modelBakery.topLevelModels.get(modelResLoc);
-        final BlockModel blockModel = model instanceof final BlockModel bm ? bm :
-            (model instanceof final MultiVariant mv ?
-                modelBakery.modelResources.get(ModelBakery.MODEL_LISTER.idToFile(mv.getVariants().get(0).getModelLocation())) :
-                null);
-
-        if (blockModel == null || blockModel.getElements().isEmpty())
-        {
-            return false;
-        }
-
-        int headCountOfRotated = 0;
-        for (final BlockElement element : blockModel.getElements())
-        {
-            if (element.rotation != null && element.rotation.axis() == Direction.Axis.Y)
-            {
-                headCountOfRotated++;
-            }
-            else
-            {
-                break;
-            }
-        }
-        // blind guess: if majority is rotation Y then fine
-        if (headCountOfRotated == 0)
-        {
-            return false;
-        }
-
-        if (blockState.hasProperty(BlockStateProperties.AXIS))
-        {
-            return blockState.getValue(BlockStateProperties.AXIS) == Axis.Y;
-        }
-
-        if (blockState.hasProperty(BlockStateProperties.FACING))
-        {
-            final Direction facing = blockState.getValue(BlockStateProperties.FACING);
-            return facing == Direction.UP || facing == Direction.DOWN;
-        }
-
-        return true;
+        // TODO: port 21.6 this is completely gone
+        // find out how to detect whether blockState is being rendered by model:block/cross
+        // or why cross models have rotation issues
+        return false;
     }
 }

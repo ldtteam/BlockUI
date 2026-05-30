@@ -4,6 +4,7 @@ import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
+import com.ldtteam.blockui.mod.item.BlockStatePipRenderer.BlockStateRenderState;
 import org.joml.Matrix3x2fStack;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.ChatFormatting;
@@ -144,7 +145,9 @@ public class ItemIconWithBlockState extends ItemIcon
         {
             target.item(itemStack, 0, 0);
         }
-        target.renderBlockStateAsItem(blockStateExtension, itemStack, 0, 0, DEFAULT_ITEMSTACK_SIZE_I, DEFAULT_ITEMSTACK_SIZE_I);
+        ms.scale(1.0f / BlockStateRenderState.SCALE_FACTOR, 1.0f / BlockStateRenderState.SCALE_FACTOR);
+        BlockStateRenderState.submit(target, blockStateExtension, itemStack);
+        ms.scale(BlockStateRenderState.SCALE_FACTOR, BlockStateRenderState.SCALE_FACTOR);
         if (renderItemDecorations)
         {
             target.renderItemDecorations(itemStack, 0, 0);

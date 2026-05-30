@@ -2,8 +2,8 @@ package com.ldtteam.blockui.mod;
 
 import com.ldtteam.blockui.Loader;
 import com.ldtteam.blockui.UiRenderMacros;
-import com.ldtteam.blockui.UiRenderMacros.BlockStatePipRenderer;
-import com.ldtteam.blockui.UiRenderMacros.BlockStateRenderState;
+import com.ldtteam.blockui.mod.item.BlockStatePipRenderer;
+import com.ldtteam.blockui.mod.item.BlockStatePipRenderer.BlockStateRenderState;
 import net.minecraft.client.resources.metadata.gui.GuiMetadataSection;
 import net.minecraft.client.resources.model.sprite.AtlasManager.AtlasConfig;
 import net.minecraft.data.AtlasIds;
