@@ -198,6 +198,26 @@ public class UiRenderMacros
         fill(ps, x, y, w, h, (argbColor >> 16) & 0xff, (argbColor >> 8) & 0xff, argbColor & 0xff, (argbColor >> 24) & 0xff);
     }
 
+    /**
+     * Draws a rounded 'badge' at the specified location.
+     * @param ps pose stack
+     * @param x item icon x position
+     * @param y item icon y position
+     * @param w width
+     * @param h height
+     * @param argbColor ARGB color
+     */
+    public static void fillRoundedBadge(final PoseStack ps, final int x, final int y, final int w, final int h, final int argbColor)
+    {
+        if (w < 3 || h < 3)
+        {
+            return;
+        }
+
+        fill(ps, x + 1, y, w - 2, h, argbColor);
+        fill(ps, x, y + 1, w, h - 2, argbColor);
+    }
+
     public static void fill(final PoseStack ps,
         final int x,
         final int y,

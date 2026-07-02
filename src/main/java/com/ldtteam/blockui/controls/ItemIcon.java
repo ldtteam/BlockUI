@@ -48,6 +48,7 @@ public class ItemIcon extends Pane
      */
     protected boolean tooltipUpdateScheduled = false;
     protected boolean renderItemDecorations = true;
+    protected boolean forceHighContrastCount = false;
 
     /**
      * Standard constructor instantiating the itemIcon without any additional settings.
@@ -77,6 +78,7 @@ public class ItemIcon extends Pane
         }
 
         this.renderItemDecorations = params.getBoolean("renderItemDecorations", renderItemDecorations);
+        this.forceHighContrastCount = params.getBoolean("forceHighContrastCount", forceHighContrastCount);
     }
 
     /**
@@ -123,6 +125,22 @@ public class ItemIcon extends Pane
     public boolean renderItemDecorations()
     {
         return renderItemDecorations;
+    }
+
+    /**
+     * @param forceHighContrastCount true if count decorations should render with a high contrast badge for this icon.
+     */
+    public void setForceHighContrastCount(final boolean forceHighContrastCount)
+    {
+        this.forceHighContrastCount = forceHighContrastCount;
+    }
+
+    /**
+     * @return true if this icon forces high contrast count rendering.
+     */
+    public boolean forceHighContrastCount()
+    {
+        return forceHighContrastCount;
     }
 
     /**
@@ -194,7 +212,7 @@ public class ItemIcon extends Pane
             target.renderItem(itemStack, 0, 0);
             if (renderItemDecorations)
             {
-                target.renderItemDecorations(itemStack, 0, 0);
+                target.renderItemDecorations(itemStack, 0, 0, forceHighContrastCount);
             }
 
             RenderSystem.defaultBlendFunc();

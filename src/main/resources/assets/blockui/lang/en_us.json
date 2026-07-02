@@ -6,5 +6,9 @@
     "blockui.config.default.boolean": "[Default: %s]",
     "blockui.config.default.string": "[Default: %s]",
     "blockui.config.default.enum": "[Default: %s, values: %s]",
-    "blockui.config.default.number": "[Default: %s, min: %s, max: %s]"
+    "blockui.config.default.number": "[Default: %s, min: %s, max: %s]",
+    "blockui.config.visuals": "Visuals",
+    "blockui.config.visuals.comment": "Client-side visual options.",
+    "blockui.config.highContrastCount": "High Contrast Count",
+    "blockui.config.highContrastCount.comment": "Draws a dark translucent badge behind item stack counts."
 }
