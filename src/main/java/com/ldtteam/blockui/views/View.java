@@ -83,7 +83,7 @@ public class View extends Pane
         final double drawX = mx - paddedX;
         final double drawY = my - paddedY;
 
-        for (final Pane child : children)
+        for (final Pane child : new ArrayList<>(children))
         {
             if (childIsVisible(child))
             {
@@ -101,7 +101,7 @@ public class View extends Pane
     @Override
     public void drawHidden()
     {
-        for (final Pane child : children)
+        for (final Pane child : new ArrayList<>(children))
         {
             child.drawHidden();
         }
@@ -124,7 +124,7 @@ public class View extends Pane
         final double drawX = mx - paddedX;
         final double drawY = my - paddedY;
 
-        for (final Pane child : children)
+        for (final Pane child : new ArrayList<>(children))
         {
             if (childIsVisible(child))
             {
