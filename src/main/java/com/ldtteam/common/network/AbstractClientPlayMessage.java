@@ -24,7 +24,7 @@ public abstract class AbstractClientPlayMessage extends AbstractUnsidedPlayMessa
      *
      * @param buf received network payload
      * @param type message type
-     * @apiNote you can keep this protected to reduce visibility
+     * API note: you can keep this protected to reduce visibility
      */
     protected AbstractClientPlayMessage(final RegistryFriendlyByteBuf buf, final PlayMessageType<?> type)
     {

@@ -5,14 +5,10 @@ import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.util.cursor.Cursor;
 import com.ldtteam.blockui.views.View;
-import com.mojang.blaze3d.platform.GlStateManager.LogicOp;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 
 /**
@@ -26,8 +22,8 @@ public class TextField extends Pane
     private static final int     DEFAULT_MAX_TEXT_LENGTH = 32;
     // Attributes
     protected            int     maxTextLength           = DEFAULT_MAX_TEXT_LENGTH;
-    protected            int     textColor               = 0xE0E0E0;
-    protected            int     textColorDisabled       = 0x707070;
+    protected            int     textColor               = 0xFFE0E0E0;
+    protected            int     textColorDisabled       = 0xFF707070;
     protected            boolean shadow                  = true;
     @Nullable
     protected            String  tabNextPaneID           = null;
@@ -208,25 +204,23 @@ public class TextField extends Pane
     /**
      * Handle key event.
      *
-     * @param c   the character.
-     * @param key the key.
      * @return if it should be processed or not.
      */
-    private boolean handleKey(final char c, final int key)
+    private boolean handleKey(final KeyEvent event)
     {
-        switch (key)
+        switch (event.key())
         {
             case GLFW.GLFW_KEY_BACKSPACE:
             case GLFW.GLFW_KEY_DELETE:
-                return handleDelete(key);
+                return handleDelete(event);
 
             case GLFW.GLFW_KEY_HOME:
             case GLFW.GLFW_KEY_END:
-                return handleHomeEnd(key);
+                return handleHomeEnd(event);
 
             case GLFW.GLFW_KEY_RIGHT:
             case GLFW.GLFW_KEY_LEFT:
-                return handleArrowKeys(key);
+                return handleArrowKeys(event);
 
             case GLFW.GLFW_KEY_TAB:
                 return handleTab();
@@ -237,21 +231,15 @@ public class TextField extends Pane
                     setSelectionEnd(cursorPosition);
                     return true;
                 }
-                // else fall-through
-
-            default:
-                return handleChar(c);
-        }
-    }
-
-    private boolean handleChar(final char c)
-    {
-        if (filter.isAllowedCharacter(c))
-        {
-            writeText(Character.toString(c));
-            return true;
         }
         return false;
+    }
+
+    @Override
+    public boolean onCharactedEvent(final CharacterEvent event)
+    {
+        writeText(Character.toString(event.codepoint()));
+        return true;
     }
 
     private boolean handleTab()
@@ -267,14 +255,14 @@ public class TextField extends Pane
         return true;
     }
 
-    private boolean handleArrowKeys(final int key)
+    private boolean handleArrowKeys(final KeyEvent event)
     {
-        final int direction = (key == GLFW.GLFW_KEY_LEFT) ? -1 : 1;
+        final int direction = (event.key() == GLFW.GLFW_KEY_LEFT) ? -1 : 1;
 
 
-        if (Screen.hasShiftDown())
+        if (event.hasShiftDown())
         {
-            if (Screen.hasControlDown())
+            if (event.hasControlDownWithQuirk())
             {
                 setSelectionEnd(getNthWordFromPos(direction, getSelectionEnd()));
             }
@@ -283,7 +271,7 @@ public class TextField extends Pane
                 setSelectionEnd(getSelectionEnd() + direction);
             }
         }
-        else if (Screen.hasControlDown())
+        else if (event.hasControlDownWithQuirk())
         {
             setCursorPosition(getNthWordFromCursor(direction));
         }
@@ -301,11 +289,11 @@ public class TextField extends Pane
         return true;
     }
 
-    private boolean handleHomeEnd(final int key)
+    private boolean handleHomeEnd(final KeyEvent event)
     {
-        final int position = (key == GLFW.GLFW_KEY_HOME) ? 0 : text.length();
+        final int position = (event.key() == GLFW.GLFW_KEY_HOME) ? 0 : text.length();
 
-        if (Screen.hasShiftDown())
+        if (event.hasControlDownWithQuirk())
         {
             setSelectionEnd(position);
         }
@@ -316,11 +304,11 @@ public class TextField extends Pane
         return true;
     }
 
-    private boolean handleDelete(final int key)
+    private boolean handleDelete(final KeyEvent event)
     {
-        final int direction = (key == GLFW.GLFW_KEY_BACKSPACE) ? -1 : 1;
+        final int direction = (event.key() == GLFW.GLFW_KEY_BACKSPACE) ? -1 : 1;
 
-        if (Screen.hasControlDown())
+        if (event.hasControlDownWithQuirk())
         {
             deleteWords(direction);
         }
@@ -394,7 +382,7 @@ public class TextField extends Pane
         {
             if (cursorBeforeEnd)
             {
-                fill(target.pose(), cursorX, drawY - 1, 1, 1 + mc.font.lineHeight, RECT_COLOR);
+                fill(target, cursorX, drawY - 1, 1, 1 + mc.font.lineHeight, RECT_COLOR);
             }
             else
             {
@@ -420,21 +408,7 @@ public class TextField extends Pane
                 selectionEndX = x + width;
             }
 
-            final Matrix4f m = target.pose().last().pose();
-            RenderSystem.setShaderColor(0.0F, 0.0F, 1.0F, 1.0F);
-            RenderSystem.enableColorLogicOp();
-            RenderSystem.logicOp(LogicOp.OR_REVERSE);
-            RenderSystem.setShader(GameRenderer::getPositionShader);
-
-            final BufferBuilder vertexBuffer = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION);
-            vertexBuffer.addVertex(m, selectionStartX, drawY - 1, 0.0f);
-            vertexBuffer.addVertex(m, selectionStartX, drawY + 1 + mc.font.lineHeight, 0.0f);
-            vertexBuffer.addVertex(m, selectionEndX, drawY + 1 + mc.font.lineHeight, 0.0f);
-            vertexBuffer.addVertex(m, selectionEndX, drawY - 1, 0.0f);
-            BufferUploader.drawWithShader(vertexBuffer.build());
-
-            RenderSystem.disableColorLogicOp();
-            RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+            target.textHighlight(selectionStartX, drawY - 1, selectionEndX, drawY + 1 + mc.font.lineHeight, true);
         }
     }
 
@@ -468,33 +442,33 @@ public class TextField extends Pane
     }
 
     @Override
-    public boolean onKeyTyped(final String c, final int key)
+    public boolean onKeyEvent(final KeyEvent event)
     {
-        if (Screen.isCopy(key))
+        if (event.isCopy())
         {
             mc.keyboardHandler.setClipboard(getSelectedText());
             return true;
         }
-        else if (Screen.isCut(key))
+        else if (event.isCut())
         {
             mc.keyboardHandler.setClipboard(getSelectedText());
             writeText("");
             return true;
         }
-        else if (Screen.isSelectAll(key))
+        else if (event.isSelectAll())
         {
             setCursorPosition(text.length());
             setSelectionEnd(0);
             return true;
         }
-        else if (Screen.isPaste(key))
+        else if (event.isPaste())
         {
             writeText(mc.keyboardHandler.getClipboard());
             return true;
         }
         else
         {
-            return handleKey(c, key);
+            return handleKey(event);
         }
     }
 

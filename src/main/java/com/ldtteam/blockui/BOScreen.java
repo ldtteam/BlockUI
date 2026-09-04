@@ -1,17 +1,23 @@
 package com.ldtteam.blockui;
 
-import com.ldtteam.blockui.util.cursor.CursorUtils;
 import com.ldtteam.blockui.views.BOWindow;
-import net.minecraft.client.input.CharacterEvent;
-import net.minecraft.client.input.KeyEvent;
-import net.minecraft.client.input.MouseButtonEvent;
+import com.mojang.blaze3d.platform.Window;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.PreeditEvent;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.Projection;
+import net.minecraft.client.renderer.state.WindowRenderState;
 import net.minecraft.network.chat.Component;
+import org.joml.Matrix2f;
+import org.joml.Matrix3x2f;
+import org.joml.Matrix4f;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.Objects;
@@ -45,52 +51,100 @@ public class BOScreen extends Screen
     }
 
     @Override
-    public void render(final GuiGraphics ms, final int mx, final int my, final float f)
+    public void extractRenderState(final GuiGraphicsExtractor ms, final int mx, final int my, final float f)
     {
-        if (minecraft == null || !isOpen) // should never happen though
+        if (ms.minecraft == null || !isOpen) // should never happen though
         {
             return;
         }
+        final WindowRenderState windowState = ms.minecraft.gameRenderer.gameRenderState().windowRenderState;
 
         absoluteMouseX = mx;
         absoluteMouseY = my;
-        framebufferWidth = ms.minecraft.getWindow().getWidth();
-        framebufferHeight = ms.minecraft.getWindow().getHeight();
-        final int guiWidth = Math.max(framebufferWidth, 320);
-        final int guiHeight = Math.max(framebufferHeight, 240);
+        framebufferWidth = windowState.width;
+        framebufferHeight = windowState.height;
+        final int guiWidth = Math.max(framebufferWidth, Window.BASE_WIDTH);
+        final int guiHeight = Math.max(framebufferHeight, Window.BASE_HEIGHT);
 
-        mcScale = ms.minecraft.getWindow().getGuiScale();
+        mcScale = windowState.guiScale;
         renderScale = window.getRenderType().calcRenderScale(ms.minecraft.getWindow(), window);
-
-        if (window.hasLightbox() && ms.minecraft.screen == this)
-        {
-            ms.fillGradient(0, 0, framebufferWidth, framebufferHeight, -1072689136, -804253680);
-        }
 
         width = window.getWidth();
         height = window.getHeight();
         x = Math.floor((guiWidth - width * renderScale) / 2.0d);
         y = Math.floor((guiHeight - height * renderScale) / 2.0d);
 
+        // counter vanilla projection
+        final Projection vanillaProjection = new Projection();
+        // INLINE: this is copied from wherever vanilla is doing projection for GUI
+        vanillaProjection.setupOrtho(1000.0F,
+            11000.0F,
+            (float) windowState.width / windowState.guiScale,
+            (float) windowState.height / windowState.guiScale,
+            true);
+
+        final Matrix4f oldProjection = vanillaProjection.getMatrix(new Matrix4f());
+        final Matrix4f oldViewModel = new Matrix4f().setTranslation(0.0F, 0.0F, -11000.0F);
+        // INLINE: end
+
+        final Matrix4f ourProjection = new Matrix4f().setOrtho(0.0F, framebufferWidth, framebufferHeight, 0.0F, vanillaProjection.zNear(), vanillaProjection.zFar());
+
+        // if ever vanilla decides allows to use 1.21 system immediately do so
+        // this hack is based on following facts at the time when it was written:
+        // 1) the only thing that does matrix computation is vertex shader (VS)
+        // 2) the said VS does classic vertex math: output = P * VM * input
+        // 3) there is no other math (or scissoring stuff) evolder around old P * VM
+        // 4) the old P and VM are properly copied from vanilla (INLINE above)
+        // 5) the matrixes are stable enough to not under/overflow
+        final Matrix4f hack = new Matrix4f();
+        hack.mul(oldViewModel.invert());
+        hack.mul(oldProjection.invertOrtho());
+        hack.mul(ourProjection);
+
+        final var newMs = new BOGuiGraphics.CountingMatrix3x2fStack(16);
+        // inject hack
+        newMs.mul(new Matrix3x2f(new Matrix2f(hack.m00(), hack.m01(), hack.m10(), hack.m11())));
+        // our stuff, this assumes projection matrix is size of FB
+
         try
         {
-            final BOGuiGraphics target = new BOGuiGraphics(ms);
-            window.draw(target, calcRelativeX(mx), calcRelativeY(my));
+            final double newMx = calcRelativeX(mx), newMy = calcRelativeY(my);
+            final BOGuiGraphics target = new BOGuiGraphics(ms.minecraft, newMs, ms.guiRenderState, (int) newMx, (int) newMy);
 
-            if (ms.minecraft.screen == this)
+            if (window.hasBlurredBackground() && ms.minecraft.gui.screen() == this && target.guiRenderState.firstStratumAfterBlur == Integer.MAX_VALUE)
             {
+                target.blurBeforeThisStratum();
+            }
+
+            if (window.hasLightbox() && ms.minecraft.gui.screen() == this)
+            {
+                UiRenderMacros.fillGradient(target, 0, 0, framebufferWidth, framebufferHeight, -1072689136, -804253680);
+                // super.extractTransparentBackground(target);
+            }
+
+            newMs.translate((float) x, (float) y);
+            newMs.scale((float) renderScale, (float) renderScale);
+
+            window.draw(target, newMx, newMy);
+
+            if (ms.minecraft.gui.screen() == this)
+            {
+                int debugX = (int) (-x / renderScale) + 3;
                 if (Pane.debugging)
                 {
-                    target.guiGraphics().drawString(minecraft.font,
+                    debugX = target.drawString(
                         "XML: %s Scaling: %s (vanilla: %.2f our: %.2f) "
                             .formatted(window.getXmlResourceLocation(), window.getRenderType().name(), mcScale, renderScale),
-                        (int) (-x / renderScale) + 3,
+                        debugX,
                         -minecraft.font.lineHeight,
                         Color.getByName("white"));
                 }
+                ms.requestCursor(target.applyCursor(debugX));
             }
 
-            window.drawLast(target, calcRelativeX(mx), calcRelativeY(my));
+            target.nextStratum(); // TODO: simulate Z layering a bit, we really need to write sorted layering for us to be stable..
+
+            window.drawLast(target, newMx, newMy);
         }
         catch (final Exception e)
         {
@@ -104,22 +158,28 @@ public class BOScreen extends Screen
         }
     }
 
+    @Override // INLINE: partial inline - completely remove any extraction
+    public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+        this.minecraft.gui.hud.extractDeferredSubtitles();
+    }
+
     @Override
     public boolean keyPressed(final KeyEvent event)
     {
+        final int key = event.key();
         // keys without printable representation
-        if (event.key() >= 0 && event.key() <= GLFW.GLFW_KEY_LAST)
+        if (key >= 0 && key <= GLFW.GLFW_KEY_LAST)
         {
             try
             {
-                return window.onKeyTyped(String.valueOf('\0'), event.key());
+                return window.onKeyEvent(event);
             }
             catch (final Exception e)
             {
                 final CrashReport crashReport = CrashReport.forThrowable(e, "KeyPressed event for BO screen");
                 final CrashReportCategory category = crashReport.addCategory("BO screen key event details");
                 category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
-                category.setDetail("GLFW key value", () -> Integer.toString(event.key()));
+                category.setDetail("GLFW key value", () -> Integer.toString(event.input()));
                 throw new ReportedException(crashReport);
             }
         }
@@ -131,32 +191,40 @@ public class BOScreen extends Screen
     {
         try
         {
-            return window.onKeyTyped(event.codepointAsString(), event.codepoint());
+            return window.onCharactedEvent(event);
         }
         catch (final Exception e)
         {
             final CrashReport crashReport = CrashReport.forThrowable(e, "CharTyped event for BO screen");
             final CrashReportCategory category = crashReport.addCategory("BO screen char event details");
             category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
-            category.setDetail("Char value", () -> event.codepointAsString());
+            category.setDetail("Char value", () -> Character.toString(event.codepoint()));
             throw new ReportedException(crashReport);
         }
     }
 
     @Override
+    public boolean preeditUpdated(final PreeditEvent event)
+    {
+        // TODO: implement this in text field
+        return true;
+    }
+
+    @Override
     public boolean mouseClicked(final MouseButtonEvent event, final boolean doubleClick)
     {
+        final int keyCode = event.button();
         final double mx = calcRelativeX(event.x());
         final double my = calcRelativeY(event.y());
         try
         {
-            if (event.isLeft())
+            if (keyCode == GLFW.GLFW_MOUSE_BUTTON_LEFT)
             {
                 // Adjust coordinate to origin of window
                 isMouseLeftDown = true;
                 return window.click(mx, my);
             }
-            else if (event.isRight())
+            else if (keyCode == GLFW.GLFW_MOUSE_BUTTON_RIGHT)
             {
                 return window.rightClick(mx, my);
             }
@@ -166,7 +234,7 @@ public class BOScreen extends Screen
             final CrashReport crashReport = CrashReport.forThrowable(e, "MousePressed event for BO screen");
             final CrashReportCategory category = crashReport.addCategory("BO screen mouse event details");
             category.setDetail("XML res loc", () -> Objects.toString(window.getXmlResourceLocation()));
-            category.setDetail("GLFW mouse key value", () -> Integer.toString(event.input()));
+            category.setDetail("GLFW mouse key value", () -> Integer.toString(keyCode));
             throw new ReportedException(crashReport);
         }
         return false;
@@ -194,11 +262,11 @@ public class BOScreen extends Screen
     }
 
     @Override
-    public boolean mouseDragged(final MouseButtonEvent event, final double dx, final double dy)
+    public boolean mouseDragged(final MouseButtonEvent event, final double deltaX, final double deltaY)
     {
         try
         {
-            return window.onMouseDrag(calcRelativeX(event.x()), calcRelativeY(event.y()), dx, dy);
+            return window.onMouseDrag(calcRelativeX(event.x()), calcRelativeY(event.y()), 0, deltaX, deltaY);
         }
         catch (final Exception e)
         {
@@ -212,7 +280,8 @@ public class BOScreen extends Screen
     @Override
     public boolean mouseReleased(final MouseButtonEvent event)
     {
-        if (event.isLeft())
+        final int keyCode = event.button();
+        if (keyCode == GLFW.GLFW_MOUSE_BUTTON_LEFT)
         {
             // Adjust coordinate to origin of window
             isMouseLeftDown = false;
@@ -225,7 +294,7 @@ public class BOScreen extends Screen
                 final CrashReport crashReport = CrashReport.forThrowable(e, "MouseReleased event for BO screen");
                 final CrashReportCategory category = crashReport.addCategory("BO screen mouse event details");
                 category.setDetail("XML res loc", () -> window.getXmlResourceLocation().toString());
-                category.setDetail("GLFW mouse key value", () -> Integer.toString(event.input()));
+                category.setDetail("GLFW mouse key value", () -> Integer.toString(keyCode));
                 throw new ReportedException(crashReport);
             }
         }
@@ -293,7 +362,6 @@ public class BOScreen extends Screen
         finally
         {
             BOWindow.clearFocus();
-            CursorUtils.resetCursor();
         }
     }
 

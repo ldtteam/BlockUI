@@ -79,13 +79,13 @@ public class TextFieldVanilla extends TextField
     @Override
     public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
-        final Matrix3x2fStack ms = target.guiGraphics().pose();
+        final Matrix3x2fStack ms = target.pose();
 
         if (backgroundEnabled)
         {
             // Draw box
-            target.guiGraphics().renderOutline(x - 1, y - 1, width + 2, height + 2, backgroundOuterColor);
-            target.guiGraphics().fill(x, y, width, height, backgroundInnerColor);
+            drawLineRect(target, x - 1, y - 1, width + 2, height + 2, backgroundOuterColor);
+            fill(target, x, y, width, height, backgroundInnerColor);
 
             ms.pushMatrix();
             ms.translate(BACKGROUND_X_TRANSLATE, (height - BACKGROUND_Y_TRANSLATE_OFFSET) / 2);

@@ -1,6 +1,5 @@
 package com.ldtteam.blockui.util;
 
-import com.ldtteam.blockui.mod.BlockUI;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -20,7 +19,6 @@ public record ToggleableTextComponent(BooleanSupplier condition, MutableComponen
         .group(ComponentSerialization.CODEC.fieldOf("data").forGetter(ToggleableTextComponent::data),
             Codec.BOOL.fieldOf("condition").forGetter(comp -> comp.condition().getAsBoolean()))
         .apply(instance, (data, conditionValue) -> new ToggleableTextComponent(() -> conditionValue, (MutableComponent) data)));
-    public static final ComponentContents.Type<ToggleableTextComponent> TYPE = new ComponentContents.Type<>(CODEC, BlockUI.MOD_ID + "_toggle");
 
     /**
      * @param condition if contidition returns true then data will get rendered
@@ -46,9 +44,9 @@ public record ToggleableTextComponent(BooleanSupplier condition, MutableComponen
     }
 
     @Override
-    public Type<?> type()
+    public MapCodec<ToggleableTextComponent> codec()
     {
-        return TYPE;
+        return CODEC;
     }
 
     public record FormattedToggleableCharSequence(BooleanSupplier condition, FormattedCharSequence data) implements FormattedCharSequence

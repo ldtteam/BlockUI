@@ -76,7 +76,7 @@ public class ScrollingView extends View
     @Override
     public boolean scrollInput(final double horizontalWheel, final double verticalWheel, final double mx, final double my)
     {
-        return setScrollY(getScrollY() - verticalWheel * BOGuiGraphics.getAltSpeedFactor());
+        return setScrollY(getScrollY() - verticalWheel * BOGuiGraphics.getAltSpeedFactor(mc));
     }
 
     public ScrollingContainer getContainer()

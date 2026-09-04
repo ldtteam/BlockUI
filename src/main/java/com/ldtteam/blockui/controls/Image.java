@@ -4,35 +4,29 @@ import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.Parsers;
-import com.ldtteam.blockui.mod.Log;
+import com.ldtteam.blockui.mod.BlockUI;
 import com.ldtteam.blockui.util.records.SizeI;
-import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
 import com.ldtteam.blockui.util.texture.OutOfJarTexture;
-import com.mojang.blaze3d.platform.NativeImage;
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureAtlas;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.resources.metadata.gui.GuiMetadataSection;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.resources.Identifier;
-import net.minecraft.util.Tuple;
-import net.neoforged.fml.loading.FMLEnvironment;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.NoSuchFileException;
-import java.util.Iterator;
 import java.util.Objects;
 
 /**
  * Simple image element.
  */
-public class Image extends Pane 
+public class Image extends Pane
 {
     protected Identifier resourceLocation = null;
-    protected int        u                = 0;
+    protected int u = 0;
     protected int v = 0;
     protected int uWidth = 0;
     protected int vHeight = 0;
+    protected ResolvedBlit resolvedBlit = null;
 
     /**
      * Default Constructor.
@@ -61,74 +55,28 @@ public class Image extends Pane
             vHeight = a.get(1);
         });
 
-        resourceLocation = params.getResource("source");
+        // Images without a source are populated by the owning window at runtime
+        // (for example Structurize's build-tool rotation indicator). Use the
+        // vanilla missing sprite until that dynamic value is supplied.
+        resourceLocation = params.getResource("source", MissingTextureAtlasSprite.getLocation());
     }
 
     /**
-     * Load and image from a {@link Identifier} and return a {@link Tuple} containing its width and height.
+     * Load and image from a {@link Identifier} and return a {@link SizeI} containing its width and height.
      *
      * @param resourceLocation The {@link Identifier} pointing to the image.
      * @return Width and height.
      */
     public static SizeI getImageDimensions(final Identifier resourceLocation)
     {
-        // this is called by most of image classes -> parse our textures
-        OutOfJarTexture.assertLoadedDefaultManagers(resourceLocation);
-
-        final int pos = resourceLocation.getPath().lastIndexOf(".");
-
-        if (pos == -1)
-        {
-            try (InputStream is = OutOfJarResourceLocation.openStream(resourceLocation, Minecraft.getInstance().getResourceManager());
-                NativeImage nativeImage = NativeImage.read(is))
-            {
-                return new SizeI(nativeImage.getWidth(), nativeImage.getHeight());
-            }
-            catch (final Exception e)
-            {
-                throw new IllegalStateException("No extension for file: " + resourceLocation.toString(), e);
-            }
-        }
-
-        final String suffix = resourceLocation.getPath().substring(pos + 1);
-        final Iterator<ImageReader> it = ImageIO.getImageReadersBySuffix(suffix);
-
-        while (it.hasNext())
-        {
-            final ImageReader reader = it.next();
-            try (InputStream is = OutOfJarResourceLocation.openStream(resourceLocation, Minecraft.getInstance().getResourceManager());
-                ImageInputStream stream = ImageIO.createImageInputStream(is))
-            {
-                reader.setInput(stream);
-
-                return new SizeI(reader.getWidth(reader.getMinIndex()), reader.getHeight(reader.getMinIndex()));
-            }
-            catch (final NoSuchFileException | FileNotFoundException e)
-            {
-                // dont log these, texture manager logs it anyway
-            }
-            catch (final IOException e)
-            {
-                Log.getLogger().warn(e);
-            }
-            finally
-            {
-                reader.dispose();
-            }
-        }
-
-        if (!FMLEnvironment.isProduction())
-        {
-            throw new RuntimeException("Couldn't resolve size for image: " + resourceLocation);
-        }
-
-        return new SizeI(0, 0);
+        final var texture = Minecraft.getInstance().getTextureManager().getTexture(resourceLocation).getTexture();
+        return new SizeI(texture.getWidth(0), texture.getHeight(0));
     }
 
     /**
      * Set the image.
      *
-     * @param rl      ResourceLocation for the image.
+     * @param rl      Identifier for the image.
      * @param u       image x offset.
      * @param v       image y offset.
      * @param uWidth  image width.
@@ -140,18 +88,20 @@ public class Image extends Pane
         {
             return;
         }
+        requireNonNull(rl, "Missing image texture");
 
         this.resourceLocation = rl;
         this.u = u;
         this.v = v;
         this.uWidth = uWidth;
         this.vHeight = vHeight;
+        this.resolvedBlit = null;
     }
 
     /**
      * Set the image.
      *
-     * @param rl     ResourceLocation for the image.
+     * @param rl     Identifier for the image.
      * @param keepUv whether to keep previous u and v values or use full size
      */
     public void setImage(final Identifier rl, final boolean keepUv)
@@ -175,11 +125,71 @@ public class Image extends Pane
     @Override
     public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
-        if (!FMLEnvironment.isProduction())
+        requireNonNull(resourceLocation, "Missing image texture");
+
+        if (resolvedBlit == null)
         {
-            Objects.requireNonNull(resourceLocation, () -> "Missing image source: " + id + " | " + window.getXmlResourceLocation());
+            resolvedBlit = resolveBlit(resourceLocation, u, v, uWidth, vHeight);
         }
 
-        target.guiGraphics().blit(resourceLocation, x, y, u, v, width, height, uWidth, vHeight);
+        resolvedBlit.blit(target, x, y, width, height);
+    }
+
+    /**
+     * @param resLoc texture resource location
+     * @return resolved blit - with precomputed values and detached from all possible instances
+     */
+    public static ResolvedBlit resolveBlit(final Identifier resLoc)
+    {
+        return resolveBlit(resLoc, 0, 0, 0, 0);
+    }
+
+    /**
+     * @param resLoc texture resource location
+     * @param u in texels
+     * @param v in texels
+     * @param uWidth in texels, zero = max
+     * @param vHeight in texels, zero = max
+     * @return resolved blit - with precomputed values and detached from all possible instances
+     */
+    public static ResolvedBlit resolveBlit(final Identifier resLoc, final int u, final int v, final int uWidth, final int vHeight)
+    {
+        // if bad input skip resolving
+        if (resLoc == null || resLoc == MissingTextureAtlasSprite.getLocation())
+        {
+            return (ps, x, y, w, h, c) -> blit(ps, MissingTextureAtlasSprite.getLocation(), x, y, w, h, c);
+        }
+
+        // this is called by most of image classes -> parse our textures
+        OutOfJarTexture.assertLoadedDefaultManagers(resLoc);
+
+        // Mods may use ordinary textures without registering a custom GUI atlas.
+        // The old BlockUI atlas manager checked those against the vanilla GUI
+        // atlas before falling back to a direct texture blit; preserve that
+        // behavior instead of passing a null atlas id to AtlasManager.
+        final Identifier atlasId = BlockUI.NAMESPACE_TO_ATLAS_MAP.getOrDefault(resLoc.getNamespace(), AtlasIds.GUI);
+        final TextureAtlas guiAtlas = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(atlasId);
+        final TextureAtlasSprite atlasSprite = guiAtlas.getSprite(resLoc);
+
+        // unless we sprited missing texture pass to sprite blit (intentional object equality)
+        if (atlasSprite != guiAtlas.missingSprite())
+        {
+            return resolveSprite(atlasSprite, atlasSprite.contents().getAdditionalMetadata(GuiMetadataSection.TYPE).orElse(GuiMetadataSection.DEFAULT).scaling());
+        }
+
+        // if full blit do normal blit
+        if (u == 0 && v == 0 && uWidth == 0 && vHeight == 0)
+        {
+            return (ps, x, y, w, h, c) -> blit(ps, resLoc, x, y, w, h, c);
+        }
+
+        // else map u,v to float
+        final SizeI mapSize = getImageDimensions(resLoc);
+        final float uMin = u / (float) mapSize.width();
+        final float uMax = uWidth == 0 ? 1.0f : uMin + uWidth / (float) mapSize.width();
+        final float vMin = v / (float) mapSize.height();
+        final float vMax = vHeight == 0 ? 1.0f : vMin + vHeight / (float) mapSize.height();
+
+        return (ps, x, y, w, h, c) -> blit(ps, resLoc, x, y, w, h, uMin, vMin, uMax, vMax, c);
     }
 }

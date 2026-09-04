@@ -9,31 +9,35 @@ import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
 import com.ldtteam.blockui.util.SpacerTextComponent;
 import com.ldtteam.blockui.util.ToggleableTextComponent;
+import com.ldtteam.common.util.BlockToItemHelper;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
-import net.minecraft.core.Holder;
+import net.minecraft.core.Holder.Reference;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Item.TooltipContext;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.block.AirBlock;
+import net.neoforged.neoforge.client.ClientTooltipFlag;
 import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2fStack;
-
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Class of itemIcons in our GUIs.
  */
 public class ItemIcon extends Pane
 {
-    protected static final float DEFAULT_ITEMSTACK_SIZE = 16f;
+    public static final int DEFAULT_ITEMSTACK_SIZE_I = 16;
+    public static final float DEFAULT_ITEMSTACK_SIZE = 16f;
     protected static final MutableComponent FIX_VANILLA_TOOLTIP = SpacerTextComponent.of(1);
 
     /**
@@ -68,10 +72,10 @@ public class ItemIcon extends Pane
         final Identifier itemName = params.getResource("item");
         if (itemName != null)
         {
-            final Optional<Holder.Reference<Item>> item = BuiltInRegistries.ITEM.get(itemName);
-            if (item.isPresent())
+            final Item item = BuiltInRegistries.ITEM.get(itemName).map(Reference::value).orElse(null);
+            if (item != null)
             {
-                setItem(item.get().value().getDefaultInstance());
+                setItem(item.getDefaultInstance());
             }
         }
 
@@ -126,7 +130,7 @@ public class ItemIcon extends Pane
 
     /**
      * Sets itemStack from blockState.
-     * 
+     *
      * @see #setItem(ItemStack) equivalent of setItem(ItemStack)
      */
     public void setItemFromBlockState(final BlockStateRenderingData blockStateExtension)
@@ -142,7 +146,7 @@ public class ItemIcon extends Pane
         }
         if (!itemStack.isEmpty() && blockStateExtension.blockEntity() != null)
         {
-            blockStateExtension.blockState().item.blockEntity().saveToItem(itemStack, mc.level.registryAccess());
+            BlockToItemHelper.saveBeToItem(blockStateExtension.blockEntity(), itemStack, mc.level.registryAccess());
         }
         onItemUpdate();
     }
@@ -173,6 +177,13 @@ public class ItemIcon extends Pane
             if (onHover instanceof final AutomaticTooltip tooltip)
             {
                 tooltip.setTextOld(getModifiedItemStackTooltip());
+                // Clearing an icon intentionally leaves the stack null.  The
+                // old port still dereferenced it while refreshing the
+                // tooltip, turning an empty/removed inventory slot into a
+                // client crash.  Keep the tooltip metadata empty with no
+                // stack and restore it when a stack is assigned again.
+                tooltip.setStyle(itemStack == null ? null : itemStack.get(DataComponents.TOOLTIP_STYLE));
+                tooltip.setTooltipComponent(itemStack == null ? null : itemStack.getTooltipImage().orElse(null));
             }
             tooltipUpdateScheduled = false;
         }
@@ -184,15 +195,15 @@ public class ItemIcon extends Pane
         updateTooltipIfNeeded();
         if (!isDataEmpty())
         {
-            final Matrix3x2fStack ms = target.guiGraphics().pose();
+            final Matrix3x2fStack ms = target.pose();
             ms.pushMatrix();
             ms.translate(x, y);
             ms.scale(this.getWidth() / DEFAULT_ITEMSTACK_SIZE, this.getHeight() / DEFAULT_ITEMSTACK_SIZE);
 
-            target.guiGraphics().renderItem(itemStack, 0, 0);
+            target.item(itemStack, 0, 0);
             if (renderItemDecorations)
             {
-                target.guiGraphics().renderItemDecorations(mc.font, itemStack, 0, 0);
+                target.renderItemDecorations(itemStack, 0, 0);
             }
 
             ms.popMatrix();
@@ -223,7 +234,7 @@ public class ItemIcon extends Pane
      * prevTooltipSize: This value if for determining whether to append "show more info" text or not.
      * If you add elements which are wrapped via ToggleableTextComponent (and want to show "show more info" text), then add their count to this value.
      * else if you want to hide the text then set this value to {@code tooltipList.size()}
-     * 
+     *
      * @param tooltipList tooltip to modify
      * @param prevTooltipSize tooltip size before any modifications
      * @return new prevTooltipSize
@@ -236,7 +247,7 @@ public class ItemIcon extends Pane
     /**
      * Adds spacer and optional data
      *
-     * INLINE: 
+     * INLINE:
      * @see CreativeModeInventoryScreen#getTooltipFromContainerItem(ItemStack)
      */
     public List<Component> getModifiedItemStackTooltip()
@@ -252,7 +263,7 @@ public class ItemIcon extends Pane
             tooltipFlags = tooltipFlags.asCreative();
         }
 
-        final List<Component> tooltipList = itemStack.getTooltipLines(TooltipContext.of(mc.level), mc.player, tooltipFlags);
+        final List<Component> tooltipList = itemStack.getTooltipLines(TooltipContext.of(mc.level), mc.player, ClientTooltipFlag.of(tooltipFlags));
         int nameOffset = 1;
 
         nameOffset = modifyTooltipName(tooltipList, tooltipFlags, nameOffset);
@@ -294,13 +305,13 @@ public class ItemIcon extends Pane
         return tooltipList;
     }
 
-    protected static MutableComponent wrapShift(final MutableComponent wrapped)
+    protected MutableComponent wrapShift(final MutableComponent wrapped)
     {
-        return ToggleableTextComponent.of(Minecraft.getInstance()::hasShiftDown, wrapped);
+        return ToggleableTextComponent.of(mc::hasShiftDown, wrapped);
     }
 
-    protected static MutableComponent wrapShift(final MutableComponent wrapped, final boolean shouldWrap)
+    protected MutableComponent wrapShift(final MutableComponent wrapped, final boolean shouldWrap)
     {
-        return shouldWrap ? ToggleableTextComponent.of(Minecraft.getInstance()::hasShiftDown, wrapped) : wrapped;
+        return shouldWrap ? ToggleableTextComponent.of(mc::hasShiftDown, wrapped) : wrapped;
     }
 }

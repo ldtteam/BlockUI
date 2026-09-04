@@ -69,8 +69,8 @@ public class ScrollingContainer extends View
     @Override
     public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
-        final Matrix3x2fStack ms = target.guiGraphics().pose();
-        target.guiGraphics().enableScissor(x,y, x+width, y+height);
+        final Matrix3x2fStack ms = target.pose();
+        scissorsStart(target);
 
         // Translate the scroll
         ms.pushMatrix();
@@ -78,17 +78,17 @@ public class ScrollingContainer extends View
         super.drawSelf(target, mx, my + scrollY);
         ms.popMatrix();
 
-        target.guiGraphics().disableScissor();
+        scissorsEnd(target);
     }
 
     @Override
     public void drawSelfLast(final BOGuiGraphics target, final double mx, final double my)
     {
-        final Matrix3x2fStack ms = target.guiGraphics().pose();
+        final Matrix3x2fStack ms = target.pose();
 
         // Translate the scroll
         ms.pushMatrix();
-        ms.translate(0.0F, (float) -scrollY);
+        ms.translate(0.0f, (float) -scrollY);
         super.drawSelfLast(target, mx, my + scrollY);
         ms.popMatrix();
     }

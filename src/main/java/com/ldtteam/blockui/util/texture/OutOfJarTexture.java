@@ -1,75 +1,61 @@
 package com.ldtteam.blockui.util.texture;
 
-import com.ldtteam.blockui.mod.BlockUI;
 import com.ldtteam.blockui.util.resloc.OutOfJarResourceLocation;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.platform.TextureUtil;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
+import net.minecraft.client.renderer.texture.ReloadableTexture;
 import net.minecraft.client.renderer.texture.SimpleTexture;
+import net.minecraft.client.renderer.texture.TextureContents;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import net.minecraft.client.resources.metadata.texture.TextureMetadataSection;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.neoforged.fml.loading.FMLEnvironment;
+
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 
 /**
  * Inspired by {@link SimpleTexture}
  */
-public class OutOfJarTexture extends AbstractTexture
+public class OutOfJarTexture extends ReloadableTexture
 {
     protected final OutOfJarResourceLocation resourceLocation;
-    private boolean redirectToSprite = false;
 
     public OutOfJarTexture(final OutOfJarResourceLocation resourceLocation)
     {
+        super(resourceLocation);
         this.resourceLocation = resourceLocation;
     }
 
     @Override
-    public void load(final ResourceManager resourceManager) throws IOException
+    public TextureContents loadContents(final ResourceManager resourceManager) throws IOException
     {
         final Resource resource = OutOfJarResourceLocation.getResourceHandle(resourceLocation, resourceManager);
 
         // redirect to sprite
-        if (resource.metadata().getSection(AnimationMetadataSection.SERIALIZER).isPresent())
+        if (resource.metadata().getSection(AnimationMetadataSection.TYPE).isPresent())
         {
-            redirectToSprite = true;
-            throw new IOException("Vanilla hack: redirecting loading to sprite texture, do NOT report this exception, it IS intended");
+            throw new UnsupportedOperationException("Trying to load sprite texture without texture atlas isn't supporsed since 26.1");
             // ^ throwing anything else but IO crashes client, but we need to take missing texture path (so this object dies properly)
         }
 
-        final TextureMetadataSection textureMeta = resource.metadata().getSection(TextureMetadataSection.SERIALIZER).orElse(null);
+        final TextureMetadataSection textureMeta = resource.metadata().getSection(TextureMetadataSection.TYPE).orElse(null);
         final NativeImage nativeImage;
 
         try (var is = resource.open())
         {
             nativeImage = NativeImage.read(is);
         }
-        TextureUtil.prepareImage(getId(), 0, nativeImage.getWidth(), nativeImage.getHeight());
-
-        if (textureMeta != null)
+        catch (final NoSuchFileException e)
         {
-            nativeImage.upload(0,
-                0,
-                0,
-                0,
-                0,
-                nativeImage.getWidth(),
-                nativeImage.getHeight(),
-                textureMeta.isBlur(),
-                textureMeta.isClamp(),
-                false,
-                true);
+            // rethrow to java.io since vanilla stupid
+            throw new FileNotFoundException(e.getMessage());
         }
-        else
-        {
-            nativeImage.upload(0, 0, 0, true);
-        }
+        return new TextureContents(nativeImage, textureMeta);
     }
 
     public static AbstractTexture assertLoadedDefaultManagers(final Identifier resLoc)
@@ -79,7 +65,7 @@ public class OutOfJarTexture extends AbstractTexture
 
     /**
      * Checks whether given resLoc should be loaded into given textureManager as outOfJar or sprite texture
-     * 
+     *
      * @return valid texture instance (including missing texture)
      */
     public static AbstractTexture assertLoaded(final Identifier resLoc, final TextureManager textureManager, final ResourceManager resourceManager)
@@ -90,31 +76,15 @@ public class OutOfJarTexture extends AbstractTexture
             return textureManager.getTexture(resLoc);
         }
 
-        final AbstractTexture current = textureManager.getTexture(resLoc, null);
+        final AbstractTexture current = textureManager.getTexture(resLoc);
         if (IsOurTexture.isOur(current))
         {
             return current;
         }
 
-        if (current == MissingTextureAtlasSprite.getTexture())
-        {
-            if (!FMLEnvironment.isProduction() && !resLoc.getNamespace().equals(BlockUI.MOD_ID))
-            {
-                throw new IllegalArgumentException("Missing texture: " + resLoc);
-            }
-
-            return current;
-        }
-
         final OutOfJarTexture outOfJarTexture = new OutOfJarTexture(outOfJarResLoc);
-        textureManager.register(outOfJarResLoc, outOfJarTexture); // this causes texture to load
+        textureManager.registerAndLoad(outOfJarResLoc, outOfJarTexture); // this causes texture to load
 
-        if (outOfJarTexture.redirectToSprite)
-        {
-            textureManager.register(outOfJarResLoc, new SpriteTexture(outOfJarResLoc));
-        }
-
-        // do recursive resolution - cant overflow because manager is aware of path now
-        return assertLoaded(outOfJarResLoc, textureManager, resourceManager);
+        return outOfJarTexture;
     }
 }

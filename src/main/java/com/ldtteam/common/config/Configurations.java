@@ -76,7 +76,7 @@ public class Configurations<CLIENT extends AbstractConfiguration,
         modBus.addListener(ModConfigEvent.Loading.class, event -> onConfigLoad(event.getConfig()));
         modBus.addListener(ModConfigEvent.Reloading.class, event -> onConfigReload(event.getConfig()));
 
-        if (FMLEnvironment.dist.isClient())
+        if (FMLEnvironment.getDist().isClient())
         {
             ClientConfigHelper.registerClient(modContainer);
         }
@@ -88,7 +88,7 @@ public class Configurations<CLIENT extends AbstractConfiguration,
         final List<AbstractConfiguration> configs)
     {
         // dont create client classes on server to avoid class loading issues
-        if (factory == null || (type == Type.CLIENT && !FMLEnvironment.dist.isClient()))
+        if (factory == null || (type == Type.CLIENT && !FMLEnvironment.getDist().isClient()))
         {
             return Pair.of(null, null);
         }

@@ -202,25 +202,28 @@ public record PlayMessageType<T extends AbstractUnsidedPlayMessage>(Type<T> id,
 
     /**
      * Call this in following code:
-     * 
+     *
      * <pre>
      * public static void onNetworkRegistry(final RegisterPayloadHandlerEvent event)
      * {
      *     final String modVersion = ModList.get().getModContainerById(Constants.MOD_ID).get().getModInfo().getVersion().toString();
      *     final PayloadRegistrar registry = event.registrar(Constants.MOD_ID).versioned(modVersion);
-     * 
+     *
      *     // MyMessage extends one of AbstractPlayMessage, AbstractClientPlayMessage, AbstractServerPlayMessage
      *     MyMessage.TYPE.register(registry);
      * }
      * </pre>
-     * 
+     *
      * @param registry event network registry
      */
     public void register(final PayloadRegistrar registry)
     {
         if (client != null && server != null)
         {
-            registry.playBidirectional(id, codec, this::onBidirectional);
+            // NeoForge's three-argument bidirectional overload only installs the
+            // server handler; the client handler must be supplied explicitly (or
+            // registered later through RegisterClientPayloadHandlersEvent).
+            registry.playBidirectional(id, codec, this::onServer, this::onClient);
         }
         else if (client != null)
         {

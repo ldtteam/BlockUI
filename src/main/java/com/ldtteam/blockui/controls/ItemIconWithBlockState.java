@@ -4,11 +4,11 @@ import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.mod.Log;
 import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.ldtteam.blockui.mod.item.BlockStatePipRenderer.BlockStateRenderState;
+import org.joml.Matrix3x2fStack;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
+import net.minecraft.util.Util;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -23,9 +23,10 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.BlockItemStateProperties;
-import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -84,7 +85,7 @@ public class ItemIconWithBlockState extends ItemIcon
                 try
                 {
                     newItemStack.applyComponents(
-                        DataComponentMap.CODEC.decode(NbtOps.INSTANCE, TagParser.parseTag(nbt)).getOrThrow().getFirst());
+                        DataComponentMap.CODEC.decode(NbtOps.INSTANCE, TagParser.parseCompoundFully(nbt)).getOrThrow().getFirst());
                 }
                 catch (final CommandSyntaxException | IllegalStateException e)
                 {
@@ -134,25 +135,25 @@ public class ItemIconWithBlockState extends ItemIcon
             super.drawSelf(target, mx, my);
             return;
         }
-        
-        final PoseStack ms = target.pose();
-        ms.pushPose();
-        ms.translate(x, y, 0.0f);
-        ms.scale(this.getWidth() / DEFAULT_ITEMSTACK_SIZE, this.getHeight() / DEFAULT_ITEMSTACK_SIZE, 1.0f);
+
+        final Matrix3x2fStack ms = target.pose();
+        ms.pushMatrix();
+        ms.translate(x, y);
+        ms.scale(this.getWidth() / DEFAULT_ITEMSTACK_SIZE, this.getHeight() / DEFAULT_ITEMSTACK_SIZE);
 
         if (renderItemAlongBlockState)
         {
-            target.renderItem(itemStack, 0, 0);
+            target.item(itemStack, 0, 0);
         }
-        target.renderBlockStateAsItem(blockStateExtension, itemStack);
+        ms.scale(1.0f / BlockStateRenderState.SCALE_FACTOR, 1.0f / BlockStateRenderState.SCALE_FACTOR);
+        BlockStateRenderState.submit(target, blockStateExtension, itemStack);
+        ms.scale(BlockStateRenderState.SCALE_FACTOR, BlockStateRenderState.SCALE_FACTOR);
         if (renderItemDecorations)
         {
             target.renderItemDecorations(itemStack, 0, 0);
         }
 
-        RenderSystem.defaultBlendFunc();
-        RenderSystem.disableBlend();
-        ms.popPose();
+        ms.popMatrix();
     }
 
     @Override
@@ -308,10 +309,13 @@ public class ItemIconWithBlockState extends ItemIcon
         }
 
         // try parsing blockentity
-        final CompoundTag blockEntityTag = itemStack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY).copyTag();
+        @Nullable
+        final TypedEntityData<BlockEntityType<?>> blockEntityData = itemStack.get(DataComponents.BLOCK_ENTITY_DATA);
         BlockEntity be = null;
-        if (!blockEntityTag.isEmpty())
+        if (blockEntityData != null)
         {
+            final CompoundTag blockEntityTag = blockEntityData.copyTagWithoutId();
+            blockEntityTag.store("id", BuiltInRegistries.BLOCK_ENTITY_TYPE.byNameCodec(), blockEntityData.type());
             try
             {
                 // use probably invalid pos

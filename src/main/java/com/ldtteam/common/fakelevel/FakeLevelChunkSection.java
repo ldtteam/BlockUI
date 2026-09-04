@@ -3,6 +3,7 @@ package com.ldtteam.common.fakelevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeResolver;
 import net.minecraft.world.level.biome.Climate.Sampler;
@@ -18,27 +19,28 @@ import java.util.function.Predicate;
  */
 public class FakeLevelChunkSection extends LevelChunkSection
 {
-    private final FakeChunk fakeChunk;
+    private static final int SECTION_WIDTH = 16;
+    private static final int SECTION_HEIGHT = 16;
+
+    private final FakeLevel<?> fakeLevel;
     private final int yIdx;
+    private final ChunkPos chunkPos;
 
     /**
-     * @param fakeChunk parent chunk
+     * @param fakeLevel parent chunk
      * @param yIdx yLevel in chunk, multiply by section height
      */
-    public FakeLevelChunkSection(final FakeChunk fakeChunk, final int yIdx)
+    public FakeLevelChunkSection(final FakeLevel<?> fakeLevel, final int yIdx, final ChunkPos chunkPos)
     {
         super(null, null);
-        this.fakeChunk = fakeChunk;
+        this.fakeLevel = fakeLevel;
         this.yIdx = yIdx;
-
-        // set itself to cache
-        fakeChunk.lastY = yIdx;
-        fakeChunk.lastSection = this;
+        this.chunkPos = chunkPos;
     }
 
     private BlockPos formGlobalPos(int x, int y, int z)
     {
-        return new BlockPos(x + fakeChunk.getPos().x * SECTION_WIDTH, y + yIdx * SECTION_HEIGHT, z  + fakeChunk.getPos().z * SECTION_WIDTH);
+        return new BlockPos(x + chunkPos.x() * SECTION_WIDTH, y + yIdx * SECTION_HEIGHT, z  + chunkPos.z() * SECTION_WIDTH);
     }
 
     @Override
@@ -51,19 +53,19 @@ public class FakeLevelChunkSection extends LevelChunkSection
     @Override
     public BlockState getBlockState(int x, int y, int z)
     {
-        return fakeChunk.getBlockState(formGlobalPos(x, y, z));
+        return fakeLevel.getBlockState(formGlobalPos(x, y, z));
     }
 
     @Override
     public FluidState getFluidState(int x, int y, int z)
     {
-        return fakeChunk.getFluidState(formGlobalPos(x, y, z));
+        return fakeLevel.getFluidState(formGlobalPos(x, y, z));
     }
 
     @Override
     public Holder<Biome> getNoiseBiome(int x, int y, int z)
     {
-        return fakeChunk.getNoiseBiome(fakeChunk.getPos().x, yIdx * SECTION_HEIGHT, fakeChunk.getPos().z);
+        return fakeLevel.getNoiseBiome(chunkPos.x(), yIdx * SECTION_HEIGHT, chunkPos.z());
     }
 
     @Override

@@ -1,6 +1,5 @@
 package com.ldtteam.blockui.hooks;
 
-import com.ldtteam.blockui.Loader;
 import com.ldtteam.blockui.views.BOWindow;
 
 import net.minecraft.resources.Identifier;
@@ -14,8 +13,7 @@ public class HookWindow<T, U> extends BOWindow
 
     HookWindow(final HookManager<T, U, ?>.WindowEntry windowHolder)
     {
-        super();
-        Loader.createFromXMLFile(windowHolder.hook.guiLoc, this);
+        super(windowHolder.hook.guiLoc, true);
 
         this.windowHolder = windowHolder;
         screen = new HookScreen(this);

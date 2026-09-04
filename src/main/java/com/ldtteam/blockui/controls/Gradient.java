@@ -64,7 +64,7 @@ public class Gradient extends AbstractTextElement
     @Override
     public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
-        target.guiGraphics().fillGradient(x,y,width,height,gradientStart,gradientEnd);
+        fillGradient(target, x, y, width, height, gradientStart, gradientEnd);
         super.drawSelf(target, mx, my);
     }
 }

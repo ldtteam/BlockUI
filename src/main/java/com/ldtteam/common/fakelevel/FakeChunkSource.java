@@ -83,21 +83,33 @@ public class FakeChunkSource extends ChunkSource
     }
 
     @Override
-    public void setSpawnSettings(boolean p_62236_, boolean p_62237_)
+    public void setSpawnSettings(boolean p_62236_)
     {
-        super.setSpawnSettings(p_62236_, p_62237_);
+        super.setSpawnSettings(p_62236_);
     }
 
     @Override
-    public void updateChunkForced(ChunkPos p_62233_, boolean p_62234_)
+    public boolean updateChunkForced(ChunkPos p_62233_, boolean p_62234_)
     {
-        super.updateChunkForced(p_62233_, p_62234_);
+        return super.updateChunkForced(p_62233_, p_62234_);
     }
 
     @Override
     public void onLightUpdate(LightLayer p_63021_, SectionPos p_63022_)
     {
         super.onLightUpdate(p_63021_, p_63022_);
+    }
+
+    @Override
+    public LongSet getForceLoadedChunks()
+    {
+        return super.getForceLoadedChunks();
+    }
+
+    @Override
+    public void onSectionEmptinessChanged(int sectionX, int sectionY, int sectionZ, boolean empty)
+    {
+        super.onSectionEmptinessChanged(sectionX, sectionY, sectionZ, empty);
     }
     */
 }

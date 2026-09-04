@@ -1,7 +1,9 @@
 package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.controls.*;
+import com.ldtteam.blockui.mod.BlockUI;
 import com.ldtteam.blockui.mod.Log;
+import com.ldtteam.blockui.util.SafeError;
 import com.ldtteam.blockui.views.*;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -25,6 +27,7 @@ import java.util.function.Function;
  */
 public final class Loader extends SimplePreparableReloadListener<Map<Identifier, PaneParams>>
 {
+    public static final Identifier RELOADABLE_LISTEN_RES_LOC = BlockUI.resLoc("xml_loader");
     public static final Loader INSTANCE = new Loader();
 
     private final Map<String, Function<PaneParams, ? extends Pane>> paneFactories = new HashMap<>();
@@ -38,7 +41,10 @@ public final class Loader extends SimplePreparableReloadListener<Map<Identifier,
         register("scrollgroup", ScrollingGroup::new);
         register("list", ScrollingList::new);
         register("text", Text::new);
+        // Keep the legacy XML tags used by Structurize and MineColonies GUI resources.
+        register("label", Text::new);
         register("button", ButtonImage::new);
+        register("buttonimage", ButtonImage::new);
         register("toggle", ToggleButton::new);
         register("input", TextFieldVanilla::new);
         register("image", Image::new);
@@ -55,17 +61,20 @@ public final class Loader extends SimplePreparableReloadListener<Map<Identifier,
 
     private static ItemIcon itemIcon(final PaneParams paneParams)
     {
+        @Deprecated(forRemoval = true, since = "26.1")
+        final String PARAM_PROPERTIES = "properties";
         if (paneParams.hasAttribute(ItemIconWithBlockState.PARAM_NBT))
         {
-            if (!FMLEnvironment.isProduction() && paneParams.hasAttribute(ItemIconWithProperties.PARAM_PROPERTIES))
+            if (!FMLEnvironment.isProduction() && paneParams.hasAttribute(PARAM_PROPERTIES))
             {
-                throw new IllegalStateException("Must be one of '%s' or '%s'".formatted(ItemIconWithBlockState.PARAM_NBT, ItemIconWithProperties.PARAM_PROPERTIES));
+                throw new IllegalStateException("Must be one of '%s' or '%s'".formatted(ItemIconWithBlockState.PARAM_NBT, PARAM_PROPERTIES));
             }
             return new ItemIconWithBlockState(paneParams);
         }
-        if (paneParams.hasAttribute(ItemIconWithProperties.PARAM_PROPERTIES))
+        if (paneParams.hasAttribute(PARAM_PROPERTIES))
         {
-            return new ItemIconWithProperties(paneParams);
+            SafeError.throwInDev(new UnsupportedOperationException("ItemIconWithProperties was not portable"));
+            // return new ItemIconWithProperties(paneParams);
         }
         return new ItemIcon(paneParams);
     }
@@ -146,7 +155,7 @@ public final class Loader extends SimplePreparableReloadListener<Map<Identifier,
     }
 
     /**
-     * Parse XML contains in a ResourceLocation into contents for a Window.
+     * Parse XML contains in a Identifier into contents for a Window.
      *
      * @param resource xml as a {@link Identifier}.
      * @param parent   parent view.
@@ -204,7 +213,7 @@ public final class Loader extends SimplePreparableReloadListener<Map<Identifier,
             }
 
             doc.getDocumentElement().normalize();
-            foundXmls.put(rl, new PaneParams(doc.getDocumentElement()));
+            foundXmls.put(rl, new PaneParams(doc.getDocumentElement(), rl));
         });
 
         profiler.pop();

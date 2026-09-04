@@ -5,7 +5,9 @@ import com.ldtteam.blockui.MouseEventCallback;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.controls.AbstractTextElement;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.ldtteam.blockui.util.cursor.Cursor;
+import com.mojang.blaze3d.platform.cursor.CursorType;
+import org.joml.Matrix3x2fStack;
 import net.minecraft.util.Mth;
 
 /**
@@ -51,7 +53,7 @@ public class ZoomDragView extends View
         zoomEnabled = params.getBoolean("zoomenabled", zoomEnabled);
         minScale = params.getDouble("minscale", minScale);
         maxScale = params.getDouble("maxscale", maxScale);
-        
+
         this.cursor = this.cursor == Cursor.DEFAULT ? Cursor.RESIZE : this.cursor;
     }
 
@@ -63,9 +65,9 @@ public class ZoomDragView extends View
     }
 
     @Override
-    public Cursor getCursor()
+    public CursorType getCursor()
     {
-        Cursor superCursor = super.getCursor();
+        CursorType superCursor = super.getCursor();
 
         // if not default
         if (superCursor != Cursor.RESIZE)
@@ -172,29 +174,29 @@ public class ZoomDragView extends View
         return Math.max(0, (double) contentWidth * scale - getWidth());
     }
 
-    protected void abstractDrawSelfPre(final PoseStack ms, final double mx, final double my)
+    protected void abstractDrawSelfPre(final Matrix3x2fStack ms, final double mx, final double my)
     {
     }
 
-    protected void abstractDrawSelfPost(final PoseStack ms, final double mx, final double my)
+    protected void abstractDrawSelfPost(final Matrix3x2fStack ms, final double mx, final double my)
     {
     }
 
     @Override
     public void drawSelf(final BOGuiGraphics target, final double mx, final double my)
     {
-        final PoseStack ms = target.pose();
+        final Matrix3x2fStack ms = target.pose();
 
-        scissorsStart(ms, contentWidth, contentHeight);
+        scissorsStart(target);
 
-        ms.pushPose();
-        ms.translate(-scrollX, -scrollY, 0.0d);
-        ms.translate((1 - scale) * x, (1 - scale) * y, 0.0d);
-        ms.scale((float) scale, (float) scale, 1.0f);
+        ms.pushMatrix();
+        ms.translate((float) -scrollX, (float) -scrollY);
+        ms.translate((float) (1 - scale) * x, (float) (1 - scale) * y);
+        ms.scale((float) scale, (float) scale);
         abstractDrawSelfPre(ms, mx, my);
         super.drawSelf(target, calcRelativeX(mx), calcRelativeY(my));
         abstractDrawSelfPost(ms, mx, my);
-        ms.popPose();
+        ms.popMatrix();
 
         scissorsEnd(target);
     }
@@ -202,16 +204,16 @@ public class ZoomDragView extends View
     @Override
     public void drawSelfLast(final BOGuiGraphics target, final double mx, final double my)
     {
-        final PoseStack ms = target.pose();
+        final Matrix3x2fStack ms = target.pose();
 
-        scissorsStart(ms, contentWidth, contentHeight);
+        scissorsStart(target);
 
-        ms.pushPose();
-        ms.translate(-scrollX, -scrollY, 0.0d);
-        ms.translate((1 - scale) * x, (1 - scale) * y, 0.0d);
-        ms.scale((float) scale, (float) scale, 1.0f);
+        ms.pushMatrix();
+        ms.translate((float) -scrollX, (float) -scrollY);
+        ms.translate((float) (1 - scale) * x, (float) (1 - scale) * y);
+        ms.scale((float) scale, (float) scale);
         super.drawSelfLast(target, calcRelativeX(mx), calcRelativeY(my));
-        ms.popPose();
+        ms.popMatrix();
 
         scissorsEnd(target);
     }
@@ -227,13 +229,13 @@ public class ZoomDragView extends View
     }
 
     @Override
-    public boolean onMouseDrag(final double startX, final double startY, final double x, final double y)
+    public boolean onMouseDrag(final double startX, final double startY, final int speed, final double x, final double y)
     {
-        final boolean childResult = super.onMouseDrag(startX, startY, calcRelativeX(x), calcRelativeY(y));
+        final boolean childResult = super.onMouseDrag(startX, startY, speed, calcRelativeX(x), calcRelativeY(y));
         if (!childResult && dragEnabled)
         {
-            setScrollX(scrollX - x * dragFactor * BOGuiGraphics.getAltSpeedFactor());
-            setScrollY(scrollY - y * dragFactor * BOGuiGraphics.getAltSpeedFactor());
+            setScrollX(scrollX - x * dragFactor * BOGuiGraphics.getAltSpeedFactor(mc));
+            setScrollY(scrollY - y * dragFactor * BOGuiGraphics.getAltSpeedFactor(mc));
             return true;
         }
         return childResult;
@@ -249,7 +251,7 @@ public class ZoomDragView extends View
             final double childY = my - y;
             final double oldX = (childX + scrollX) / scale;
             final double oldY = (childY + scrollY) / scale;
-            final double zoomFactor = this.zoomFactor * BOGuiGraphics.getAltSpeedFactor();
+            final double zoomFactor = this.zoomFactor * BOGuiGraphics.getAltSpeedFactor(mc);
             scale = verticalWheel < 0 ? scale / zoomFactor : scale * zoomFactor;
 
             // try to round if around whole number (cuz of text texture)

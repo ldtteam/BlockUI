@@ -1,13 +1,18 @@
 package com.ldtteam.blockui;
 
 import com.ldtteam.blockui.controls.AbstractTextBuilder.TooltipBuilder;
+import com.ldtteam.blockui.util.SafeError;
+import com.ldtteam.blockui.util.cursor.Cursor;
 import com.ldtteam.blockui.views.View;
 import com.ldtteam.blockui.views.BOWindow;
 import com.mojang.blaze3d.platform.cursor.CursorType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
+import org.joml.Matrix3x2fStack;
 import net.minecraft.network.chat.MutableComponent;
 import org.jetbrains.annotations.Nullable;
-
 import java.util.List;
 import java.util.Objects;
 
@@ -31,9 +36,10 @@ public class Pane extends UiRenderMacros
     protected boolean visible = true;
     protected boolean enabled = true;
     protected String onHoverId = "";
-    protected CursorType cursor = CursorType.DEFAULT;
+    protected CursorType cursor = Cursor.DEFAULT;
     // Runtime
     protected BOWindow window;
+    private   String paneParamsPath = "UNKNOWN";
     protected View parent;
     protected Pane hoverSource = null;
     /**
@@ -60,6 +66,7 @@ public class Pane extends UiRenderMacros
     public Pane(final PaneParams params)
     {
         super();
+        paneParamsPath = params.getXmlRelatedId();
         id = params.getString("id", id);
 
         params.getScaledInteger("size", params.getParentWidth(), params.getParentHeight(), a -> {
@@ -77,6 +84,8 @@ public class Pane extends UiRenderMacros
         enabled = params.getBoolean("enabled", enabled);
         onHoverId = params.getString("onHoverId", onHoverId);
         toolTipLines = params.getMultilineText("tooltip", toolTipLines);
+
+        params.getResource("cursor", resLoc -> cursor = Cursor.of(resLoc));
     }
 
     /**
@@ -133,6 +142,29 @@ public class Pane extends UiRenderMacros
     public final void setID(final String id)
     {
         this.id = id;
+    }
+
+    /**
+     * @return string path from nearest parent with id
+     */
+    public final String getXmlRelatedId()
+    {
+        return window == null ? paneParamsPath : window.getXmlResourceLocation().toString() + "|" + Objects.requireNonNullElseGet(id, () -> pathToNearestIdParent(parent));
+    }
+
+    private static String pathToNearestIdParent(final Pane pane)
+    {
+        if (pane == null)
+        {
+            return "root";
+        }
+
+        return pane.id != null ? pane.id : pathToNearestIdParent(pane.parent) + "/" + pane.getClass().getSimpleName();
+    }
+
+    public void requireNonNull(final Object value, final String errorMessage)
+    {
+        SafeError.requireNonNull(value, errorMessage + " (" + getXmlRelatedId() + ")");
     }
 
     /**
@@ -302,6 +334,22 @@ public class Pane extends UiRenderMacros
     }
 
     /**
+     * Used mostly for overrides for default logics like {@link com.ldtteam.blockui.views.ZoomDragView#getCursor ZoomDragView}
+     */
+    public CursorType getCursor()
+    {
+        return cursor;
+    }
+
+    /**
+     * @param cursor use {@link Cursor} instances for default behaviour (or new instances to prevent it)
+     */
+    public void setCursor(final CursorType cursor)
+    {
+        this.cursor = cursor;
+    }
+
+    /**
      * Draw the current Pane if visible.
      *
      * @param mx mouse x.
@@ -315,18 +363,24 @@ public class Pane extends UiRenderMacros
 
         if (shouldDraw())
         {
+            if (wasCursorInPane && isEnabled())
+            {
+                // intentional getter cuz overrides
+                target.setCursor(getCursor());
+            }
+
             drawSelf(target, mx, my);
 
             if (debugging)
             {
                 final int color = wasCursorInPane ? 0xFF00FF00 : 0xFF0000FF;
 
-                target.guiGraphics().renderOutline(x, y, width, height, color);
+                drawLineRect(target, x, y, width, height, color);
 
                 if (wasCursorInPane && !id.isEmpty())
                 {
                     final int stringWidth = mc.font.width(id) + 1;
-                    target.guiGraphics().drawString(mc.font, id, x + getWidth() - stringWidth, y + getHeight() - mc.font.lineHeight, color);
+                    target.drawString(id, x + getWidth() - stringWidth, y + getHeight() - mc.font.lineHeight, color);
                 }
             }
         }
@@ -631,10 +685,39 @@ public class Pane extends UiRenderMacros
      * @param ch  the character
      * @param key the key
      * @return true if event was used or propagation needs to be stopped
+     * @deprecated replaced by {@link #onKeyEvent(KeyEvent)} and {@link #onCharactedEvent(CharacterEvent)}
      */
-    public boolean onKeyTyped(final String ch, final int key)
+    @Deprecated(forRemoval = true, since = "26.1")
+    public boolean onKeyTyped(final char ch, final int key)
     {
         return false;
+    }
+
+    /**
+     * Called when a key is pressed.
+     *
+     * @param keyEvent event with key, scancode and modifier keys
+     * @return true if event was used or propagation needs to be stopped
+     */
+    public boolean onKeyEvent(final KeyEvent keyEvent)
+    {
+        return onKeyTyped('\0', keyEvent.key());
+    }
+
+    /**
+     * Called when a unicode character is emitted.
+     *
+     * @param characterEvent event with unicode codepoint
+     * @return true if event was used or propagation needs to be stopped
+     */
+    public boolean onCharactedEvent(final CharacterEvent characterEvent)
+    {
+        boolean stopPropagation = false;
+        for (char c : Character.toChars(characterEvent.codepoint()))
+        {
+            stopPropagation |= onKeyTyped(c, -1);
+        }
+        return stopPropagation;
     }
 
     /**
@@ -643,6 +726,13 @@ public class Pane extends UiRenderMacros
     public void onUpdate()
     {
         // Can be overloaded
+    }
+
+    protected synchronized void scissorsStart(final BOGuiGraphics target)
+    {
+        // the vanilla stuff here contains transformation via current pose (baked coordination)
+        // if ever this stop being a thing then in git history (1.21.1) we have our version
+        target.enableScissor(x, y, x + width, y + height);
     }
 
     /**
@@ -663,6 +753,34 @@ public class Pane extends UiRenderMacros
     public int getY()
     {
         return y;
+    }
+
+    protected synchronized void scissorsEnd(final BOGuiGraphics target)
+    {
+        final Matrix3x2fStack ms = target.pose();
+        final ScreenRectangle popped = target.peekScissorStack();
+        if (debugging)
+        {
+            final int color = 0xffff0000;
+            final int w = popped.right() - popped.left();
+            final int h = popped.bottom() - popped.top();
+
+            final int yStart = mc.getWindow().getHeight() - popped.bottom();
+
+            ms.pushMatrix();
+            ms.identity();
+            drawLineRect(target, popped.left(), yStart, w, h, color, 2);
+
+            final String scId = "scissor_" + (id.isEmpty() ? this.toString() : id);
+            final int stringWidth = mc.font.width(scId) + 1;
+            target.drawString(scId,
+                popped.left() + w - stringWidth,
+                yStart + h - 2 * mc.font.lineHeight,
+                color);
+            ms.popMatrix();
+        }
+
+        target.disableScissor();
     }
 
     /**
@@ -757,11 +875,12 @@ public class Pane extends UiRenderMacros
      *
      * @param mx     mouse start x
      * @param my     mouse start y
+     * @param speed  drag speed
      * @param deltaX relative x
      * @param deltaY relative y
      * @return true if event was used or propagation needs to be stopped
      */
-    public boolean onMouseDrag(final double mx, final double my, final double deltaX, final double deltaY)
+    public boolean onMouseDrag(final double mx, final double my, final int speed, final double deltaX, final double deltaY)
     {
         return false;
     }

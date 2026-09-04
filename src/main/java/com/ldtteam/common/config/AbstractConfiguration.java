@@ -2,7 +2,6 @@ package com.ldtteam.common.config;
 
 import com.ldtteam.common.language.LanguageHandler;
 import net.minecraft.server.TickTask;
-import net.neoforged.fml.LogicalSide;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.ModConfigSpec.BooleanValue;
 import net.neoforged.neoforge.common.ModConfigSpec.Builder;
@@ -12,7 +11,10 @@ import net.neoforged.neoforge.common.ModConfigSpec.EnumValue;
 import net.neoforged.neoforge.common.ModConfigSpec.IntValue;
 import net.neoforged.neoforge.common.ModConfigSpec.LongValue;
 import net.neoforged.neoforge.common.ModConfigSpec.RestartType;
+import net.neoforged.neoforge.internal.NeoForgeProxy;
+import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -280,8 +282,15 @@ public abstract class AbstractConfiguration
 
             if (!Objects.equals(newValue, lastValue))
             {
-                LogicalSidedProvider.WORKQUEUE.get(FMLEnvironment.getDist().isClient() ? LogicalSide.CLIENT : LogicalSide.SERVER)
-                    .tell(new TickTask(0, () -> listener.onChange(lastValue, newValue)));
+                final Runnable changeEvent = () -> listener.onChange(lastValue, newValue);
+                if (FMLEnvironment.getDist().isClient())
+                {
+                    NeoForgeProxy.INSTANCE.getClientExecutor().schedule(changeEvent);
+                }
+                else
+                {
+                    ServerLifecycleHooks.getCurrentServer().schedule(new TickTask(0, changeEvent));
+                }
                 lastValue = newValue;
             }
         }

@@ -130,16 +130,16 @@ public class Scrollbar extends Pane
         }
 
         // Scroll Area Back
-        fill(target.pose(), x + offsetX, y + offsetY, width - 2, height, scrollbarBackground);
+        fill(target, x + offsetX, y + offsetY, width - 2, height, scrollbarBackground);
 
         final int renderY = y + (int) getScrollBarYPos();
         final int renderHeight = getBarHeight();
 
         // Scroll Bar (Bottom/Right Edge line) - Fill whole Scroll area
-        fill(target.pose(), x + offsetX, renderY, width - 2, renderHeight, scrollbarColorHighlight);
+        fill(target, x + offsetX, renderY, width - 2, renderHeight, scrollbarColorHighlight);
 
         // Scroll Bar (Inset color)
-        fill(target.pose(), x + offsetX, renderY, width - 3, renderHeight - 1, scrollbarColor);
+        fill(target, x + offsetX, renderY, width - 3, renderHeight - 1, scrollbarColor);
     }
 
     @Override
@@ -192,7 +192,7 @@ public class Scrollbar extends Pane
     }
 
     @Override
-    public boolean onMouseDrag(final double mx, final double my, final double deltaX, final double deltaY)
+    public boolean onMouseDrag(final double mx, final double my, final int speed, final double deltaX, final double deltaY)
     {
         return true;
     }

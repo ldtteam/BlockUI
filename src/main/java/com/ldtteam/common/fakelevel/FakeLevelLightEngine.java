@@ -84,7 +84,7 @@ public class FakeLevelLightEngine extends LevelLightEngine
     }
 
     @Override
-    public boolean lightOnInSection(final SectionPos p_285319_)
+    public boolean lightOnInColumn(long sectionZeroNode)
     {
         // Noop, used only in chunk compiling?
         return false;
@@ -153,14 +153,14 @@ public class FakeLevelLightEngine extends LevelLightEngine
         // super is fine
         return super.getLightSectionCount();
     }
-    
+
     @Override
     public int getMaxLightSection()
     {
         // super is fine
         return super.getMaxLightSection();
     }
-    
+
     @Override
     public int getMinLightSection()
     {
@@ -228,6 +228,12 @@ public class FakeLevelLightEngine extends LevelLightEngine
         public int getLightValue(final BlockPos p_75710_)
         {
             return fakeLevel.getBrightness(lightLayer, p_75710_);
+        }
+
+        @Override
+        public void updateSectionStatus(BlockPos pos, boolean sectionEmpty)
+        {
+            // Noop
         }
     }
 }

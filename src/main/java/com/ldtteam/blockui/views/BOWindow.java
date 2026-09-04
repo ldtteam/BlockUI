@@ -7,18 +7,15 @@ import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.Parsers;
 import com.mojang.blaze3d.platform.Window;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.resources.Identifier;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import org.lwjgl.glfw.GLFW;
 
 import java.util.function.ToDoubleBiFunction;
 
 /**
  * Blockout window, high level root pane.
  */
-@OnlyIn(Dist.CLIENT)
 public class BOWindow extends View
 {
     /**
@@ -47,6 +44,11 @@ public class BOWindow extends View
     protected boolean lightbox = false;
 
     /**
+     * Defines if the window should have blurred background.
+     */
+    protected boolean blurBackground = false;
+
+    /**
      * Render using size or attemp to scale to fullscreen.
      */
     protected WindowRenderType windowRenderType = WindowRenderType.OVERSIZED_VANILLA;
@@ -56,21 +58,23 @@ public class BOWindow extends View
     /**
      * Create a window from an xml file.
      *
-     * @param resource ResourceLocation to get file from.
+     * @param resource Identifier to get file from.
      */
     public BOWindow(final Identifier resource)
     {
-        this();
-        this.xmlResourceLocation = resource;
-        Loader.createFromXMLFile(resource, this);
+        this(resource, true);
     }
 
     /**
      * Make default sized window.
      */
-    public BOWindow()
+    public BOWindow(final Identifier resource, final boolean shouldloadXml)
     {
-        this(DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        this(resource, DEFAULT_WIDTH, DEFAULT_HEIGHT);
+        if (shouldloadXml)
+        {
+            Loader.createFromXMLFile(resource, this);
+        }
     }
 
     /**
@@ -79,9 +83,10 @@ public class BOWindow extends View
      * @param w Width of the window, in pixels.
      * @param h Height of the window, in pixels.
      */
-    public BOWindow(final int w, final int h)
+    public BOWindow(final Identifier resource, final int w, final int h)
     {
         super();
+        xmlResourceLocation = resource;
         width = w;
         height = h;
 
@@ -104,6 +109,7 @@ public class BOWindow extends View
         });
 
         lightbox = params.getBoolean("lightbox", lightbox);
+        blurBackground = params.getBoolean("blurBackground", blurBackground);
         windowPausesGame = params.getBoolean("pause", windowPausesGame);
         windowRenderType = params.getEnum("type", WindowRenderType.class, windowRenderType);
     }
@@ -111,9 +117,14 @@ public class BOWindow extends View
     @Override
     public void drawSelf(final BOGuiGraphics ms, final double mx, final double my)
     {
-        debugging = Screen.hasShiftDown() && Screen.hasAltDown() && Screen.hasControlDown();
+        debugging = mc.hasShiftDown() && mc.hasAltDown() && mc.hasControlDown();
 
         super.drawSelf(ms, mx, my);
+    }
+
+    public void setLightbox(final boolean lightbox)
+    {
+        this.lightbox = lightbox;
     }
 
     /**
@@ -124,6 +135,21 @@ public class BOWindow extends View
     public boolean hasLightbox()
     {
         return lightbox;
+    }
+
+    public void setBlurBackground(final boolean blurBackground)
+    {
+        this.blurBackground = blurBackground;
+    }
+
+    public boolean hasBlurredBackground()
+    {
+        return blurBackground;
+    }
+
+    public void setWindowPausesGame(final boolean windowPausesGame)
+    {
+        this.windowPausesGame = windowPausesGame;
     }
 
     /**
@@ -157,7 +183,7 @@ public class BOWindow extends View
      */
     public void open()
     {
-        mc.submit(() -> mc.setScreen(screen));
+        mc.submit(() -> mc.gui.setScreen(screen));
     }
 
     /**
@@ -165,7 +191,7 @@ public class BOWindow extends View
      */
     public void openAsLayer()
     {
-        mc.submit(() -> mc.pushGuiLayer(screen));
+        mc.submit(() -> mc.gui.setScreen(screen));
     }
 
     /**
@@ -193,24 +219,40 @@ public class BOWindow extends View
     }
 
     /**
+     * Characted input handler. Directs text to focused Pane.
+     * <p>
+     * It is advised not to override this method.
+     *
+     * @return {@code true} if the key was handled by a Pane.
+     */
+    @Override
+    public boolean onCharactedEvent(final CharacterEvent event)
+    {
+        if (getFocus() != null && getFocus().onCharactedEvent(event))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Key input handler. Directs keystrokes to focused Pane, or to onUnhandledKeyTyped() if no
      * Pane handles the keystroke.
      * <p>
      * It is advised not to override this method.
      *
-     * @param ch  Character of key pressed.
-     * @param key Keycode of key pressed.
      * @return {@code true} if the key was handled by a Pane.
      */
     @Override
-    public boolean onKeyTyped(final String ch, final int key)
+    public boolean onKeyEvent(final KeyEvent event)
     {
-        if (getFocus() != null && getFocus().onKeyTyped(ch, key))
+        if (getFocus() != null && getFocus().onKeyEvent(event))
         {
             return true;
         }
 
-        return onUnhandledKeyTyped(ch, key);
+        return onUnhandledKeyTyped(event);
     }
 
     /**
@@ -218,12 +260,10 @@ public class BOWindow extends View
      * <p>
      * Override this to handle key input at the Window level.
      *
-     * @param ch  Character of key pressed.
-     * @param key Keycode of key pressed.
      */
-    public boolean onUnhandledKeyTyped(final int ch, final int key)
+    public boolean onUnhandledKeyTyped(final KeyEvent event)
     {
-        if (key == GLFW.GLFW_KEY_ESCAPE)
+        if (event.isEscape())
         {
             if (getFocus() != null)
             {
@@ -243,7 +283,7 @@ public class BOWindow extends View
      */
     public void close()
     {
-        Minecraft.getInstance().popGuiLayer();
+        Minecraft.getInstance().gui.setScreen(null);
     }
 
     /**

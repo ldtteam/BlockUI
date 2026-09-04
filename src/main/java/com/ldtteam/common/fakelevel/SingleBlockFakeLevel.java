@@ -19,7 +19,7 @@ public class SingleBlockFakeLevel extends FakeLevel<SingleBlockFakeLevel.SingleB
 {
     /**
      * Creates simple fakeLevel instance
-     * 
+     *
      * @param realLevel actual valid vanilla instance to provide eg. registries
      */
     public SingleBlockFakeLevel(final Level realLevel)
@@ -33,7 +33,7 @@ public class SingleBlockFakeLevel extends FakeLevel<SingleBlockFakeLevel.SingleB
      * @param blockState  related to blockEntity
      * @param blockEntity related to blockState
      * @param realLevel   actual valid vanilla instance to provide eg. registries
-     * @see #unset(FakeLevel, BlockEntity)
+     * @see #unset(BlockEntity)
      * @see FakeLevel#setEntities(Collection) FakeLevel#setEntities(Collection) if you want to add entities, do not forget to reset
      */
     public void prepare(final BlockState blockState, @Nullable final BlockEntity blockEntity, final Level realLevel)
@@ -50,7 +50,7 @@ public class SingleBlockFakeLevel extends FakeLevel<SingleBlockFakeLevel.SingleB
 
     /**
      * @param blockEntity to unlink level if needed
-     * @see #prepare(FakeLevel, BlockState, BlockEntity, Level)
+     * @see #prepare(BlockState, BlockEntity, Level)
      */
     public void unset(@Nullable final BlockEntity blockEntity)
     {
@@ -73,13 +73,13 @@ public class SingleBlockFakeLevel extends FakeLevel<SingleBlockFakeLevel.SingleB
 
     /**
      * See related methods for more information.
-     * 
+     *
      * @param blockState  related to blockEntity
      * @param blockEntity related to blockState
      * @param realLevel   actual valid vanilla instance to provide eg. registries
      * @param action      context action
-     * @see #prepare(FakeLevel, BlockState, BlockEntity, Level)
-     * @see #unset(FakeLevel, BlockEntity)
+     * @see #prepare(BlockState, BlockEntity, Level)
+     * @see #unset(BlockEntity)
      */
     public void withFakeLevelContext(final BlockState blockState,
         @Nullable final BlockEntity blockEntity,
@@ -93,13 +93,13 @@ public class SingleBlockFakeLevel extends FakeLevel<SingleBlockFakeLevel.SingleB
 
     /**
      * See related methods for more information.
-     * 
+     *
      * @param blockState  related to blockEntity
      * @param blockEntity related to blockState
      * @param realLevel   actual valid vanilla instance to provide eg. registries
      * @param action      context action
-     * @see #prepare(FakeLevel, BlockState, BlockEntity, Level)
-     * @see #unset(FakeLevel, BlockEntity)
+     * @see #prepare(BlockState, BlockEntity, Level)
+     * @see #unset(BlockEntity)
      */
     public <T> T useFakeLevelContext(final BlockState blockState,
         @Nullable final BlockEntity blockEntity,

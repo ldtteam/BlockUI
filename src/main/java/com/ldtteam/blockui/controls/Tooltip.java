@@ -5,7 +5,12 @@ import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.BOScreen;
 import com.ldtteam.blockui.PaneBuilders;
 import com.ldtteam.blockui.PaneParams;
+import com.ldtteam.blockui.util.records.SizeI;
+import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipComponent;
 import net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3x2fStack;
 
 import java.util.Collections;
@@ -19,21 +24,28 @@ public class Tooltip extends AbstractTextElement
     public static final int DEFAULT_MAX_HEIGHT = AbstractTextElement.SIZE_FOR_UNLIMITED_ELEMENTS;
 
     private static final int CURSOR_BOX_SIZE = 12;
-    private static final int Z_OFFSET = 200;
-    private static final int BACKGROUND_COLOR = 0xf0100010; // TooltipRenderUtil.BACKGROUND_COLOR;
-    private static final int BORDER_COLOR_A = 0x505000ff; // TooltipRenderUtil.BORDER_COLOR_TOP
-    private static final int BORDER_COLOR_B = 0x5028007f; // TooltipRenderUtil.BORDER_COLOR_BOTTOM
+    private static final int CONTENT_PADDING = TooltipRenderUtil.PADDING; // one direction
 
-    public static final int DEFAULT_TEXT_COLOR = 0xffffff; // white
+    public static final int DEFAULT_TEXT_COLOR = 0xFFffffff; // white
 
     protected boolean autoWidth = true;
     protected boolean autoHeight = true;
     protected int maxWidth = DEFAULT_MAX_WIDTH;
     protected int maxHeight = DEFAULT_MAX_HEIGHT;
 
+    // TODO: make AbstractTextElement accept this as part of text - requires big type changes
+    @Nullable
+    protected ClientTooltipComponent tooltipComponent = null;
+    private SizeI tooltipComponentSize = null;
+
+    @Nullable
+    protected Identifier style = null;
+    private ResolvedBlit backgroundBlit = null;
+    private ResolvedBlit frameBlit = null;
+
     /**
      * Standard constructor which instantiates the tooltip.
-     * 
+     *
      * @see PaneBuilders#tooltipBuilder()
      * @deprecated {@link PaneBuilders#tooltipBuilder()}
      */
@@ -61,8 +73,8 @@ public class Tooltip extends AbstractTextElement
     protected void init()
     {
         textLinespace = 1;
-        textOffsetX = 4;
-        textOffsetY = 4;
+        textOffsetX = CONTENT_PADDING;
+        textOffsetY = CONTENT_PADDING;
         hide();
         recalcTextRendering();
     }
@@ -80,11 +92,11 @@ public class Tooltip extends AbstractTextElement
         if (autoWidth)
         {
             // +1 for shadow
-            textWidth = maxWidth - 8 + 1;
+            textWidth = maxWidth - 2 * CONTENT_PADDING + 1;
         }
         if (autoHeight)
         {
-            textHeight = maxHeight - 8;
+            textHeight = maxHeight - 2 * CONTENT_PADDING;
         }
 
         super.recalcTextRendering();
@@ -105,6 +117,34 @@ public class Tooltip extends AbstractTextElement
         super.setSize(w, h);
     }
 
+    public void setStyle(@Nullable final Identifier style)
+    {
+        this.style = style;
+        backgroundBlit = null;
+        frameBlit = null;
+    }
+
+    public Identifier getStyle()
+    {
+        return style;
+    }
+
+    public void setTooltipComponent(@Nullable final TooltipComponent tooltipComponent)
+    {
+        setTooltipComponent(tooltipComponent == null ? null : ClientTooltipComponent.create(tooltipComponent));
+    }
+
+    public void setTooltipComponent(@Nullable final ClientTooltipComponent tooltipComponent)
+    {
+        this.tooltipComponent = tooltipComponent;
+        tooltipComponentSize = null;
+    }
+
+    public ClientTooltipComponent getTooltipComponent()
+    {
+        return tooltipComponent;
+    }
+
     @Override
     public void drawSelf(final BOGuiGraphics ms, final double mx, final double my)
     {
@@ -114,18 +154,33 @@ public class Tooltip extends AbstractTextElement
     @Override
     public void drawSelfLast(final BOGuiGraphics target, final double mx, final double my)
     {
-        final Matrix3x2fStack ms = target.guiGraphics().pose();
+        final Matrix3x2fStack ms = target.pose();
 
         if (!preparedText.isEmpty() && isEnabled())
         {
+            if (backgroundBlit == null)
+            {
+                backgroundBlit = Image.resolveBlit(TooltipRenderUtil.getBackgroundSprite(style), 0, 0, 0, 0);
+            }
+            if (frameBlit == null)
+            {
+                frameBlit = Image.resolveBlit(TooltipRenderUtil.getFrameSprite(style), 0, 0, 0, 0);
+            }
+            if (tooltipComponentSize == null)
+            {
+                // -2 for manual adjustment of terrible mojang math
+                tooltipComponentSize = tooltipComponent == null ? new SizeI(0, 0) :
+                    new SizeI(tooltipComponent.getWidth(mc.font), tooltipComponent.getHeight(mc.font) - 2);
+            }
+
             recalcPreparedTextBox();
             if (autoWidth)
             {
-                width = renderedTextWidth + 8;
+                width = Math.max(renderedTextWidth, tooltipComponentSize.width()) + 2 * CONTENT_PADDING;
             }
             if (autoHeight)
             {
-                height = renderedTextHeight + 8;
+                height = renderedTextHeight + tooltipComponentSize.height() + 2 * CONTENT_PADDING;
             }
 
             final BOScreen scr = window.getScreen();
@@ -154,9 +209,28 @@ public class Tooltip extends AbstractTextElement
             }
 
             // modified INLINE: vanilla Screen#renderTooltip(MatrixStack, List<? extends IReorderingProcessor>, int, int, FontRenderer)
-            TooltipRenderUtil.renderTooltipBackground(target.guiGraphics(), x, y, width, height, null);
+            // INLINE: update from net.minecraft.client.gui.screens.inventory.tooltip.TooltipRenderUtil
+            ms.pushMatrix();
+
+            final int shift = TooltipRenderUtil.MARGIN;
+            backgroundBlit.blit(target, x - shift, y - shift, width + 2 * shift, height + 2 * shift);
+            frameBlit.blit(target, x - shift, y - shift, width + 2 * shift, height + 2 * shift);
 
             super.innerDrawSelf(target, mx, my);
+
+            if (tooltipComponent != null)
+            {
+                final int adjustedY = y + CONTENT_PADDING + renderedTextHeight + textLinespace;
+                tooltipComponent.extractText(target, mc.font, x + CONTENT_PADDING, adjustedY);
+                tooltipComponent.extractImage(mc.font,
+                    x + CONTENT_PADDING,
+                    adjustedY,
+                    Math.min(tooltipComponentSize.width(), width - 2 * CONTENT_PADDING),
+                    Math.min(tooltipComponentSize.height(), height - 2 * CONTENT_PADDING),
+                    target);
+            }
+
+            ms.popMatrix();
         }
     }
 

@@ -3,7 +3,6 @@ package com.ldtteam.common.language;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import net.minecraft.locale.Language;
-import net.minecraft.network.chat.Component;
 import net.neoforged.fml.loading.FMLEnvironment;
 import org.apache.commons.io.IOUtils;
 import java.io.InputStream;
@@ -24,33 +23,6 @@ public final class LanguageHandler
     private LanguageHandler()
     {
         // Intentionally left empty.
-    }
-
-    /**
-     * Localize a string and use String.format().
-     *
-     * @param inputKey translation key.
-     * @param args     Objects for String.format().
-     * @return Localized string.
-     */
-    @Deprecated(forRemoval = true, since = "1.21.1")
-    public static String format(final String key, final Object... args)
-    {
-        final String result = (args.length == 0 ? Component.translatable(key) : Component.translatable(key, args)).getString();
-        return result.isEmpty() ? key : result;
-    }
-
-    /**
-     * Translates key to readable string and formats it.
-     *
-     * @param key    translation key
-     * @param format String.format() attributes
-     * @return formatted string
-     */
-    @Deprecated(forRemoval = true, since = "1.21.1")
-    public static String translateKeyWithFormat(final String key, final Object... format)
-    {
-        return String.format(translateKey(key), format);
     }
 
     /**
@@ -92,7 +64,7 @@ public final class LanguageHandler
 
         private void load(final String path)
         {
-            final String locale = FMLEnvironment.dist.isClient() ? ClientLocale.getLocale() : ServerLocale.getLocale();
+            final String locale = FMLEnvironment.getDist().isClient() ? ClientLocale.getLocale() : ServerLocale.getLocale();
 
             InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(String.format(path, locale));
             if (is == null)

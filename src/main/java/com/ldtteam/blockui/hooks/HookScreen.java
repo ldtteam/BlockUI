@@ -3,12 +3,11 @@ package com.ldtteam.blockui.hooks;
 import com.ldtteam.blockui.BOScreen;
 import com.ldtteam.blockui.hooks.TriggerMechanism.RayTraceTriggerMechanism;
 import com.ldtteam.blockui.views.ScrollingList;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import org.joml.Matrix4fStack;
 
 /**
  * Screen wrapper.
@@ -28,23 +27,24 @@ public class HookScreen extends BOScreen
 
     @Override
     @Deprecated
-    public void render(final GuiGraphics target, final int mx, final int my, final float f)
+    public void extractRenderState(final GuiGraphicsExtractor target, final int mx, final int my, final float f)
     {
-        render(target.pose());
+        render(null);
     }
 
-    public void render(final PoseStack ms)
+    public void render(final Matrix4fStack ms)
     {
-        if (minecraft == null || !isOpen) // should never happen though
+        if (minecraft == null || ms == null || !isOpen) // should never happen though
         {
             return;
         }
 
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.enableDepthTest();
-        RenderSystem.disableBlend();
-        RenderSystem.defaultBlendFunc();
-        ms.translate(-width / 2, -height, 0.0d);
+        // TODO: rework in-game gui rendering
+        // RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        // RenderSystem.enableDepthTest();
+        // RenderSystem.disableBlend();
+        // RenderSystem.defaultBlendFunc();
+        ms.translate(-width / 2, -height, 0.0f);
         try
         {
             throw new UnsupportedOperationException("need port fix");

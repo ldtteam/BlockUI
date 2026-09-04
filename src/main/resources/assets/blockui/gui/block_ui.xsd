@@ -36,6 +36,7 @@
         <xs:attribute name="width" type="xs:string"/>
         <xs:attribute name="height" type="xs:string"/>
         <xs:attribute name="lightbox" type="xs:boolean"/>
+        <xs:attribute name="blurBackground" type="xs:boolean"/>
         <xs:attribute name="pause" type="xs:boolean"/>
         <xs:attribute name="type" use="optional">
             <xs:simpleType>
@@ -74,6 +75,7 @@
         <xs:attribute name="onHoverId" type="xs:string"/>
 
         <xs:attribute name="style" type="xs:string"/>
+        <xs:attribute name="cursor" type="xs:string"/>
     </xs:complexType>
 
     <!-- Abstract text element -->
@@ -232,6 +234,8 @@
                 <xs:attribute name="yaw" type="xs:float"/>
                 <xs:attribute name="pitch" type="xs:float"/>
                 <xs:attribute name="head" type="xs:float"/>
+                <xs:attribute name="renderState" type="xs:string"/>
+                <xs:attribute name="transformation" type="xs:string"/>
             </xs:extension>
         </xs:complexContent>
     </xs:complexType>

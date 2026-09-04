@@ -23,6 +23,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTypes;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +31,7 @@ import java.util.Set;
 
 public class ContainerHook
 {
-    public static TagKey<BlockEntityType<?>> CONTAINER_TAG = TagKey.create(Registries.BLOCK_ENTITY_TYPE, Identifier.fromNamespaceAndPath(BlockUI.MOD_ID, "container_gui"));
+    public static TagKey<BlockEntityType<?>> CONTAINER_TAG = TagKey.create(Registries.BLOCK_ENTITY_TYPE, BlockUI.resLoc("container_gui"));
 
     public static void init()
     {
@@ -39,7 +40,7 @@ public class ContainerHook
             return;
         }
 
-        final Identifier gui_loc = Identifier.fromNamespaceAndPath(BlockUI.MOD_ID, "gui/container.xml");
+        final Identifier gui_loc = BlockUI.resLoc("gui/container.xml");
         // TODO: properly support tag reloading
         for (final Holder<BlockEntityType<?>> beType : BuiltInRegistries.BLOCK_ENTITY_TYPE.getTagOrEmpty(CONTAINER_TAG))
         {
@@ -69,8 +70,8 @@ public class ContainerHook
                 .getBlockEntity(thing.getBlockPos());
 
             final Container container = worldBlockEntity instanceof Container c ? c :
-                (worldBlockEntity.getType() == BlockEntityType.ENDER_CHEST ? integratedServer.getPlayerList()
-                    .getPlayer(integratedServer.getSingleplayerProfile().getId())
+                (worldBlockEntity.getType() == BlockEntityTypes.ENDER_CHEST ? integratedServer.getPlayerList()
+                    .getPlayer(integratedServer.getSingleplayerProfile().id())
                     .getEnderChestInventory() : null);
 
             if (container == null)

@@ -1,8 +1,8 @@
 package com.ldtteam.common.fakelevel;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.level.storage.WritableLevelData;
 import java.util.function.Supplier;
@@ -22,15 +22,9 @@ public class FakeLevelData implements WritableLevelData
     }
 
     @Override
-    public BlockPos getSpawnPos()
+    public LevelData.RespawnData getRespawnData()
     {
-        return BlockPos.ZERO;
-    }
-
-    @Override
-    public float getSpawnAngle()
-    {
-        return 0;
+        return new RespawnData(new GlobalPos(vanillaLevelData.get().getRespawnData().dimension(), BlockPos.ZERO), 0, 0);
     }
 
     @Override
@@ -40,39 +34,9 @@ public class FakeLevelData implements WritableLevelData
     }
 
     @Override
-    public long getDayTime()
-    {
-        return lightProvider.forceOwnLightLevel() ? lightProvider.getDayTime() : vanillaLevelData.get().getDayTime();
-    }
-
-    @Override
-    public boolean isThundering()
-    {
-        return false;
-    }
-
-    @Override
-    public boolean isRaining()
-    {
-        return false;
-    }
-
-    @Override
-    public void setRaining(final boolean p_78171_)
-    {
-        // Noop
-    }
-
-    @Override
     public boolean isHardcore()
     {
         return false;
-    }
-
-    @Override
-    public GameRules getGameRules()
-    {
-        return vanillaLevelData.get().getGameRules();
     }
 
     @Override
@@ -89,8 +53,8 @@ public class FakeLevelData implements WritableLevelData
     }
 
     @Override
-    public void setSpawn(final BlockPos pos, final float angle)
+    public void setSpawn(final LevelData.RespawnData respawnData)
     {
-        // Noop        
+        // Noop
     }
 }

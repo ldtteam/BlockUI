@@ -27,9 +27,8 @@ public record SpacerTextComponent(int pixelHeight) implements ComponentContents
         return new FormattedSpacerComponent(pixelHeight);
     }
 
-
     @Override
-    public MapCodec<? extends ComponentContents> codec()
+    public MapCodec<SpacerTextComponent> codec()
     {
         return CODEC;
     }
