@@ -1,11 +1,13 @@
 package com.ldtteam.blockui.views;
 
+import com.ldtteam.blockui.LayoutContext;
 import com.ldtteam.blockui.Pane;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.views.ScrollingListContainer.RowSizeModifier;
 import net.minecraft.network.chat.MutableComponent;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.IntSupplier;
 
 import static com.ldtteam.blockui.controls.AbstractTextElement.DEFAULT_TEXT_COLOR;
@@ -156,7 +158,7 @@ public class ScrollingList extends ScrollingView
     }
 
     @Override
-    public void parseChildren(final PaneParams params)
+    public void parseChildren(final PaneParams params, final LayoutContext context, final Consumer<PaneParams> childCreator)
     {
         final List<PaneParams> childNodes = params.getChildren();
         if (childNodes.isEmpty())

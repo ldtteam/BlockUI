@@ -1,6 +1,8 @@
 package com.ldtteam.blockui.views;
 
 import com.ldtteam.blockui.Pane;
+import com.ldtteam.blockui.LayoutContext;
+import com.ldtteam.blockui.Loader;
 import com.ldtteam.blockui.PaneParams;
 import com.ldtteam.blockui.controls.Button;
 import com.ldtteam.blockui.controls.ButtonHandler;
@@ -94,7 +96,7 @@ public class DropDownList extends View implements ButtonHandler
         }
         list.setSize(dropDownWidth, dropDownHeight);
         list.putInside(overlay);
-        list.parseChildren(params);
+        list.parseChildren(params, LayoutContext.EMPTY, child -> Loader.createFromPaneParams(child, list));
 
         button.setHandler(this);
     }
@@ -290,7 +292,7 @@ public class DropDownList extends View implements ButtonHandler
     }
 
     @Override
-    public void parseChildren(PaneParams params)
+    public void parseChildren(final PaneParams params, final LayoutContext context, final Consumer<PaneParams> childCreator)
     {
         // noop cuz this element only has button (that was already set up in ctor)
     }

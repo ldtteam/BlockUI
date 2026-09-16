@@ -1,1 +1,7 @@
 apply from: 'https://raw.githubusercontent.com/ldtteam/OperaPublicaCreator/ng7/gradle/mod.gradle'
+
+runs {
+    client {
+        systemProperty 'blockui.debug', 'true'
+    }
+}

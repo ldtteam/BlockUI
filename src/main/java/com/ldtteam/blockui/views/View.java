@@ -11,13 +11,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 /**
  * A View is a Pane which can contain other Panes.
  */
 public class View extends Pane
 {
-        protected List<Pane> children = new ArrayList<>();
+    protected List<Pane> children = new ArrayList<>();
+
     protected int padding = 0;
 
     /**
@@ -39,20 +41,25 @@ public class View extends Pane
 
         if (params.getParentView() != null) // might be null if created dynamically
         {
-            if (width == 0) width = params.getParentView().width - x;
-            if (height == 0) height = params.getParentView().height - y;
+            if (width == 0)
+            {
+                width = params.getParentView().width - x;
+            }
+            if (height == 0)
+            {
+                height = params.getParentView().height - y;
+            }
         }
 
         padding = params.getInteger("padding", padding);
     }
 
-        public List<Pane> getChildren()
+    public List<Pane> getChildren()
     {
         return children;
     }
 
-    @Override
-    public void parseChildren(final PaneParams params)
+    public void parseChildren(final PaneParams params, final LayoutContext context, final Consumer<PaneParams> childCreator)
     {
         final List<PaneParams> childNodes = params.getChildren();
         if (childNodes.isEmpty())
@@ -62,7 +69,7 @@ public class View extends Pane
 
         for (final PaneParams node : childNodes)
         {
-            Loader.createFromPaneParams(node, this);
+            childCreator.accept(node);
         }
     }
 
@@ -200,7 +207,10 @@ public class View extends Pane
 
         // Allow elements to have their size expanded when zero
         View p = parent;
-        if (p == null) return;
+        if (p == null)
+        {
+            return;
+        }
 
         if (width == 0)
         {
@@ -395,13 +405,14 @@ public class View extends Pane
      * Select first children using reverse iteration over {@link #children} that is rendered
      * {@link Pane#isPointInPane(double, double)}.
      *
-     * @param mx            mouse x relative to parent
-     * @param my            mouse y relative to parent
+     * @param mx                    mouse x relative to parent
+     * @param my                    mouse y relative to parent
      * @param eventCallbackPositive event callback if accept.
      * @param eventCallbackNegative event callback if deny.
      * @return true if event was used or propagation needs to be stopped
      */
-    public boolean mousePointableEventHandler(final double mx, final double my,
+    public boolean mousePointableEventHandler(
+        final double mx, final double my,
         final MouseEventCallback eventCallbackPositive, @Nullable final MouseEventCallback eventCallbackNegative)
     {
         return mouseEventProcessor(mx, my, Pane::isPointInPane, eventCallbackPositive, eventCallbackNegative);
@@ -410,14 +421,15 @@ public class View extends Pane
     /**
      * Select first children using reverse iteration over {@link #children} that is accepted by panePredicate.
      *
-     * @param mx            mouse x relative to parent
-     * @param my            mouse y relative to parent
-     * @param panePredicate test child pane if it can accept current event
+     * @param mx                    mouse x relative to parent
+     * @param my                    mouse y relative to parent
+     * @param panePredicate         test child pane if it can accept current event
      * @param eventCallbackPositive event callback
      * @param eventCallbackNegative negative event callback.
      * @return true if event was used or propagation needs to be stopped
      */
-    public boolean mouseEventProcessor(final double mx, final double my, final MouseEventCallback panePredicate,
+    public boolean mouseEventProcessor(
+        final double mx, final double my, final MouseEventCallback panePredicate,
         final MouseEventCallback eventCallbackPositive, final MouseEventCallback eventCallbackNegative)
     {
         final ListIterator<Pane> it = children.listIterator(children.size());

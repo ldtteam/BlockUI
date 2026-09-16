@@ -2,7 +2,10 @@ package com.ldtteam.blockui.views;
 
 import com.ldtteam.blockui.BOGuiGraphics;
 import com.ldtteam.blockui.Pane;
+import com.ldtteam.blockui.LayoutContext;
 import com.ldtteam.blockui.PaneParams;
+
+import java.util.function.Consumer;
 import com.ldtteam.blockui.controls.Scrollbar;
 
 /**
@@ -90,9 +93,9 @@ public class ScrollingView extends View
      * @param params the xml parameters.
      */
     @Override
-    public void parseChildren(final PaneParams params)
+    public void parseChildren(final PaneParams params, final LayoutContext context, final Consumer<PaneParams> childCreator)
     {
-        container.parseChildren(params);
+        container.parseChildren(params, context, childCreator);
     }
 
     /**

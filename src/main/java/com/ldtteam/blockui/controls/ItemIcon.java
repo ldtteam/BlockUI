@@ -24,6 +24,7 @@ import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.block.AirBlock;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.common.CreativeModeTabRegistry;
 import org.jetbrains.annotations.Nullable;
 import java.util.Collections;
@@ -48,6 +49,23 @@ public class ItemIcon extends Pane
      */
     protected boolean tooltipUpdateScheduled = false;
     protected boolean renderItemDecorations = true;
+
+    public static ItemIcon parse(final PaneParams paneParams)
+    {
+        if (paneParams.hasAttribute(ItemIconWithBlockState.PARAM_NBT))
+        {
+            if (!FMLEnvironment.production && paneParams.hasAttribute(ItemIconWithProperties.PARAM_PROPERTIES))
+            {
+                throw new IllegalStateException("Must be one of '%s' or '%s'".formatted(ItemIconWithBlockState.PARAM_NBT, ItemIconWithProperties.PARAM_PROPERTIES));
+            }
+            return new ItemIconWithBlockState(paneParams);
+        }
+        if (paneParams.hasAttribute(ItemIconWithProperties.PARAM_PROPERTIES))
+        {
+            return new ItemIconWithProperties(paneParams);
+        }
+        return new ItemIcon(paneParams);
+    }
 
     /**
      * Standard constructor instantiating the itemIcon without any additional settings.
