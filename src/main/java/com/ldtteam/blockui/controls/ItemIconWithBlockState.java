@@ -147,7 +147,7 @@ public class ItemIconWithBlockState extends ItemIcon
         target.renderBlockStateAsItem(blockStateExtension, itemStack);
         if (renderItemDecorations)
         {
-            target.renderItemDecorations(itemStack, 0, 0);
+            target.renderItemDecorations(itemStack, 0, 0, forceHighContrastCount);
         }
 
         RenderSystem.defaultBlendFunc();

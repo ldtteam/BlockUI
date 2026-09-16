@@ -1,5 +1,6 @@
 package com.ldtteam.blockui;
 
+import com.ldtteam.blockui.mod.BlockUI;
 import com.ldtteam.blockui.mod.item.BlockStateRenderingData;
 import com.ldtteam.blockui.util.SingleBlockGetter.SingleBlockNeighborhood;
 import com.ldtteam.blockui.util.cursor.Cursor;
@@ -55,12 +56,68 @@ public class BOGuiGraphics extends GuiGraphics
 
     public void renderItemDecorations(final ItemStack itemStack, final int x, final int y)
     {
-        super.renderItemDecorations(getFont(itemStack), itemStack, x, y);
+        renderItemDecorations(itemStack, x, y, null, false);
     }
 
     public void renderItemDecorations(final ItemStack itemStack, final int x, final int y, @Nullable final String altStackSize)
     {
-        super.renderItemDecorations(getFont(itemStack), itemStack, x, y, altStackSize);
+        renderItemDecorations(itemStack, x, y, altStackSize, false);
+    }
+
+    public void renderItemDecorations(final ItemStack itemStack, final int x, final int y, final boolean forceHighContrastCount)
+    {
+        renderItemDecorations(itemStack, x, y, null, forceHighContrastCount);
+    }
+
+    /**
+     * Renders vanilla item decorations, optionally drawing a high-contrast badge behind the stack count.
+     *
+     * @param itemStack item stack whose decorations will be rendered
+     * @param x item icon x position
+     * @param y item icon y position
+     * @param altStackSize optional text to render instead of the stack count
+     * @param forceHighContrastCount true to draw the count badge even when the client option is disabled
+     */
+    public void renderItemDecorations(
+        final ItemStack itemStack,
+        final int x,
+        final int y,
+        @Nullable final String altStackSize,
+        final boolean forceHighContrastCount)
+    {
+        final Font font = getFont(itemStack);
+        if (BlockUI.isHighContrastCountEnabled() || forceHighContrastCount)
+        {
+            drawCountBadge(font, itemStack, x, y, altStackSize);
+        }
+
+        super.renderItemDecorations(font, itemStack, x, y, altStackSize);
+    }
+
+    /**
+     * Draws a high-contrast 'badge' under the item decoration.
+     * @param font font used to measure count text
+     * @param itemStack item stack being highlighted
+     * @param x left
+     * @param y top
+     * @param altStackSize optional text to render instead of the stack count
+     */
+    private void drawCountBadge(final Font font, final ItemStack itemStack, final int x, final int y, @Nullable final String altStackSize)
+    {
+        final String countText = altStackSize == null ? itemStack.getCount() == 1 ? null : String.valueOf(itemStack.getCount()) : altStackSize;
+        if (countText == null || countText.isEmpty())
+        {
+            return;
+        }
+
+        final int textWidth = font.width(countText);
+        final int textX = x + 17 - textWidth;
+        final int textY = y + 9;
+
+        pose().pushPose();
+        pose().translate(0, 0, 199);
+        UiRenderMacros.fillRoundedBadge(pose(), textX - 2, textY - 1, textWidth + 4, font.lineHeight + 1, 0x99000000);
+        pose().popPose();
     }
 
     public int drawString(final String text, final float x, final float y, final int color)
